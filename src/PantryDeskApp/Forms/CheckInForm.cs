@@ -265,7 +265,17 @@ public partial class CheckInForm : Form
 
     private void BtnOpenProfile_Click(object? sender, EventArgs e)
     {
-        MessageBox.Show("Household Profile coming in Phase 4", "Coming Soon", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        if (_selectedHousehold == null)
+        {
+            return;
+        }
+
+        using var profileForm = new HouseholdProfileForm(_selectedHousehold.Id);
+        if (profileForm.ShowDialog() == DialogResult.OK)
+        {
+            // Refresh search to show updated data
+            SearchHouseholds(txtSearch.Text);
+        }
     }
 
     private void MenuItemChangePasswords_Click(object? sender, EventArgs e)

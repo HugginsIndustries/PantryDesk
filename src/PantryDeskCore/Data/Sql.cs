@@ -167,6 +167,16 @@ public static class Sql
         ORDER BY event_date DESC, created_at DESC
         LIMIT 1";
 
+    public const string ServiceEventUpdate = @"
+        UPDATE service_events
+        SET event_type = @event_type,
+            event_status = @event_status,
+            event_date = @event_date,
+            scheduled_text = @scheduled_text,
+            override_reason = @override_reason,
+            notes = @notes
+        WHERE id = @id";
+
     // PantryDay queries
     public const string PantryDayInsert = @"
         INSERT INTO pantry_days (pantry_date, is_active, notes, created_at)

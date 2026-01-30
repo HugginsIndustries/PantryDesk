@@ -45,11 +45,11 @@ Implementation checklist based on phased plan.
 
 ## Phase 4 — Household Profile + Service History + Appointments
 
-- [ ] Household Profile form: all fields + Active toggle
-- [ ] Service History view: list of events with filters
-- [ ] Appointment scheduler: ScheduledDate + ScheduledText (required), optional notes
-- [ ] Actions: mark Scheduled appointment as Completed / Cancelled / NoShow
-- [ ] Verify: Schedule appointment → mark completed; NoShow/Cancelled doesn't affect eligibility
+- [x] Household Profile form: all fields + Active toggle
+- [x] Service History view: list of events with filters
+- [x] Appointment scheduler: ScheduledDate + ScheduledText (required), optional notes
+- [x] Actions: mark Scheduled appointment as Completed / Cancelled / NoShow
+- [x] Verify: Schedule appointment → mark completed; NoShow/Cancelled doesn't affect eligibility
 
 ## Phase 5 — Pantry day calendar generator + editor
 

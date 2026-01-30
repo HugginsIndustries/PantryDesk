@@ -72,6 +72,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Monthly eligibility checking: households can only be served once per calendar month
   - Automatic event type classification: PantryDay if today matches active pantry day, else Appointment
   - Search results update immediately after service completion or household creation
+- **Phase 4: Household Profile + Service History + Appointments**
+  - `ServiceEventRepository.Update()` method for updating service event status and details
+  - `HouseholdProfileForm` with tabbed interface (Profile, Service History, Appointments)
+  - Profile tab: Full household CRUD with all fields including Active toggle and auto-calculated total size
+  - Service History tab: DataGridView displaying all service events with Status and Type filters
+  - Appointments tab: Schedule new appointments with required date and text, optional notes
+  - Context menu actions on Service History: Mark Scheduled appointments as Completed/Cancelled/NoShow
+  - Completed appointments trigger eligibility check and override modal (same as direct check-in)
+  - Cancelled/NoShow appointments do NOT affect monthly eligibility
+  - CheckInForm "Open Profile" button now opens HouseholdProfileForm and refreshes results on save
 
 ### Changed
 
@@ -80,6 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Form1 test button updated to handle existing pantry days (prevents UNIQUE constraint violations)
 - Main application now shows CheckInForm instead of Form1 after login
 - Program.cs updated to launch CheckInForm as the main screen
+- CheckInForm "Open Profile" button now opens functional HouseholdProfileForm (replaces placeholder)
 
 ### Fixed
 

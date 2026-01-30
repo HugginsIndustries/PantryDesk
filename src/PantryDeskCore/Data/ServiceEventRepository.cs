@@ -172,6 +172,35 @@ public static class ServiceEventRepository
         }
     }
 
+    /// <summary>
+    /// Updates an existing service event.
+    /// </summary>
+    /// <param name="connection">The database connection.</param>
+    /// <param name="serviceEvent">The service event to update.</param>
+    public static void Update(SqliteConnection connection, ServiceEvent serviceEvent)
+    {
+        var eventDate = serviceEvent.EventDate.ToString("yyyy-MM-dd");
+
+        connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.ServiceEventUpdate, connection);
+            cmd.Parameters.AddWithValue("@id", serviceEvent.Id);
+            cmd.Parameters.AddWithValue("@event_type", serviceEvent.EventType);
+            cmd.Parameters.AddWithValue("@event_status", serviceEvent.EventStatus);
+            cmd.Parameters.AddWithValue("@event_date", eventDate);
+            cmd.Parameters.AddWithValue("@scheduled_text", (object?)serviceEvent.ScheduledText ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@override_reason", (object?)serviceEvent.OverrideReason ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@notes", (object?)serviceEvent.Notes ?? DBNull.Value);
+
+            cmd.ExecuteNonQuery();
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
     private static ServiceEvent MapFromReader(SqliteDataReader reader)
     {
         return new ServiceEvent
