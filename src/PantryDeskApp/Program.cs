@@ -17,7 +17,11 @@ static class Program
         ApplicationConfiguration.Initialize();
 
         // Initialize database
-        DatabaseManager.InitializeDatabase();
+        using (var connection = DatabaseManager.InitializeDatabase())
+        {
+            // Initialize app version if not already set
+            ConfigRepository.InitializeAppVersion(connection);
+        }
 
         // Check if automatic backup is needed for today
         try

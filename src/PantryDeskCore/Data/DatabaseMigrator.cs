@@ -21,6 +21,10 @@ public static class DatabaseMigrator
 
         try
         {
+            // Enable foreign key constraints
+            using var fkCmd = new SqliteCommand("PRAGMA foreign_keys=ON", connection);
+            fkCmd.ExecuteNonQuery();
+
             using var transaction = connection.BeginTransaction();
 
             try

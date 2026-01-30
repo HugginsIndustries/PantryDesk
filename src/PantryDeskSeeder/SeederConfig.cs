@@ -94,6 +94,31 @@ public class SeederConfig
                     i++;
                     break;
 
+                case "--city-weights" when i + 1 < args.Length:
+                    config.CityWeights = ParseKeyValuePairs(args[i + 1]);
+                    i++;
+                    break;
+
+                case "--age-weights" when i + 1 < args.Length:
+                    config.AgeWeights = ParseKeyValuePairs(args[i + 1]);
+                    i++;
+                    break;
+
+                case "--household-size-dist" when i + 1 < args.Length:
+                    config.HouseholdSizeDistribution = ParseIntKeyValuePairs(args[i + 1]);
+                    i++;
+                    break;
+
+                case "--events-per-pantry-day" when i + 1 < args.Length:
+                    config.EventsPerPantryDayRange = ParseRange(args[i + 1]);
+                    i++;
+                    break;
+
+                case "--appointments-per-week" when i + 1 < args.Length:
+                    config.AppointmentsPerWeekRange = ParseRange(args[i + 1]);
+                    i++;
+                    break;
+
                 case "--help":
                     PrintUsage();
                     Environment.Exit(0);
@@ -138,6 +163,58 @@ public class SeederConfig
         }
     }
 
+    private static Dictionary<string, int> ParseKeyValuePairs(string input)
+    {
+        var dict = new Dictionary<string, int>();
+        var pairs = input.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var pair in pairs)
+        {
+            var parts = pair.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (parts.Length == 2 && int.TryParse(parts[1], out var value) && value > 0)
+            {
+                dict[parts[0]] = value;
+            }
+            else
+            {
+                throw new ArgumentException($"Invalid key=value pair: {pair}");
+            }
+        }
+        return dict;
+    }
+
+    private static Dictionary<int, int> ParseIntKeyValuePairs(string input)
+    {
+        var dict = new Dictionary<int, int>();
+        var pairs = input.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var pair in pairs)
+        {
+            var parts = pair.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (parts.Length == 2 && int.TryParse(parts[0], out var key) && int.TryParse(parts[1], out var value) && value > 0)
+            {
+                dict[key] = value;
+            }
+            else
+            {
+                throw new ArgumentException($"Invalid key=value pair: {pair}");
+            }
+        }
+        return dict;
+    }
+
+    private static (int Min, int Max) ParseRange(string input)
+    {
+        var parts = input.Split('-', StringSplitOptions.TrimEntries);
+        if (parts.Length == 2 && int.TryParse(parts[0], out var min) && int.TryParse(parts[1], out var max))
+        {
+            if (min < 0 || max < min)
+            {
+                throw new ArgumentException($"Invalid range: {input}. Min must be >= 0 and max must be >= min.");
+            }
+            return (min, max);
+        }
+        throw new ArgumentException($"Invalid range format: {input}. Expected format: min-max (e.g., 25-50)");
+    }
+
     private static void PrintUsage()
     {
         Console.WriteLine("PantryDesk Seeder Tool");
@@ -145,10 +222,20 @@ public class SeederConfig
         Console.WriteLine("Usage: PantryDeskSeeder [options]");
         Console.WriteLine();
         Console.WriteLine("Options:");
-        Console.WriteLine("  --households <count>     Number of households to generate (default: 300)");
-        Console.WriteLine("  --months-back <months>   How many months back to generate data (default: 6)");
-        Console.WriteLine("  --seed <number>         RNG seed for deterministic generation (default: random)");
-        Console.WriteLine("  --output <path>          Output database path (default: demo_pantrydesk.db)");
-        Console.WriteLine("  --help                   Show this help message");
+        Console.WriteLine("  --households <count>              Number of households to generate (default: 300)");
+        Console.WriteLine("  --months-back <months>            How many months back to generate data (default: 6)");
+        Console.WriteLine("  --seed <number>                   RNG seed for deterministic generation (default: random)");
+        Console.WriteLine("  --output <path>                   Output database path (default: demo_pantrydesk.db)");
+        Console.WriteLine("  --city-weights <pairs>            City weights as key=value pairs (default: Winlock=50,Vader=30,Ryderwood=20)");
+        Console.WriteLine("                                    Example: --city-weights \"Winlock=50,Vader=30,Ryderwood=20\"");
+        Console.WriteLine("  --age-weights <pairs>             Age weights as key=value pairs (default: Child=30,Adult=50,Senior=20)");
+        Console.WriteLine("                                    Example: --age-weights \"Child=30,Adult=50,Senior=20\"");
+        Console.WriteLine("  --household-size-dist <pairs>    Household size distribution as key=value pairs");
+        Console.WriteLine("                                    Example: --household-size-dist \"1=20,2=30,3=25,4=15,5=7,6=3\"");
+        Console.WriteLine("  --events-per-pantry-day <range>   Range of events per pantry day (default: 25-50)");
+        Console.WriteLine("                                    Example: --events-per-pantry-day \"25-50\"");
+        Console.WriteLine("  --appointments-per-week <range>   Range of appointments per week (default: 2-8)");
+        Console.WriteLine("                                    Example: --appointments-per-week \"2-8\"");
+        Console.WriteLine("  --help                            Show this help message");
     }
 }

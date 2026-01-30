@@ -20,7 +20,7 @@ public static class ServiceEventRepository
         var createdAt = now.ToString("yyyy-MM-ddTHH:mm:ssZ");
         var eventDate = serviceEvent.EventDate.ToString("yyyy-MM-dd");
 
-        connection.Open();
+        DatabaseManager.OpenWithForeignKeys(connection);
         try
         {
             using var cmd = new SqliteCommand(Sql.ServiceEventInsert, connection);
@@ -57,7 +57,7 @@ public static class ServiceEventRepository
     /// <returns>The service event, or null if not found.</returns>
     public static ServiceEvent? GetById(SqliteConnection connection, int id)
     {
-        connection.Open();
+        DatabaseManager.OpenWithForeignKeys(connection);
         try
         {
             using var cmd = new SqliteCommand(Sql.ServiceEventSelectById, connection);
@@ -87,7 +87,7 @@ public static class ServiceEventRepository
     {
         var events = new List<ServiceEvent>();
 
-        connection.Open();
+        DatabaseManager.OpenWithForeignKeys(connection);
         try
         {
             using var cmd = new SqliteCommand(Sql.ServiceEventSelectByHouseholdId, connection);
@@ -117,7 +117,7 @@ public static class ServiceEventRepository
     {
         var events = new List<ServiceEvent>();
 
-        connection.Open();
+        DatabaseManager.OpenWithForeignKeys(connection);
         try
         {
             using var cmd = new SqliteCommand(Sql.ServiceEventSelectAll, connection);
@@ -150,7 +150,7 @@ public static class ServiceEventRepository
         var startDateStr = startDate.ToString("yyyy-MM-dd");
         var endDateStr = endDate.ToString("yyyy-MM-dd");
 
-        connection.Open();
+        DatabaseManager.OpenWithForeignKeys(connection);
         try
         {
             using var cmd = new SqliteCommand(Sql.ServiceEventSelectByDateRange, connection);
@@ -173,6 +173,36 @@ public static class ServiceEventRepository
     }
 
     /// <summary>
+    /// Checks if a household has any completed service events within a date range.
+    /// </summary>
+    /// <param name="connection">The database connection.</param>
+    /// <param name="householdId">The household ID.</param>
+    /// <param name="startDate">The start date (inclusive).</param>
+    /// <param name="endDate">The end date (inclusive).</param>
+    /// <returns>True if any completed events exist in the range, false otherwise.</returns>
+    public static bool HasCompletedInDateRange(SqliteConnection connection, int householdId, DateTime startDate, DateTime endDate)
+    {
+        var startDateStr = startDate.ToString("yyyy-MM-dd");
+        var endDateStr = endDate.ToString("yyyy-MM-dd");
+
+        DatabaseManager.OpenWithForeignKeys(connection);
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.ServiceEventSelectCompletedByHouseholdAndDateRange, connection);
+            cmd.Parameters.AddWithValue("@household_id", householdId);
+            cmd.Parameters.AddWithValue("@start_date", startDateStr);
+            cmd.Parameters.AddWithValue("@end_date", endDateStr);
+
+            using var reader = cmd.ExecuteReader();
+            return reader.Read(); // If any row exists, household has completed service in this range
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
+    /// <summary>
     /// Gets the most recent completed service event for a household.
     /// </summary>
     /// <param name="connection">The database connection.</param>
@@ -180,7 +210,7 @@ public static class ServiceEventRepository
     /// <returns>The most recent completed service event, or null if none exists.</returns>
     public static ServiceEvent? GetLastCompletedByHouseholdId(SqliteConnection connection, int householdId)
     {
-        connection.Open();
+        DatabaseManager.OpenWithForeignKeys(connection);
         try
         {
             using var cmd = new SqliteCommand(Sql.ServiceEventSelectLastCompletedByHouseholdId, connection);
@@ -209,7 +239,7 @@ public static class ServiceEventRepository
     {
         var eventDate = serviceEvent.EventDate.ToString("yyyy-MM-dd");
 
-        connection.Open();
+        DatabaseManager.OpenWithForeignKeys(connection);
         try
         {
             using var cmd = new SqliteCommand(Sql.ServiceEventUpdate, connection);

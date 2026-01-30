@@ -30,7 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `PasswordHasher` using PBKDF2 with 100,000 iterations for secure password storage
   - All SQL queries use parameterized statements (SQL injection protection)
   - Centralized SQL statements in `Sql.cs` class
-  - Phase 1 verification test button in PantryDeskApp
 - **Phase 2: Authentication (Entry/Admin)**
   - `SessionManager` class for tracking current logged-in role
   - `PermissionChecker` helper class for Admin-only feature enforcement

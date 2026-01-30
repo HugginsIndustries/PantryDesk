@@ -16,7 +16,7 @@ public static class ConfigRepository
     /// <returns>The configuration value, or null if not found.</returns>
     public static string? GetValue(SqliteConnection connection, string key)
     {
-        connection.Open();
+        DatabaseManager.OpenWithForeignKeys(connection);
         try
         {
             using var cmd = new SqliteCommand(Sql.ConfigGetValue, connection);
@@ -38,7 +38,7 @@ public static class ConfigRepository
     /// <param name="value">The configuration value.</param>
     public static void SetValue(SqliteConnection connection, string key, string value)
     {
-        connection.Open();
+        DatabaseManager.OpenWithForeignKeys(connection);
         try
         {
             using var cmd = new SqliteCommand(Sql.ConfigSetValue, connection);

@@ -22,15 +22,10 @@ public static class EligibilityService
         var monthStart = new DateTime(referenceDate.Year, referenceDate.Month, 1);
         var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
-        // Check for any completed service events in this month
-        var events = ServiceEventRepository.GetByDateRange(connection, monthStart, monthEnd);
-
-        // Filter to only completed events for this household
-        var completedThisMonth = events.Any(e => 
-            e.HouseholdId == householdId && 
-            e.EventStatus == "Completed");
+        // Use optimized query that filters by household, status, and date range in SQL
+        var hasCompleted = ServiceEventRepository.HasCompletedInDateRange(connection, householdId, monthStart, monthEnd);
 
         // Eligible if no completed services this month
-        return !completedThisMonth;
+        return !hasCompleted;
     }
 }

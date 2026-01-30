@@ -184,6 +184,16 @@ public static class Sql
         ORDER BY event_date DESC, created_at DESC
         LIMIT 1";
 
+    public const string ServiceEventSelectCompletedByHouseholdAndDateRange = @"
+        SELECT id, household_id, event_type, event_status, event_date,
+               scheduled_text, override_reason, notes, created_at
+        FROM service_events
+        WHERE household_id = @household_id 
+          AND event_status = 'Completed'
+          AND event_date >= @start_date 
+          AND event_date <= @end_date
+        LIMIT 1";
+
     public const string ServiceEventUpdate = @"
         UPDATE service_events
         SET event_type = @event_type,
