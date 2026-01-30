@@ -22,6 +22,13 @@ public partial class HouseholdProfileForm : Form
         SetupServiceHistoryGrid();
         SetupFilters();
         SetupContextMenu();
+        
+        // Set form icon if available
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
+        if (File.Exists(iconPath))
+        {
+            this.Icon = new Icon(iconPath);
+        }
     }
 
     private void HouseholdProfileForm_Load(object? sender, EventArgs e)

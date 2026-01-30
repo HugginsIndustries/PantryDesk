@@ -7,6 +7,13 @@ public partial class BackupRestoreForm : Form
     public BackupRestoreForm()
     {
         InitializeComponent();
+        
+        // Set form icon if available
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
+        if (File.Exists(iconPath))
+        {
+            this.Icon = new Icon(iconPath);
+        }
     }
 
     private void BtnBrowse_Click(object? sender, EventArgs e)

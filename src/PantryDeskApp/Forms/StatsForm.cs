@@ -13,6 +13,13 @@ public partial class StatsForm : Form
     {
         InitializeComponent();
         SetupDataGridViews();
+        
+        // Set form icon if available
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
+        if (File.Exists(iconPath))
+        {
+            this.Icon = new Icon(iconPath);
+        }
     }
 
     private void SetupDataGridViews()

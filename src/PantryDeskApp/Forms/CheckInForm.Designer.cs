@@ -1,3 +1,5 @@
+using System.Drawing;
+
 namespace PantryDeskApp.Forms;
 
 partial class CheckInForm

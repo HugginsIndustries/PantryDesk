@@ -161,6 +161,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - All constraints enforced: service area cities only (Winlock/Vader/Ryderwood), correct zip codes, no PO boxes, no child-only households
   - Seeder configuration stored as JSON in config table for traceability
   - Summary output showing counts of households, pantry days, service events, completed/scheduled events, and overrides
+- **Phase 9: Demo polish + hardening**
+  - Duplicate household warning when creating new households with similar names
+  - Inactive household warning when completing service for inactive households
+  - Demo mode configuration via `PantryDesk.demo.config` file
+  - `AppConfig.GetDemoDatabasePath()` method to read demo database path from config file
+  - `DatabaseManager` updated to check for demo config before using default database location
+  - `publish.ps1` script for creating standalone executables and demo distribution package
+  - Improved seeder logic: strict one pantry day per household per month, 1-2% override rate for appointments only
+  - Seeder now filters pantry days to only generate those within the requested date range
+  - Seeder summary now separates PantryDay events from Appointment events
+  - Application icon support: executable icon and form icons for all windows (title bar and taskbar)
 
 ### Changed
 
@@ -171,6 +182,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Program.cs updated to launch CheckInForm as the main screen
 - CheckInForm "Open Profile" button now opens functional HouseholdProfileForm (replaces placeholder)
 - Removed unused Form1.cs and Form1.Designer.cs files (replaced by CheckInForm in Phase 3)
+- Seeder default household count increased from 150 to 300
+- Seeder override logic improved: pantry days never have overrides, appointments have 1-2% override rate
+- Seeder now only generates pantry days within the requested date range (not full years)
 
 ### Fixed
 
@@ -178,3 +192,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PantryDeskApp opens blank window as expected
 - Fixed transaction handling in `DatabaseMigrator.TableExists` method
 - Fixed Phase 1 test button to check for existing pantry days before creating (prevents duplicate date errors)
+- Fixed seeder generating overrides on pantry day events (now only appointments can have overrides)
+- Fixed seeder generating too many pantry days (now filters to requested date range)
+- Fixed seeder override rate being too high (reduced to 1-2% of appointments only)

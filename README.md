@@ -44,12 +44,54 @@ dotnet run --project src/PantryDeskApp
 dotnet run --project src/PantryDeskSeeder
 
 # Seeder options:
-# --households <count>     Number of households (default: 150)
+# --households <count>     Number of households (default: 300)
 # --months-back <months>   How many months back (default: 6)
 # --seed <number>          RNG seed for deterministic generation
-# --output <path>           Output database path (default: demo_pantrydesk.db)
+# --output <path>          Output database path (default: demo_pantrydesk.db)
 # --help                    Show usage information
 ```
+
+### Publishing
+
+To create standalone executables for distribution:
+
+```powershell
+.\publish.ps1
+```
+
+This script:
+
+- Creates single-file, self-contained executables for both `PantryDeskApp` and `PantryDeskSeeder`
+- Outputs everything to the `dist/` folder at the repo root
+- Includes `demo_pantrydesk.db` and `PantryDesk.demo.config` for easy demo setup
+- Automatically overwrites existing `dist/` contents
+
+The `dist/` folder will contain:
+
+- `PantryDeskApp/PantryDeskApp.exe` - Standalone desktop application
+- `PantryDeskSeeder/PantryDeskSeeder.exe` - Standalone seeder tool
+- `demo_pantrydesk.db` - Demo database
+- `PantryDesk.demo.config` - Demo mode configuration
+- `PantryDeskApp/PantryDesk.demo.config` - Demo config next to the app executable
+
+### Demo mode
+
+For demo scenarios, you can point the app at a pre-generated `demo_pantrydesk.db` without changing the normal data location:
+
+1. Place `demo_pantrydesk.db` anywhere on disk (for example, in the repo root).
+2. In the folder where `PantryDeskApp.exe` runs, create a text file named `PantryDesk.demo.config` with a single line:
+
+   ```text
+   DemoDatabasePath = C:\dev\PantryDesk\demo_pantrydesk.db
+   ```
+
+3. Start the app normally. When this config file is present and the path exists, PantryDesk uses that database instead of the default `C:\ProgramData\PantryDesk\pantrydesk.db`.
+4. Delete or rename `PantryDesk.demo.config` to return to normal behavior.
+
+**Default Demo Passwords:**
+
+- **Entry role**: `entry`
+- **Admin role**: `admin`
 
 ## Repository Structure
 

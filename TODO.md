@@ -86,7 +86,9 @@ Implementation checklist based on phased plan.
 
 ## Phase 9 — Demo polish + hardening
 
-- [ ] UI polish: tab order, keyboard shortcuts (Enter to search), clear labels and error messages
-- [ ] Edge-case handling: duplicates warning, inactive household warning, prevent empty names / negative counts
-- [ ] "Demo mode" configuration: app points to `demo_pantrydesk.db` easily (config file or CLI arg)
-- [ ] Verify: Run scripted demo in 5–7 minutes without surprises
+- [x] UI polish: tab order, keyboard shortcuts (Enter to search), clear labels and error messages
+- [x] Edge-case handling: duplicates warning, inactive household warning, prevent empty names / negative counts
+- [x] "Demo mode" configuration: app points to `demo_pantrydesk.db` easily (config file or CLI arg)
+- [x] Application icon support: executable icon and form icons for all windows
+- [x] Publishing script: `publish.ps1` for creating standalone executables with demo files
+- [x] Verify: Run scripted demo in 5–7 minutes without surprises

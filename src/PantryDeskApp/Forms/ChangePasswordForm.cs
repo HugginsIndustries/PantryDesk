@@ -10,6 +10,13 @@ public partial class ChangePasswordForm : Form
     public ChangePasswordForm()
     {
         InitializeComponent();
+        
+        // Set form icon if available
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
+        if (File.Exists(iconPath))
+        {
+            this.Icon = new Icon(iconPath);
+        }
     }
 
     private void BtnChangePassword_Click(object? sender, EventArgs e)

@@ -214,6 +214,44 @@ public static class HouseholdRepository
         return households;
     }
 
+    /// <summary>
+    /// Finds potential duplicate households based on primary name, with optional city and phone filters.
+    /// Intended for use in UI warning flows only; does not enforce uniqueness.
+    /// </summary>
+    /// <param name="connection">The database connection.</param>
+    /// <param name="primaryName">The primary name to check for similarity.</param>
+    /// <param name="city">Optional city filter (exact match when provided).</param>
+    /// <param name="phone">Optional phone filter (exact match when provided).</param>
+    /// <returns>A list of potential duplicate households.</returns>
+    public static List<Household> FindPotentialDuplicates(SqliteConnection connection, string primaryName, string? city, string? phone)
+    {
+        var households = new List<Household>();
+
+        // Wrap primary name with % for partial matching
+        var likePattern = $"%{primaryName.Trim()}%";
+
+        connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.HouseholdFindPotentialDuplicates, connection);
+            cmd.Parameters.AddWithValue("@primary_name", likePattern);
+            cmd.Parameters.AddWithValue("@city", string.IsNullOrWhiteSpace(city) ? DBNull.Value : city.Trim());
+            cmd.Parameters.AddWithValue("@phone", string.IsNullOrWhiteSpace(phone) ? DBNull.Value : phone.Trim());
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                households.Add(MapFromReader(reader));
+            }
+        }
+        finally
+        {
+            connection.Close();
+        }
+
+        return households;
+    }
+
     private static Household MapFromReader(SqliteDataReader reader)
     {
         return new Household

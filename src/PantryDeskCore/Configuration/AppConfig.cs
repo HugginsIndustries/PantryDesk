@@ -6,6 +6,7 @@ namespace PantryDeskCore.Configuration;
 public static class AppConfig
 {
     private static string? _dataRootOverride;
+    private static string? _demoDatabasePath;
 
     /// <summary>
     /// Gets the root directory for application data files.
@@ -39,6 +40,79 @@ public static class AppConfig
         }
 
         return dataRoot;
+    }
+
+    /// <summary>
+    /// Gets an optional demo database path from a local config file near the application.
+    /// When present and valid, this path can be used instead of the default data root DB.
+    /// </summary>
+    /// <returns>The demo database path, or null if not configured or not found.</returns>
+    public static string? GetDemoDatabasePath()
+    {
+        if (_demoDatabasePath != null)
+        {
+            return _demoDatabasePath;
+        }
+
+        try
+        {
+            // Look for a simple config file next to the application binaries.
+            var baseDirectory = AppContext.BaseDirectory;
+            var configPath = Path.Combine(baseDirectory, "PantryDesk.demo.config");
+
+            if (!File.Exists(configPath))
+            {
+                return null;
+            }
+
+            var lines = File.ReadAllLines(configPath);
+            foreach (var rawLine in lines)
+            {
+                var line = rawLine.Trim();
+                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
+                {
+                    continue;
+                }
+
+                var parts = line.Split('=', 2);
+                if (parts.Length != 2)
+                {
+                    continue;
+                }
+
+                var key = parts[0].Trim();
+                var value = parts[1].Trim();
+
+                if (!string.Equals(key, "DemoDatabasePath", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    return null;
+                }
+
+                // Expand environment variables if present
+                var expanded = Environment.ExpandEnvironmentVariables(value);
+
+                if (!File.Exists(expanded))
+                {
+                    // If the configured file does not exist, treat as not configured
+                    return null;
+                }
+
+                _demoDatabasePath = expanded;
+                return _demoDatabasePath;
+            }
+        }
+        catch
+        {
+            // On any error, fall back to normal behavior without surfacing to the user.
+            return null;
+        }
+
+        return null;
     }
 
     /// <summary>

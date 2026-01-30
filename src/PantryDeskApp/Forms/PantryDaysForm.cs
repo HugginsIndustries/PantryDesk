@@ -17,6 +17,13 @@ public partial class PantryDaysForm : Form
         InitializeComponent();
         PermissionChecker.RequireAdmin();
         SetupDataGridView();
+        
+        // Set form icon if available
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
+        if (File.Exists(iconPath))
+        {
+            this.Icon = new Icon(iconPath);
+        }
     }
 
     private void PantryDaysForm_Load(object? sender, EventArgs e)

@@ -77,7 +77,7 @@ public static class DataGenerators
         "Marsh", "Mckinney", "Mann", "Zimmerman", "Dawson", "Lara", "Fletcher", "Page",
         "Mccarthy", "Love", "Robles", "Cain", "Rivas", "Khan", "Rogers", "Serrano",
         "Higgins", "Ingram", "Harmon", "Hess", "Coffey", "Hess", "Monroe", "Marsh",
-        "Mckinney", "Mann", "Zimmerman", "Dawson", "Lara", "Fletcher", "Page", "Mccarthy"
+        "Mckinney", "Mann", "Zimmerman", "Dawson", "Lara", "Fletcher", "Page", "Mccarthy", "Huggins"
     };
 
     private static readonly string[] StreetNames = new[]

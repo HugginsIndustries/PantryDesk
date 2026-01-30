@@ -15,6 +15,13 @@ public partial class MonthlySummaryForm : Form
     public MonthlySummaryForm()
     {
         InitializeComponent();
+        
+        // Set form icon if available
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
+        if (File.Exists(iconPath))
+        {
+            this.Icon = new Icon(iconPath);
+        }
     }
 
     private void MonthlySummaryForm_Load(object? sender, EventArgs e)

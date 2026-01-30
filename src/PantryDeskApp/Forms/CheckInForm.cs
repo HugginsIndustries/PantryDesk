@@ -17,6 +17,13 @@ public partial class CheckInForm : Form
         InitializeComponent();
         UpdateMenuVisibility();
         SetupDataGridView();
+        
+        // Set form icon if available
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
+        if (File.Exists(iconPath))
+        {
+            this.Icon = new Icon(iconPath);
+        }
     }
 
     private void CheckInForm_Load(object? sender, EventArgs e)
@@ -201,6 +208,21 @@ public partial class CheckInForm : Form
         try
         {
             using var connection = DatabaseManager.GetConnection();
+
+            // Warn if household is marked inactive
+            if (!_selectedHousehold.IsActive)
+            {
+                var inactiveResult = MessageBox.Show(
+                    "This household is marked as Inactive.\n\nDo you still want to record a completed service for this household?",
+                    "Inactive Household",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (inactiveResult == DialogResult.No)
+                {
+                    return;
+                }
+            }
 
             // Check eligibility
             var isEligible = EligibilityService.IsEligibleThisMonth(connection, _selectedHousehold.Id, DateTime.Today);

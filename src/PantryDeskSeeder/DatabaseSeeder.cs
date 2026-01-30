@@ -46,12 +46,18 @@ public static class DatabaseSeeder
             pantryDays.AddRange(previousYearPantryDays);
         }
 
-        // Insert pantry days
-        foreach (var pantryDay in pantryDays)
+        // Filter pantry days to only include those within the date range
+        var startDate = baseDate.AddMonths(-config.MonthsBack);
+        var pantryDaysInRange = pantryDays
+            .Where(pd => pd.PantryDate >= startDate && pd.PantryDate <= baseDate)
+            .ToList();
+
+        // Insert pantry days (only those in range)
+        foreach (var pantryDay in pantryDaysInRange)
         {
             PantryDayRepository.Create(connection, pantryDay);
         }
-        Console.WriteLine($"  Created {pantryDays.Count} pantry days");
+        Console.WriteLine($"  Created {pantryDaysInRange.Count} pantry days");
 
         // Generate households
         Console.WriteLine($"Generating {config.HouseholdsCount} households...");
@@ -68,7 +74,7 @@ public static class DatabaseSeeder
         Console.WriteLine("Generating service events...");
         var serviceEvents = ServiceEventGenerator.GenerateServiceEvents(
             households,
-            pantryDays,
+            pantryDaysInRange,
             config,
             rng,
             baseDate);
@@ -97,8 +103,10 @@ public static class DatabaseSeeder
         Console.WriteLine();
         Console.WriteLine("Summary:");
         Console.WriteLine($"  Households: {households.Count}");
-        Console.WriteLine($"  Pantry Days: {pantryDays.Count}");
+        Console.WriteLine($"  Pantry Days: {pantryDaysInRange.Count}");
         Console.WriteLine($"  Service Events: {serviceEvents.Count}");
+        Console.WriteLine($"    PantryDay Events: {serviceEvents.Count(e => e.EventType == "PantryDay")}");
+        Console.WriteLine($"    Appointment Events: {serviceEvents.Count(e => e.EventType == "Appointment")}");
         Console.WriteLine($"  Completed Events: {serviceEvents.Count(e => e.EventStatus == "Completed")}");
         Console.WriteLine($"  Scheduled Events: {serviceEvents.Count(e => e.EventStatus == "Scheduled")}");
         Console.WriteLine($"  Events with Overrides: {serviceEvents.Count(e => !string.IsNullOrEmpty(e.OverrideReason))}");

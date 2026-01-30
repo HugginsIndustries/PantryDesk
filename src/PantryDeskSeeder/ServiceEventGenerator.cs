@@ -50,33 +50,45 @@ public static class ServiceEventGenerator
             .Where(pd => pd.PantryDate >= startDate && pd.PantryDate <= baseDate && pd.IsActive)
             .ToList();
 
+        // Track households served per month to prevent duplicates
+        var householdsServedPerMonth = new Dictionary<(int Year, int Month), HashSet<int>>();
+
         foreach (var pantryDay in pantryDaysInRange)
         {
             var eventCount = rng.Next(config.EventsPerPantryDayRange.Min, config.EventsPerPantryDayRange.Max + 1);
             eventCount = Math.Min(eventCount, activeHouseholds.Count);
 
-            // Select random households for this pantry day
-            var selectedHouseholds = activeHouseholds
+            var monthKey = (pantryDay.PantryDate.Year, pantryDay.PantryDate.Month);
+            if (!householdsServedPerMonth.ContainsKey(monthKey))
+            {
+                householdsServedPerMonth[monthKey] = new HashSet<int>();
+            }
+            var householdsServedThisMonth = householdsServedPerMonth[monthKey];
+
+            // NEVER allow a household to visit more than one pantry day per month
+            // Only select from households not yet served this month
+            var availableHouseholds = activeHouseholds
+                .Where(h => !householdsServedThisMonth.Contains(h.Id))
                 .OrderBy(_ => rng.Next())
                 .Take(eventCount)
                 .ToList();
 
-            foreach (var household in selectedHouseholds)
+            foreach (var household in availableHouseholds)
             {
-                var hasOverride = rng.NextDouble() < 0.15; // 15% have overrides
-                var overrideReason = hasOverride ? OverrideReasons[rng.Next(OverrideReasons.Length)] : null;
-                var notes = hasOverride && rng.NextDouble() < 0.5 ? GenerateOverrideNotes(rng) : null;
-
+                // Pantry day events never have overrides (households can only visit once per month)
                 events.Add(new ServiceEvent
                 {
                     HouseholdId = household.Id,
                     EventType = "PantryDay",
                     EventStatus = "Completed",
                     EventDate = pantryDay.PantryDate,
-                    OverrideReason = overrideReason,
-                    Notes = notes,
+                    OverrideReason = null,
+                    Notes = null,
                     CreatedAt = pantryDay.PantryDate.AddHours(10 + rng.Next(8)) // Random time during pantry hours
                 });
+
+                // Track that this household was served this month
+                householdsServedThisMonth.Add(household.Id);
             }
         }
 
@@ -84,12 +96,68 @@ public static class ServiceEventGenerator
         var pantryDayDates = pantryDaysInRange.Select(pd => pd.PantryDate.Date).ToHashSet();
         var appointmentDates = GenerateAppointmentDates(startDate, baseDate, pantryDayDates, config, rng);
 
+        // Calculate target number of override appointments (1-2% of total appointments)
+        var totalAppointmentSlots = appointmentDates.Count;
+        var overrideAppointmentCount = Math.Max(1, (int)(totalAppointmentSlots * (0.01 + rng.NextDouble() * 0.01))); // 1-2% range
+        var overrideAppointmentsCreated = 0;
+
         foreach (var appointmentDate in appointmentDates)
         {
-            var household = activeHouseholds[rng.Next(activeHouseholds.Count)];
-            var hasOverride = rng.NextDouble() < 0.15; // 15% have overrides
-            var overrideReason = hasOverride ? OverrideReasons[rng.Next(OverrideReasons.Length)] : null;
-            var notes = hasOverride && rng.NextDouble() < 0.5 ? GenerateOverrideNotes(rng) : null;
+            var monthKey = (appointmentDate.Year, appointmentDate.Month);
+            if (!householdsServedPerMonth.ContainsKey(monthKey))
+            {
+                householdsServedPerMonth[monthKey] = new HashSet<int>();
+            }
+            var householdsServedThisMonth = householdsServedPerMonth[monthKey];
+
+            Household household;
+            bool isOverride = false;
+            
+            // 1-2% of appointments can be overrides (households already served this month)
+            if (overrideAppointmentsCreated < overrideAppointmentCount && 
+                householdsServedThisMonth.Count > 0 && 
+                rng.NextDouble() < (overrideAppointmentCount / (double)Math.Max(1, totalAppointmentSlots - overrideAppointmentsCreated)))
+            {
+                // Create an override appointment (household already served this month)
+                var duplicateHouseholds = activeHouseholds
+                    .Where(h => householdsServedThisMonth.Contains(h.Id))
+                    .ToList();
+                if (duplicateHouseholds.Count > 0)
+                {
+                    household = duplicateHouseholds[rng.Next(duplicateHouseholds.Count)];
+                    isOverride = true;
+                    overrideAppointmentsCreated++;
+                }
+                else
+                {
+                    // Fallback if no duplicates available
+                    var availableHouseholds = activeHouseholds
+                        .Where(h => !householdsServedThisMonth.Contains(h.Id))
+                        .ToList();
+                    household = availableHouseholds.Count > 0 
+                        ? availableHouseholds[rng.Next(availableHouseholds.Count)]
+                        : activeHouseholds[rng.Next(activeHouseholds.Count)];
+                }
+            }
+            else
+            {
+                // Normal appointment (household not yet served this month)
+                var availableHouseholds = activeHouseholds
+                    .Where(h => !householdsServedThisMonth.Contains(h.Id))
+                    .ToList();
+                household = availableHouseholds.Count > 0
+                    ? availableHouseholds[rng.Next(availableHouseholds.Count)]
+                    : activeHouseholds[rng.Next(activeHouseholds.Count)];
+            }
+
+            // Only add override if this is a duplicate (household already served this month)
+            string? overrideReason = null;
+            string? notes = null;
+            if (isOverride)
+            {
+                overrideReason = OverrideReasons[rng.Next(OverrideReasons.Length)];
+                notes = rng.NextDouble() < 0.5 ? GenerateOverrideNotes(rng) : null;
+            }
 
             events.Add(new ServiceEvent
             {
@@ -102,6 +170,12 @@ public static class ServiceEventGenerator
                 Notes = notes,
                 CreatedAt = appointmentDate.AddHours(9 + rng.Next(8))
             });
+
+            // Track that this household was served this month (if not already tracked)
+            if (!householdsServedThisMonth.Contains(household.Id))
+            {
+                householdsServedThisMonth.Add(household.Id);
+            }
         }
 
         // Generate scheduled Appointment events (future)
@@ -135,42 +209,6 @@ public static class ServiceEventGenerator
             });
         }
 
-        // Ensure some households are ineligible this month (already served)
-        // This is handled by the completed events above, but we can add a few more
-        // to ensure demo moments are visible
-        var currentMonthStart = new DateTime(baseDate.Year, baseDate.Month, 1);
-        var currentMonthEvents = events.Where(e => 
-            e.EventDate >= currentMonthStart && 
-            e.EventDate <= baseDate && 
-            e.EventStatus == "Completed").ToList();
-
-        if (currentMonthEvents.Count < activeHouseholds.Count / 3)
-        {
-            // Add a few more completed events this month to ensure ineligibility is visible
-            var additionalCount = Math.Min(10, activeHouseholds.Count / 4);
-            var householdsToAdd = activeHouseholds
-                .Where(h => !currentMonthEvents.Any(e => e.HouseholdId == h.Id))
-                .OrderBy(_ => rng.Next())
-                .Take(additionalCount)
-                .ToList();
-
-            foreach (var household in householdsToAdd)
-            {
-                var eventDate = currentMonthStart.AddDays(rng.Next((baseDate - currentMonthStart).Days + 1));
-                if (!pantryDayDates.Contains(eventDate.Date))
-                {
-                    events.Add(new ServiceEvent
-                    {
-                        HouseholdId = household.Id,
-                        EventType = "Appointment",
-                        EventStatus = "Completed",
-                        EventDate = eventDate,
-                        ScheduledText = ScheduledTexts[rng.Next(ScheduledTexts.Length)],
-                        CreatedAt = eventDate.AddHours(9 + rng.Next(8))
-                    });
-                }
-            }
-        }
 
         return events;
     }

@@ -128,6 +128,17 @@ public static class Sql
         WHERE primary_name LIKE @search_term COLLATE NOCASE
         ORDER BY primary_name";
 
+    public const string HouseholdFindPotentialDuplicates = @"
+        SELECT id, primary_name, address1, city, state, zip, phone, email,
+               children_count, adults_count, seniors_count, notes,
+               is_active, created_at, updated_at
+        FROM households
+        WHERE primary_name LIKE @primary_name COLLATE NOCASE
+          AND (@city IS NULL OR city = @city)
+          AND (@phone IS NULL OR phone = @phone)
+        ORDER BY primary_name
+        LIMIT 10";
+
     // ServiceEvent queries
     public const string ServiceEventInsert = @"
         INSERT INTO service_events (

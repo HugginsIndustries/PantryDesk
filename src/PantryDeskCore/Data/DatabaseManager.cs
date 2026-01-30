@@ -14,6 +14,13 @@ public static class DatabaseManager
     /// <returns>The SQLite connection string.</returns>
     public static string GetConnectionString()
     {
+        // First, check if a demo database path has been configured.
+        var demoPath = AppConfig.GetDemoDatabasePath();
+        if (!string.IsNullOrWhiteSpace(demoPath))
+        {
+            return $"Data Source={demoPath}";
+        }
+
         var dataRoot = AppConfig.GetDataRoot();
         var dbPath = Path.Combine(dataRoot, "pantrydesk.db");
         return $"Data Source={dbPath}";

@@ -11,6 +11,13 @@ public partial class NewHouseholdForm : Form
     public NewHouseholdForm()
     {
         InitializeComponent();
+        
+        // Set form icon if available
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
+        if (File.Exists(iconPath))
+        {
+            this.Icon = new Icon(iconPath);
+        }
     }
 
     private void BtnSave_Click(object? sender, EventArgs e)
@@ -58,8 +65,63 @@ public partial class NewHouseholdForm : Form
                 IsActive = true
             };
 
-            using var connection = DatabaseManager.GetConnection();
-            HouseholdRepository.Create(connection, household);
+            // Check for potential duplicates before saving
+            using (var connection = DatabaseManager.GetConnection())
+            {
+                var potentialDuplicates = HouseholdRepository.FindPotentialDuplicates(
+                    connection,
+                    household.PrimaryName,
+                    household.City,
+                    household.Phone);
+
+                if (potentialDuplicates.Count > 0)
+                {
+                    var summaryLines = potentialDuplicates
+                        .Select(h =>
+                        {
+                            var cityZip = string.Empty;
+                            if (!string.IsNullOrWhiteSpace(h.City))
+                            {
+                                cityZip = h.City;
+                                if (!string.IsNullOrWhiteSpace(h.Zip))
+                                {
+                                    cityZip += $", {h.Zip}";
+                                }
+                            }
+                            else if (!string.IsNullOrWhiteSpace(h.Zip))
+                            {
+                                cityZip = h.Zip;
+                            }
+
+                            if (string.IsNullOrWhiteSpace(cityZip))
+                            {
+                                cityZip = "—";
+                            }
+
+                            return $"{h.PrimaryName} ({cityZip})";
+                        })
+                        .Distinct()
+                        .Take(5);
+
+                    var message =
+                        "Households with a similar name already exist:\n\n" +
+                        string.Join("\n", summaryLines) +
+                        "\n\nDo you still want to create this new household?";
+
+                    var result = MessageBox.Show(
+                        message,
+                        "Possible Duplicate Household",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning);
+
+                    if (result == DialogResult.No)
+                    {
+                        return;
+                    }
+                }
+
+                HouseholdRepository.Create(connection, household);
+            }
 
             DialogResult = DialogResult.OK;
             Close();

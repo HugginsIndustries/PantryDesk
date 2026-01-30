@@ -8,6 +8,13 @@ public partial class ExportForm : Form
     {
         InitializeComponent();
         radioCsv.Checked = true;
+        
+        // Set form icon if available
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
+        if (File.Exists(iconPath))
+        {
+            this.Icon = new Icon(iconPath);
+        }
     }
 
     private void BtnBrowse_Click(object? sender, EventArgs e)
