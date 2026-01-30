@@ -35,6 +35,9 @@ partial class CheckInForm
         btnNewHousehold = new Button();
         btnOpenProfile = new Button();
         menuStrip = new MenuStrip();
+        menuReports = new ToolStripMenuItem();
+        menuItemStatisticsDashboard = new ToolStripMenuItem();
+        menuItemMonthlySummary = new ToolStripMenuItem();
         menuAdmin = new ToolStripMenuItem();
         menuItemChangePasswords = new ToolStripMenuItem();
         menuItemPantryDays = new ToolStripMenuItem();
@@ -118,12 +121,33 @@ partial class CheckInForm
         // 
         // menuStrip
         // 
-        menuStrip.Items.AddRange(new ToolStripItem[] { menuAdmin, menuItemLogout });
+        menuStrip.Items.AddRange(new ToolStripItem[] { menuReports, menuAdmin, menuItemLogout });
         menuStrip.Location = new Point(0, 0);
         menuStrip.Name = "menuStrip";
         menuStrip.Size = new Size(800, 24);
         menuStrip.TabIndex = 6;
         menuStrip.Text = "menuStrip";
+        // 
+        // menuReports
+        // 
+        menuReports.DropDownItems.AddRange(new ToolStripItem[] { menuItemStatisticsDashboard, menuItemMonthlySummary });
+        menuReports.Name = "menuReports";
+        menuReports.Size = new Size(59, 20);
+        menuReports.Text = "Reports";
+        // 
+        // menuItemStatisticsDashboard
+        // 
+        menuItemStatisticsDashboard.Name = "menuItemStatisticsDashboard";
+        menuItemStatisticsDashboard.Size = new Size(195, 22);
+        menuItemStatisticsDashboard.Text = "Statistics Dashboard";
+        menuItemStatisticsDashboard.Click += MenuItemStatisticsDashboard_Click;
+        // 
+        // menuItemMonthlySummary
+        // 
+        menuItemMonthlySummary.Name = "menuItemMonthlySummary";
+        menuItemMonthlySummary.Size = new Size(195, 22);
+        menuItemMonthlySummary.Text = "Monthly Summary";
+        menuItemMonthlySummary.Click += MenuItemMonthlySummary_Click;
         // 
         // menuAdmin
         // 
@@ -187,6 +211,9 @@ partial class CheckInForm
     private Button btnNewHousehold;
     private Button btnOpenProfile;
     private MenuStrip menuStrip;
+    private ToolStripMenuItem menuReports;
+    private ToolStripMenuItem menuItemStatisticsDashboard;
+    private ToolStripMenuItem menuItemMonthlySummary;
     private ToolStripMenuItem menuAdmin;
     private ToolStripMenuItem menuItemChangePasswords;
     private ToolStripMenuItem menuItemPantryDays;

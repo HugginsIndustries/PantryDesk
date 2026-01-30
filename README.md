@@ -7,8 +7,8 @@
 - **Household Management**: Search, create, and manage household profiles with composition tracking (Children/Adults/Seniors)
 - **Pantry Days & Appointments**: Calendar-based pantry day scheduling with appointment support
 - **Monthly Eligibility**: Automatic eligibility tracking with override support (requires reason)
-- **Statistics Dashboard**: Real-time stats on households, services, and service area breakdown
-- **Monthly Summary Reports**: Export to PDF or print monthly summaries
+- **Statistics Dashboard**: Real-time statistics showing active households, total people served, completed services, unique households served, PantryDay vs Appointment breakdown, override counts by reason, and city-level breakdown (Winlock/Vader/Ryderwood)
+- **Monthly Summary Reports**: Comprehensive monthly reports with totals, pantry day breakdown tables, household composition served (Children/Adults/Seniors), and area breakdown. Export to PDF or print directly (print uses PDF format for consistent output)
 - **Backup & Restore**: Automatic daily backups with manual backup/restore capabilities
 - **Data Export**: CSV and JSON exports for external analysis (Admin-only)
 - **Demo Data Seeder**: Separate console tool to generate realistic demo databases
@@ -49,6 +49,10 @@ dotnet run --project src/PantryDeskSeeder
 - `PantryDeskApp` — WinForms desktop application
 - `PantryDeskSeeder` — Console app to generate demo databases
 - `PantryDeskCore` — Shared models/data/services used by both app and seeder
+
+## Third-Party Libraries
+
+- **QuestPDF** (MIT License) - Used for PDF generation in monthly summary reports. See <https://www.questpdf.com/> for details.
 
 ## License
 

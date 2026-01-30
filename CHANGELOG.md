@@ -95,6 +95,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Date validation prevents duplicate pantry days when editing
   - "Pantry Days" menu item added to Admin menu in CheckInForm and Form1
   - Check-in integration already implemented: CheckInForm uses pantry day matching by date
+- **Phase 6: Stats dashboard + Monthly Summary Report (PDF + Print)**
+  - Statistics data models: `MonthlyStatistics`, `CityBreakdown`, `OverrideBreakdown`, `PantryDayBreakdown`
+  - Parameterized SQL queries in `Sql.cs` for all statistics calculations (active households, total people, completed services, unique households served, city breakdown, override breakdown, pantry day breakdown, composition served)
+  - `StatisticsService` class with methods for current month stats, monthly stats, city breakdown, override breakdown, pantry day breakdown, and composition served
+  - `StatsForm` - Statistics dashboard displaying current month metrics
+    - Total active households, total people, completed services, unique households served
+    - PantryDay vs Appointment completions breakdown
+    - Overrides count and breakdown by reason
+    - City breakdown (Winlock/Vader/Ryderwood) with households served and services completed
+    - Refresh button to reload statistics
+    - Monthly Summary button to open report form
+  - `MonthlySummaryForm` - Monthly summary report viewer with month/year picker
+    - Preview area showing formatted report text
+    - Export PDF button with SaveFileDialog
+    - Print button (generates PDF and opens print dialog via Windows default PDF handler)
+  - `ReportService` class for PDF generation using QuestPDF library
+    - Formatted monthly summary PDF with header, totals section, pantry day breakdown table, household composition section, area breakdown table, and footer
+    - Professional formatting with tables, proper spacing, and clear sections
+  - QuestPDF library (MIT License) added to PantryDeskCore for PDF generation
+  - "Reports" menu added to CheckInForm with "Statistics Dashboard" and "Monthly Summary" items
+  - Print functionality uses PDF format for consistent output (matches exported PDF exactly)
 
 ### Changed
 

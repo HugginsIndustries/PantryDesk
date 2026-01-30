@@ -220,4 +220,89 @@ public static class Sql
             password_hash = @password_hash,
             salt = @salt,
             updated_at = @updated_at";
+
+    // Statistics queries
+    public const string StatisticsCountActiveHouseholds = @"
+        SELECT COUNT(*) FROM households WHERE is_active = 1";
+
+    public const string StatisticsSumTotalPeople = @"
+        SELECT COALESCE(SUM(children_count + adults_count + seniors_count), 0)
+        FROM households
+        WHERE is_active = 1";
+
+    public const string StatisticsCountCompletedServicesInRange = @"
+        SELECT COUNT(*)
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND event_date >= @start_date AND event_date <= @end_date";
+
+    public const string StatisticsCountUniqueHouseholdsServedInRange = @"
+        SELECT COUNT(DISTINCT household_id)
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND event_date >= @start_date AND event_date <= @end_date";
+
+    public const string StatisticsCountCompletedServicesByTypeInRange = @"
+        SELECT event_type, COUNT(*) as count
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND event_date >= @start_date AND event_date <= @end_date
+        GROUP BY event_type";
+
+    public const string StatisticsCountOverridesInRange = @"
+        SELECT COUNT(*)
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND override_reason IS NOT NULL
+        AND event_date >= @start_date AND event_date <= @end_date";
+
+    public const string StatisticsBreakdownByCityInRange = @"
+        SELECT 
+            COALESCE(h.city, 'Other') as city,
+            COUNT(DISTINCT se.household_id) as households_served,
+            COUNT(*) as services_completed
+        FROM service_events se
+        INNER JOIN households h ON se.household_id = h.id
+        WHERE se.event_status = 'Completed'
+        AND se.event_date >= @start_date AND se.event_date <= @end_date
+        GROUP BY COALESCE(h.city, 'Other')
+        ORDER BY city";
+
+    public const string StatisticsBreakdownByOverrideReasonInRange = @"
+        SELECT 
+            override_reason as reason,
+            COUNT(*) as count
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND override_reason IS NOT NULL
+        AND event_date >= @start_date AND event_date <= @end_date
+        GROUP BY override_reason
+        ORDER BY count DESC";
+
+    public const string StatisticsPantryDayBreakdownInRange = @"
+        SELECT 
+            se.event_date as pantry_date,
+            COUNT(*) as completed_services
+        FROM service_events se
+        WHERE se.event_status = 'Completed'
+        AND se.event_type = 'PantryDay'
+        AND se.event_date >= @start_date AND se.event_date <= @end_date
+        GROUP BY se.event_date
+        ORDER BY se.event_date";
+
+    public const string StatisticsCompositionServedInRange = @"
+        SELECT 
+            COALESCE(SUM(h.children_count), 0) as total_children,
+            COALESCE(SUM(h.adults_count), 0) as total_adults,
+            COALESCE(SUM(h.seniors_count), 0) as total_seniors
+        FROM service_events se
+        INNER JOIN households h ON se.household_id = h.id
+        WHERE se.event_status = 'Completed'
+        AND se.event_date >= @start_date AND se.event_date <= @end_date
+        AND se.household_id IN (
+            SELECT DISTINCT household_id
+            FROM service_events
+            WHERE event_status = 'Completed'
+            AND event_date >= @start_date AND event_date <= @end_date
+        )";
 }

@@ -61,10 +61,10 @@ Implementation checklist based on phased plan.
 
 ## Phase 6 — Stats dashboard + Monthly Summary Report (PDF + Print)
 
-- [ ] Stats screen: totals, completed services, unique households served, PantryDay vs Appointment, overrides breakdown, by city
-- [ ] Monthly Summary view: month picker, Export PDF, Print
-- [ ] PDF contents: totals, pantry day breakdown, household composition served, area breakdown
-- [ ] Verify: Export PDF for any month with seeded data looks clean; Print opens Windows print dialog
+- [x] Stats screen: totals, completed services, unique households served, PantryDay vs Appointment, overrides breakdown, by city
+- [x] Monthly Summary view: month picker, Export PDF, Print
+- [x] PDF contents: totals, pantry day breakdown, household composition served, area breakdown
+- [x] Verify: Export PDF for any month with seeded data looks clean; Print opens Windows print dialog
 
 ## Phase 7 — Backup / Export / Restore
 

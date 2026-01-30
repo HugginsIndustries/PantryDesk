@@ -290,6 +290,18 @@ public partial class CheckInForm : Form
         pantryDaysForm.ShowDialog();
     }
 
+    private void MenuItemStatisticsDashboard_Click(object? sender, EventArgs e)
+    {
+        using var statsForm = new StatsForm();
+        statsForm.ShowDialog();
+    }
+
+    private void MenuItemMonthlySummary_Click(object? sender, EventArgs e)
+    {
+        using var monthlySummaryForm = new MonthlySummaryForm();
+        monthlySummaryForm.ShowDialog();
+    }
+
     private void MenuItemLogout_Click(object? sender, EventArgs e)
     {
         SessionManager.Logout();
