@@ -39,6 +39,13 @@ partial class CheckInForm
         menuItemStatisticsDashboard = new ToolStripMenuItem();
         menuItemMonthlySummary = new ToolStripMenuItem();
         menuAdmin = new ToolStripMenuItem();
+        menuItemBackupNow = new ToolStripMenuItem();
+        menuItemBackupToUsb = new ToolStripMenuItem();
+        menuItemRestore = new ToolStripMenuItem();
+        menuItemExport = new ToolStripMenuItem();
+        menuSeparator1 = new ToolStripSeparator();
+        menuSeparator2 = new ToolStripSeparator();
+        menuSeparator3 = new ToolStripSeparator();
         menuItemChangePasswords = new ToolStripMenuItem();
         menuItemPantryDays = new ToolStripMenuItem();
         menuItemLogout = new ToolStripMenuItem();
@@ -151,10 +158,53 @@ partial class CheckInForm
         // 
         // menuAdmin
         // 
-        menuAdmin.DropDownItems.AddRange(new ToolStripItem[] { menuItemChangePasswords, menuItemPantryDays });
+        menuAdmin.DropDownItems.AddRange(new ToolStripItem[] { menuSeparator1, menuItemBackupNow, menuItemBackupToUsb, menuSeparator2, menuItemRestore, menuSeparator3, menuItemExport, menuItemChangePasswords, menuItemPantryDays });
         menuAdmin.Name = "menuAdmin";
         menuAdmin.Size = new Size(55, 20);
         menuAdmin.Text = "Admin";
+        // 
+        // menuSeparator1
+        // 
+        menuSeparator1.Name = "menuSeparator1";
+        menuSeparator1.Size = new Size(177, 6);
+        // 
+        // menuItemBackupNow
+        // 
+        menuItemBackupNow.Name = "menuItemBackupNow";
+        menuItemBackupNow.Size = new Size(180, 22);
+        menuItemBackupNow.Text = "Backup Now";
+        menuItemBackupNow.Click += MenuItemBackupNow_Click;
+        // 
+        // menuItemBackupToUsb
+        // 
+        menuItemBackupToUsb.Name = "menuItemBackupToUsb";
+        menuItemBackupToUsb.Size = new Size(180, 22);
+        menuItemBackupToUsb.Text = "Backup to USB...";
+        menuItemBackupToUsb.Click += MenuItemBackupToUsb_Click;
+        // 
+        // menuSeparator2
+        // 
+        menuSeparator2.Name = "menuSeparator2";
+        menuSeparator2.Size = new Size(177, 6);
+        // 
+        // menuItemRestore
+        // 
+        menuItemRestore.Name = "menuItemRestore";
+        menuItemRestore.Size = new Size(180, 22);
+        menuItemRestore.Text = "Restore from Backup...";
+        menuItemRestore.Click += MenuItemRestore_Click;
+        // 
+        // menuSeparator3
+        // 
+        menuSeparator3.Name = "menuSeparator3";
+        menuSeparator3.Size = new Size(177, 6);
+        // 
+        // menuItemExport
+        // 
+        menuItemExport.Name = "menuItemExport";
+        menuItemExport.Size = new Size(180, 22);
+        menuItemExport.Text = "Export Data...";
+        menuItemExport.Click += MenuItemExport_Click;
         // 
         // menuItemChangePasswords
         // 
@@ -215,6 +265,13 @@ partial class CheckInForm
     private ToolStripMenuItem menuItemStatisticsDashboard;
     private ToolStripMenuItem menuItemMonthlySummary;
     private ToolStripMenuItem menuAdmin;
+    private ToolStripMenuItem menuItemBackupNow;
+    private ToolStripMenuItem menuItemBackupToUsb;
+    private ToolStripMenuItem menuItemRestore;
+    private ToolStripMenuItem menuItemExport;
+    private ToolStripSeparator menuSeparator1;
+    private ToolStripSeparator menuSeparator2;
+    private ToolStripSeparator menuSeparator3;
     private ToolStripMenuItem menuItemChangePasswords;
     private ToolStripMenuItem menuItemPantryDays;
     private ToolStripMenuItem menuItemLogout;

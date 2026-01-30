@@ -307,4 +307,175 @@ public partial class CheckInForm : Form
         SessionManager.Logout();
         Application.Exit();
     }
+
+    private void MenuItemBackupNow_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            PermissionChecker.RequireAdmin();
+
+            Cursor = Cursors.WaitCursor;
+            var backupPath = BackupService.CreateBackup();
+            Cursor = Cursors.Default;
+
+            MessageBox.Show(
+                $"Backup created successfully.\n\nLocation: {backupPath}",
+                "Backup Complete",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            MessageBox.Show(
+                "This action requires Admin privileges.",
+                "Access Denied",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+        catch (Exception ex)
+        {
+            Cursor = Cursors.Default;
+            MessageBox.Show(
+                $"Failed to create backup:\n\n{ex.Message}",
+                "Backup Failed",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+    }
+
+    private void MenuItemBackupToUsb_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            PermissionChecker.RequireAdmin();
+
+            using var dialog = new FolderBrowserDialog
+            {
+                Description = "Select folder for backup (e.g., USB drive)",
+                ShowNewFolderButton = true
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                var targetFolder = dialog.SelectedPath;
+
+                // Validate folder is writable
+                try
+                {
+                    var testFile = Path.Combine(targetFolder, "test_write.tmp");
+                    File.WriteAllText(testFile, "test");
+                    File.Delete(testFile);
+                }
+                catch
+                {
+                    MessageBox.Show(
+                        "Selected folder is not writable. Please choose a different location.",
+                        "Invalid Folder",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+
+                Cursor = Cursors.WaitCursor;
+                var backupPath = BackupService.CreateBackup(targetFolder);
+                Cursor = Cursors.Default;
+
+                MessageBox.Show(
+                    $"Backup created successfully.\n\nLocation: {backupPath}",
+                    "Backup Complete",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            MessageBox.Show(
+                "This action requires Admin privileges.",
+                "Access Denied",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+        catch (Exception ex)
+        {
+            Cursor = Cursors.Default;
+            MessageBox.Show(
+                $"Failed to create backup:\n\n{ex.Message}",
+                "Backup Failed",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+    }
+
+    private void MenuItemRestore_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            PermissionChecker.RequireAdmin();
+
+            using var restoreForm = new BackupRestoreForm();
+            if (restoreForm.ShowDialog() == DialogResult.OK)
+            {
+                // Restore completed, prompt for restart
+                var result = MessageBox.Show(
+                    "Database has been restored successfully.\n\n" +
+                    "The application must restart to use the restored database.\n\n" +
+                    "Do you want to restart now?",
+                    "Restart Required",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    Application.Restart();
+                }
+                else
+                {
+                    Application.Exit();
+                }
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            MessageBox.Show(
+                "This action requires Admin privileges.",
+                "Access Denied",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Failed to restore backup:\n\n{ex.Message}",
+                "Restore Failed",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+    }
+
+    private void MenuItemExport_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            PermissionChecker.RequireAdmin();
+
+            using var exportForm = new ExportForm();
+            exportForm.ShowDialog();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            MessageBox.Show(
+                "This action requires Admin privileges.",
+                "Access Denied",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Failed to export data:\n\n{ex.Message}",
+                "Export Failed",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+    }
 }

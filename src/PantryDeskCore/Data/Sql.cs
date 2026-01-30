@@ -159,6 +159,12 @@ public static class Sql
         WHERE event_date >= @start_date AND event_date <= @end_date
         ORDER BY event_date DESC, created_at DESC";
 
+    public const string ServiceEventSelectAll = @"
+        SELECT id, household_id, event_type, event_status, event_date,
+               scheduled_text, override_reason, notes, created_at
+        FROM service_events
+        ORDER BY event_date DESC, created_at DESC";
+
     public const string ServiceEventSelectLastCompletedByHouseholdId = @"
         SELECT id, household_id, event_type, event_status, event_date,
                scheduled_text, override_reason, notes, created_at

@@ -1,4 +1,5 @@
 using PantryDeskCore.Data;
+using PantryDeskCore.Services;
 using PantryDeskApp.Forms;
 
 namespace PantryDeskApp;
@@ -17,6 +18,26 @@ static class Program
 
         // Initialize database
         DatabaseManager.InitializeDatabase();
+
+        // Check if automatic backup is needed for today
+        try
+        {
+            var lastBackupDate = BackupService.GetLastBackupDate();
+            var today = DateTime.Today;
+
+            if (lastBackupDate == null || lastBackupDate < today)
+            {
+                // Create automatic backup
+                var backupPath = BackupService.CreateBackup();
+                // Silent success - backup created automatically
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't block app startup
+            // In a production app, you might want to log this to a file
+            System.Diagnostics.Debug.WriteLine($"Automatic backup failed: {ex.Message}");
+        }
 
         // Check if roles exist
         bool hasRoles;

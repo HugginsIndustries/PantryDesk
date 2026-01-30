@@ -109,6 +109,34 @@ public static class ServiceEventRepository
     }
 
     /// <summary>
+    /// Gets all service events.
+    /// </summary>
+    /// <param name="connection">The database connection.</param>
+    /// <returns>A list of all service events.</returns>
+    public static List<ServiceEvent> GetAll(SqliteConnection connection)
+    {
+        var events = new List<ServiceEvent>();
+
+        connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.ServiceEventSelectAll, connection);
+            using var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                events.Add(MapFromReader(reader));
+            }
+        }
+        finally
+        {
+            connection.Close();
+        }
+
+        return events;
+    }
+
+    /// <summary>
     /// Gets all service events within a date range.
     /// </summary>
     /// <param name="connection">The database connection.</param>

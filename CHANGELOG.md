@@ -116,6 +116,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - QuestPDF library (MIT License) added to PantryDeskCore for PDF generation
   - "Reports" menu added to CheckInForm with "Statistics Dashboard" and "Monthly Summary" items
   - Print functionality uses PDF format for consistent output (matches exported PDF exactly)
+- **Phase 7: Backup / Export / Restore**
+  - `BackupService` class for creating and restoring encrypted database backups
+    - AES-256 encryption with key derived from app data root (deterministic, app-specific)
+    - Backup files contain database and metadata JSON (backup date, schema version, app version)
+    - Automatic daily backup check on first app run each day (stored in `Backups\` folder)
+    - Manual "Backup Now" functionality
+    - "Backup to USB" option with folder selection dialog
+    - One-click restore with backup file validation and safety copy of current database
+    - Backup date tracking via config table (`last_backup_date`)
+  - `ExportService` class for data export functionality
+    - CSV export: Excel-compatible format (UTF-8 with BOM) for households, service_events, pantry_days
+    - JSON export: Structured export with all data in single file
+    - Proper CSV escaping for fields containing commas, quotes, or newlines
+  - `ServiceEventRepository.GetAll()` method added for export functionality
+  - `BackupRestoreForm` - Admin-only form for restoring from backup
+    - File selection dialog with .zip filter
+    - Backup validation (checks for database file and metadata)
+    - Confirmation dialog showing backup date and schema version
+    - Safety copy creation before restore (`pantrydesk.db.pre_restore_*.backup`)
+    - Restart prompt after successful restore
+  - `ExportForm` - Admin-only form for data export
+    - Radio buttons for CSV or JSON export format
+    - Folder browser for CSV (creates 3 files) or file save dialog for JSON
+    - Success messages showing file locations
+  - Admin menu items added to CheckInForm:
+    - "Backup Now" - Creates immediate backup
+    - "Backup to USB..." - Backup to user-selected folder
+    - "Restore from Backup..." - Opens restore form
+    - "Export Data..." - Opens export form
+  - All backup/restore/export features enforce Admin-only access via `PermissionChecker.RequireAdmin()`
+  - Automatic backup runs silently on app startup if no backup exists for today
 
 ### Changed
 
@@ -125,6 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Main application now shows CheckInForm instead of Form1 after login
 - Program.cs updated to launch CheckInForm as the main screen
 - CheckInForm "Open Profile" button now opens functional HouseholdProfileForm (replaces placeholder)
+- Removed unused Form1.cs and Form1.Designer.cs files (replaced by CheckInForm in Phase 3)
 
 ### Fixed
 

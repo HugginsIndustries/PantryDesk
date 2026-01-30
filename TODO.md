@@ -68,12 +68,12 @@ Implementation checklist based on phased plan.
 
 ## Phase 7 — Backup / Export / Restore
 
-- [ ] Automatic daily backup: encrypted zip on first app run each day
-- [ ] Manual backup now
-- [ ] Optional "Backup to USB" (choose folder)
-- [ ] One-click restore (Admin-only): select backup zip, validate, safety-copy current DB, restore, prompt restart
-- [ ] Export (Admin-only): CSV (households, service_events, pantry_days), JSON structured export
-- [ ] Verify: Restore from backup confirms data reverts; Exports open fine in Excel (CSV)
+- [x] Automatic daily backup: encrypted zip on first app run each day
+- [x] Manual backup now
+- [x] Optional "Backup to USB" (choose folder)
+- [x] One-click restore (Admin-only): select backup zip, validate, safety-copy current DB, restore, prompt restart
+- [x] Export (Admin-only): CSV (households, service_events, pantry_days), JSON structured export
+- [x] Verify: Restore from backup confirms data reverts; Exports open fine in Excel (CSV)
 
 ## Phase 8 — Seeder tool
 

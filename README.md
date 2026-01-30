@@ -9,8 +9,8 @@
 - **Monthly Eligibility**: Automatic eligibility tracking with override support (requires reason)
 - **Statistics Dashboard**: Real-time statistics showing active households, total people served, completed services, unique households served, PantryDay vs Appointment breakdown, override counts by reason, and city-level breakdown (Winlock/Vader/Ryderwood)
 - **Monthly Summary Reports**: Comprehensive monthly reports with totals, pantry day breakdown tables, household composition served (Children/Adults/Seniors), and area breakdown. Export to PDF or print directly (print uses PDF format for consistent output)
-- **Backup & Restore**: Automatic daily backups with manual backup/restore capabilities
-- **Data Export**: CSV and JSON exports for external analysis (Admin-only)
+- **Backup & Restore**: Automatic daily encrypted backups (AES-256), manual backup to default location or USB, one-click restore with safety copy (Admin-only)
+- **Data Export**: CSV (Excel-compatible) and JSON exports for external analysis (Admin-only)
 - **Demo Data Seeder**: Separate console tool to generate realistic demo databases
 
 ## Privacy & Security
