@@ -26,11 +26,11 @@ Implementation checklist based on phased plan.
 
 ## Phase 2 — Authentication (Entry/Admin)
 
-- [ ] Login form: role selection (Entry/Admin) + password
-- [ ] Role passwords stored salted+hashed
-- [ ] Admin screen: "Change role passwords"
-- [ ] Enforce Admin-only features (exports/restore/calendar edits blocked for Entry)
-- [ ] Verify: Can log in as Entry/Admin; Admin-only actions blocked for Entry
+- [x] Login form: role selection (Entry/Admin) + password
+- [x] Role passwords stored salted+hashed
+- [x] Admin screen: "Change role passwords"
+- [x] Enforce Admin-only features (exports/restore/calendar edits blocked for Entry)
+- [x] Verify: Can log in as Entry/Admin; Admin-only actions blocked for Entry
 
 ## Phase 3 — Core workflow: Search + Check-in + Create Household
 

@@ -1,5 +1,7 @@
 using PantryDeskCore.Data;
 using PantryDeskCore.Models;
+using PantryDeskCore.Security;
+using PantryDeskApp.Forms;
 
 namespace PantryDeskApp;
 
@@ -8,7 +10,19 @@ public partial class Form1 : Form
     public Form1()
     {
         InitializeComponent();
-        this.Text = "PantryDesk";
+        UpdateTitle();
+        UpdateMenuVisibility();
+    }
+
+    private void UpdateTitle()
+    {
+        var role = SessionManager.CurrentRole ?? "Not Logged In";
+        this.Text = $"PantryDesk - {role}";
+    }
+
+    private void UpdateMenuVisibility()
+    {
+        menuAdmin.Visible = SessionManager.IsAdmin;
     }
 
     private void BtnTest_Click(object? sender, EventArgs e)
@@ -41,16 +55,25 @@ public partial class Form1 : Form
             household = HouseholdRepository.Create(connection, household);
             results.Add($"✓ Created household ID: {household.Id}, Name: {household.PrimaryName}");
 
-            // 2. Create a pantry day
-            var pantryDay = new PantryDay
+            // 2. Create or get a pantry day
+            var testDate = DateTime.Today.AddDays(7);
+            var pantryDay = PantryDayRepository.GetByDate(connection, testDate);
+            
+            if (pantryDay == null)
             {
-                PantryDate = DateTime.Today.AddDays(7),
-                IsActive = true,
-                Notes = "Test pantry day"
-            };
-
-            pantryDay = PantryDayRepository.Create(connection, pantryDay);
-            results.Add($"✓ Created pantry day ID: {pantryDay.Id}, Date: {pantryDay.PantryDate:yyyy-MM-dd}");
+                pantryDay = new PantryDay
+                {
+                    PantryDate = testDate,
+                    IsActive = true,
+                    Notes = "Test pantry day"
+                };
+                pantryDay = PantryDayRepository.Create(connection, pantryDay);
+                results.Add($"✓ Created pantry day ID: {pantryDay.Id}, Date: {pantryDay.PantryDate:yyyy-MM-dd}");
+            }
+            else
+            {
+                results.Add($"✓ Found existing pantry day ID: {pantryDay.Id}, Date: {pantryDay.PantryDate:yyyy-MM-dd}");
+            }
 
             // 3. Create a service event
             var serviceEvent = new ServiceEvent
@@ -107,5 +130,17 @@ public partial class Form1 : Form
         {
             MessageBox.Show($"Test failed: {ex.Message}\n\n{ex.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void MenuItemChangePasswords_Click(object? sender, EventArgs e)
+    {
+        using var changePasswordForm = new ChangePasswordForm();
+        changePasswordForm.ShowDialog();
+    }
+
+    private void MenuItemLogout_Click(object? sender, EventArgs e)
+    {
+        SessionManager.Logout();
+        Application.Exit();
     }
 }

@@ -83,6 +83,35 @@ public static class AuthRoleRepository
         return PasswordHasher.VerifyPassword(password, role.PasswordHash, role.Salt);
     }
 
+    /// <summary>
+    /// Checks if any authentication roles exist in the database.
+    /// </summary>
+    /// <param name="connection">The database connection.</param>
+    /// <returns>True if any roles exist, false if the table is empty or doesn't exist.</returns>
+    public static bool HasAnyRoles(SqliteConnection connection)
+    {
+        connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand("SELECT COUNT(*) FROM auth_roles", connection);
+            var result = cmd.ExecuteScalar();
+            if (result != null && result is long count)
+            {
+                return count > 0;
+            }
+            return false;
+        }
+        catch
+        {
+            // If table doesn't exist or other error, return false
+            return false;
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
     private static AuthRole MapFromReader(SqliteDataReader reader)
     {
         return new AuthRole
