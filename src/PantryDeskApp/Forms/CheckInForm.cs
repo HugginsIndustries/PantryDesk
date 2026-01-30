@@ -284,6 +284,12 @@ public partial class CheckInForm : Form
         changePasswordForm.ShowDialog();
     }
 
+    private void MenuItemPantryDays_Click(object? sender, EventArgs e)
+    {
+        using var pantryDaysForm = new PantryDaysForm();
+        pantryDaysForm.ShowDialog();
+    }
+
     private void MenuItemLogout_Click(object? sender, EventArgs e)
     {
         SessionManager.Logout();

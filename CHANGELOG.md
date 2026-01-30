@@ -82,6 +82,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Completed appointments trigger eligibility check and override modal (same as direct check-in)
   - Cancelled/NoShow appointments do NOT affect monthly eligibility
   - CheckInForm "Open Profile" button now opens HouseholdProfileForm and refreshes results on save
+- **Phase 5: Pantry day calendar generator + editor**
+  - `PantryDaysForm` - Admin-only form for managing pantry day calendar
+  - Year generation feature with configurable year input (defaults to current year)
+  - Automatic pantry day generation following business rules:
+    - January-October: 2nd, 3rd, and 4th Wednesday of each month
+    - November-December: 1st, 2nd, and 3rd Wednesday of each month
+  - `GetNthWeekdayOfMonth()` helper method for calculating nth occurrence of weekday in month
+  - Duplicate prevention: skips dates that already have pantry days
+  - DataGridView listing all pantry days with Date, Active status, and Notes columns
+  - Edit functionality: change date, toggle active/inactive status, edit notes
+  - Date validation prevents duplicate pantry days when editing
+  - "Pantry Days" menu item added to Admin menu in CheckInForm and Form1
+  - Check-in integration already implemented: CheckInForm uses pantry day matching by date
 
 ### Changed
 

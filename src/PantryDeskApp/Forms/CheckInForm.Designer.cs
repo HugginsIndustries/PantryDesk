@@ -37,6 +37,7 @@ partial class CheckInForm
         menuStrip = new MenuStrip();
         menuAdmin = new ToolStripMenuItem();
         menuItemChangePasswords = new ToolStripMenuItem();
+        menuItemPantryDays = new ToolStripMenuItem();
         menuItemLogout = new ToolStripMenuItem();
         ((System.ComponentModel.ISupportInitialize)dgvResults).BeginInit();
         menuStrip.SuspendLayout();
@@ -126,7 +127,7 @@ partial class CheckInForm
         // 
         // menuAdmin
         // 
-        menuAdmin.DropDownItems.AddRange(new ToolStripItem[] { menuItemChangePasswords });
+        menuAdmin.DropDownItems.AddRange(new ToolStripItem[] { menuItemChangePasswords, menuItemPantryDays });
         menuAdmin.Name = "menuAdmin";
         menuAdmin.Size = new Size(55, 20);
         menuAdmin.Text = "Admin";
@@ -137,6 +138,13 @@ partial class CheckInForm
         menuItemChangePasswords.Size = new Size(195, 22);
         menuItemChangePasswords.Text = "Change Role Passwords";
         menuItemChangePasswords.Click += MenuItemChangePasswords_Click;
+        // 
+        // menuItemPantryDays
+        // 
+        menuItemPantryDays.Name = "menuItemPantryDays";
+        menuItemPantryDays.Size = new Size(195, 22);
+        menuItemPantryDays.Text = "Pantry Days";
+        menuItemPantryDays.Click += MenuItemPantryDays_Click;
         // 
         // menuItemLogout
         // 
@@ -181,5 +189,6 @@ partial class CheckInForm
     private MenuStrip menuStrip;
     private ToolStripMenuItem menuAdmin;
     private ToolStripMenuItem menuItemChangePasswords;
+    private ToolStripMenuItem menuItemPantryDays;
     private ToolStripMenuItem menuItemLogout;
 }

@@ -53,11 +53,11 @@ Implementation checklist based on phased plan.
 
 ## Phase 5 — Pantry day calendar generator + editor
 
-- [ ] Admin-only "Pantry Days" screen
-- [ ] "Generate for Year" button with rule logic (Jan–Oct: 2nd/3rd/4th Wed; Nov–Dec: 1st/2nd/3rd Wed)
-- [ ] List with edit: change date, deactivate/reactivate, notes
-- [ ] Main check-in uses PantryDay match by date
-- [ ] Verify: Generate 2026 pantry days; edit one day and see check-in behavior reflect it
+- [x] Admin-only "Pantry Days" screen
+- [x] "Generate for Year" button with rule logic (Jan–Oct: 2nd/3rd/4th Wed; Nov–Dec: 1st/2nd/3rd Wed)
+- [x] List with edit: change date, deactivate/reactivate, notes
+- [x] Main check-in uses PantryDay match by date
+- [x] Verify: Generate 2026 pantry days; edit one day and see check-in behavior reflect it
 
 ## Phase 6 — Stats dashboard + Monthly Summary Report (PDF + Print)
 
