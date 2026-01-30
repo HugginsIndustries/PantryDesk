@@ -4,14 +4,14 @@ Implementation checklist based on phased plan.
 
 ## Phase 0 — Repo setup and guardrails
 
-- [x] Update project naming (FoodBank* -> PantryDesk*)
+- [x] Update project naming (FoodBank\* -> PantryDesk\*)
 - [x] Create repo scaffolding files (.gitignore, README, LICENSE, etc.)
 - [x] Create .NET solution skeleton
-- [ ] Get solution building and running from clean clone
-- [ ] Add `.editorconfig` and consistent formatting
-- [ ] Decide data folder location: `C:\ProgramData\PantryDeskApp\` (configurable)
-- [ ] `PantryDeskApp` opens a blank window
-- [ ] `PantryDeskSeeder` runs and prints message
+- [x] Get solution building and running from clean clone
+- [x] Add `.editorconfig` and consistent formatting
+- [x] Decide data folder location: `C:\ProgramData\PantryDesk\` (configurable via `AppConfig.GetDataRoot()`)
+- [x] `PantryDeskApp` opens a blank window
+- [x] `PantryDeskSeeder` runs and prints message
 
 ## Phase 1 — Database schema + data access layer
 

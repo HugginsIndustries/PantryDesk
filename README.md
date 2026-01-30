@@ -56,4 +56,4 @@ Licensed under **GNU GPL v3.0 or later**. See [LICENSE.md](LICENSE.md) for full 
 
 ## Repository
 
-GitHub: https://github.com/HugginsIndustries/PantryDesk
+GitHub: <https://github.com/HugginsIndustries/PantryDesk>

@@ -1,4 +1,4 @@
-## Phased implementation plan (Cursor-friendly, demo-first)
+# Phased implementation plan (Cursor-friendly, demo-first)
 
 This plan assumes: **C# .NET WinForms + SQLite + separate Seeder console app**, demo target **2026-02-06**. Email stays **optional** (and can be hidden by default in the UI if you want later).
 
@@ -6,7 +6,7 @@ This plan assumes: **C# .NET WinForms + SQLite + separate Seeder console app**, 
 
 # Phase 0 — Repo setup and guardrails (½ day)
 
-### Deliverables
+## Deliverables
 
 * Git repo with two projects:
 
@@ -14,9 +14,9 @@ This plan assumes: **C# .NET WinForms + SQLite + separate Seeder console app**, 
   * `PantryDeskSeeder` (Console)
 * Shared library (optional but recommended): `PantryDeskCore` for models/db/helpers used by both app and seeder.
 
-### Suggested structure
+## Suggested structure
 
-```
+```text
 /src
   /PantryDeskCore
     Models/
@@ -33,13 +33,13 @@ This plan assumes: **C# .NET WinForms + SQLite + separate Seeder console app**, 
 README.md
 ```
 
-### Cursor goals
+## Cursor goals
 
 * Get the solution building and running from a clean clone.
 * Add `.editorconfig` and consistent formatting.
 * Decide data folder location: `C:\ProgramData\PantryDeskApp\` (configurable).
 
-**Done when**
+### Done when
 
 * `PantryDeskApp` opens a blank window.
 * `PantryDeskSeeder` runs and prints "Hello seed".
@@ -48,7 +48,7 @@ README.md
 
 # Phase 1 — Database schema + data access layer (Day 1)
 
-### Deliverables
+## Deliverables
 
 * SQLite schema creation + migrations (simple “schema version” is enough for MVP).
 * Data access layer that can:
@@ -60,12 +60,12 @@ README.md
   * AuthRoles read/write (hashed passwords)
 * Central config table: schema version, app version, etc.
 
-### Design choices (MVP-simple)
+## Design choices (MVP-simple)
 
 * Use parameterized queries (avoid ORM if it slows you down).
 * Put all SQL in one place (e.g., `PantryDeskCore/Data/Sql.cs`).
 
-**Done when**
+### Done when
 
 * App can create a database file and insert/read:
 
@@ -77,7 +77,7 @@ README.md
 
 # Phase 2 — Authentication (Entry/Admin) (½ day)
 
-### Deliverables
+## Deliverables
 
 * Login form:
 
@@ -86,12 +86,12 @@ README.md
 * Role passwords stored salted+hashed.
 * Admin screen: “Change role passwords” (minimal UI ok).
 
-### Rules
+## Rules
 
 * Two shared accounts only.
 * App should lock out exports/restore/calendar edits for Entry role.
 
-**Done when**
+### Done when
 
 * Can log in as Entry/Admin.
 * Attempting Admin-only actions as Entry is blocked.
@@ -100,9 +100,9 @@ README.md
 
 # Phase 3 — Core workflow: Search + Check-in + Create Household (Day 2)
 
-This is the “demo killer feature”.
+This is the "demo killer feature".
 
-### Deliverables
+## Deliverables
 
 * Main Check-In screen:
 
@@ -121,7 +121,7 @@ This is the “demo killer feature”.
     * New Household
     * Open Profile
 
-### Key behaviors
+## Key behaviors
 
 * **Name search**: partial matching, case-insensitive.
 * **Complete Service**:
@@ -135,7 +135,7 @@ This is the “demo killer feature”.
     * dropdown reason (required)
     * optional notes
 
-### Household creation
+## Household creation
 
 * “New Household” from main screen:
 
@@ -143,7 +143,7 @@ This is the “demo killer feature”.
   * Address fields recommended (so “service area” is meaningful)
   * Email field **optional** (can be blank; don’t nag)
 
-**Done when**
+### Done when
 
 * In <30 seconds, you can:
 
@@ -157,7 +157,7 @@ This is the “demo killer feature”.
 
 # Phase 4 — Household Profile + Service History + Appointments (Day 3)
 
-### Deliverables
+## Deliverables
 
 * Household Profile form:
 
@@ -179,12 +179,12 @@ This is the “demo killer feature”.
   * Notes optional
   * Creates `ServiceEvents` row: `Appointment + Scheduled`
 
-### Actions
+## Actions
 
 * From history: mark Scheduled appointment as Completed / Cancelled / NoShow.
 * Completion should apply the monthly eligibility rule + overrides the same way.
 
-**Done when**
+### Done when
 
 * You can schedule an appointment and later mark it completed.
 * NoShow/Cancelled does not affect eligibility.
@@ -193,7 +193,7 @@ This is the “demo killer feature”.
 
 # Phase 5 — Pantry day calendar generator + editor (½–1 day)
 
-### Deliverables
+## Deliverables
 
 * Admin-only “Pantry Days” screen:
 
@@ -208,12 +208,12 @@ This is the “demo killer feature”.
     * deactivate/reactivate
     * notes
 
-### App behavior
+## App behavior
 
 * Main check-in uses PantryDay match by date.
 * If pantry day is deactivated, treat the day as non-pantry (→ appointment classification) unless admin decides otherwise.
 
-**Done when**
+### Done when
 
 * Generate 2026 pantry days.
 * Edit one day and see check-in behavior reflect it.
@@ -222,7 +222,7 @@ This is the “demo killer feature”.
 
 # Phase 6 — Stats dashboard + Monthly Summary Report (PDF + Print) (Day 4)
 
-### Deliverables
+## Deliverables
 
 * Stats screen (fast queries):
 
@@ -245,14 +245,14 @@ This is the “demo killer feature”.
   * household composition served (Children/Adults/Seniors totals)
   * area breakdown
 
-### Recommendation
+## Recommendation
 
 * For “composition served”, choose:
 
   * unique households served in the month (simpler)
     Label it clearly: “Totals across unique households served this month”.
 
-**Done when**
+### Done when
 
 * You can export a PDF for any month with seeded data and it looks clean.
 * Print opens Windows print dialog.
@@ -261,7 +261,7 @@ This is the “demo killer feature”.
 
 # Phase 7 — Backup / Export / Restore (Day 5)
 
-### Deliverables
+## Deliverables
 
 * Automatic daily backup:
 
@@ -280,7 +280,7 @@ This is the “demo killer feature”.
   * CSV: households, service_events, pantry_days
   * JSON: structured export
 
-**Done when**
+### Done when
 
 * You can restore from backup and confirm data reverts.
 * Exports open fine in Excel (CSV).
@@ -291,7 +291,7 @@ This is the “demo killer feature”.
 
 You can implement this in parallel once schema is stable.
 
-### Deliverables
+## Deliverables
 
 * `PantryDeskSeeder` generates `demo_pantrydesk.db` + config metadata.
 * Configurable:
@@ -319,7 +319,7 @@ You can implement this in parallel once schema is stable.
   * some overrides with reasons
   * scheduled appointments upcoming
 
-**Done when**
+### Done when
 
 * Running seeder produces DB that instantly makes:
 
@@ -331,7 +331,7 @@ You can implement this in parallel once schema is stable.
 
 # Phase 9 — Demo polish + hardening (final day before demo)
 
-### Deliverables
+## Deliverables
 
 * UI polish (not fancy, just humane):
 
@@ -347,7 +347,7 @@ You can implement this in parallel once schema is stable.
 
   * app points to `demo_pantrydesk.db` easily (config file or CLI arg)
 
-**Done when**
+### Done when
 
 * You can run a scripted demo in 5–7 minutes without surprises.
 
@@ -364,9 +364,9 @@ You can implement this in parallel once schema is stable.
 ## Quick demo script (for Feb 6)
 
 1. Login Entry
-2. Search “Smith” → show list + last served
+2. Search "Smith" → show list + last served
 3. Complete service on pantry day → show success
-4. Complete again → override modal required → pick “Special Circumstance”
+4. Complete again → override modal required → pick "Special Circumstance"
 5. Open Stats → show month totals + overrides
 6. Export Monthly Summary PDF
 7. Admin login → show pantry day calendar generator + backup/restore
