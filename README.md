@@ -11,7 +11,7 @@
 - **Monthly Summary Reports**: Comprehensive monthly reports with totals, pantry day breakdown tables, household composition served (Children/Adults/Seniors), and area breakdown. Export to PDF or print directly (print uses PDF format for consistent output)
 - **Backup & Restore**: Automatic daily encrypted backups (AES-256), manual backup to default location or USB, one-click restore with safety copy (Admin-only)
 - **Data Export**: CSV (Excel-compatible) and JSON exports for external analysis (Admin-only)
-- **Demo Data Seeder**: Separate console tool to generate realistic demo databases
+- **Demo Data Seeder**: Separate console tool (`PantryDeskSeeder`) to generate realistic demo databases with configurable parameters (household count, date range, RNG seed for deterministic generation). Enforces all data constraints (service area addresses, phone format, no PO boxes, no child-only households) and includes demo moments (ineligible households, overrides, scheduled appointments)
 
 ## Privacy & Security
 
@@ -40,8 +40,15 @@ dotnet build
 # Run the desktop app
 dotnet run --project src/PantryDeskApp
 
-# Run the seeder tool
+# Run the seeder tool (generates demo_pantrydesk.db in current directory)
 dotnet run --project src/PantryDeskSeeder
+
+# Seeder options:
+# --households <count>     Number of households (default: 150)
+# --months-back <months>   How many months back (default: 6)
+# --seed <number>          RNG seed for deterministic generation
+# --output <path>           Output database path (default: demo_pantrydesk.db)
+# --help                    Show usage information
 ```
 
 ## Repository Structure

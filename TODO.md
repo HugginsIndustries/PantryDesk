@@ -77,12 +77,12 @@ Implementation checklist based on phased plan.
 
 ## Phase 8 — Seeder tool
 
-- [ ] `PantryDeskSeeder` generates `demo_pantrydesk.db` + config metadata
-- [ ] Configurable: households count, monthsBack, city weights, age weights, household size distribution, events per pantry day range, appointments per week range, RNG seed
-- [ ] Outputs match constraints: No PO boxes, 360-555-xxxx phones, address city/zip in service area
-- [ ] Realism guardrails: no child-only households
-- [ ] Inject "demo moments": ineligible households, overrides with reasons, scheduled appointments upcoming
-- [ ] Verify: Running seeder produces DB that makes eligibility warnings visible, stats non-zero, monthly PDF interesting
+- [x] `PantryDeskSeeder` generates `demo_pantrydesk.db` + config metadata
+- [x] Configurable: households count, monthsBack, city weights, age weights, household size distribution, events per pantry day range, appointments per week range, RNG seed
+- [x] Outputs match constraints: No PO boxes, 360-555-xxxx phones, address city/zip in service area
+- [x] Realism guardrails: no child-only households
+- [x] Inject "demo moments": ineligible households, overrides with reasons, scheduled appointments upcoming
+- [x] Verify: Running seeder produces DB that makes eligibility warnings visible, stats non-zero, monthly PDF interesting
 
 ## Phase 9 — Demo polish + hardening
 

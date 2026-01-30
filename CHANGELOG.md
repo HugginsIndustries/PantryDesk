@@ -147,10 +147,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - "Export Data..." - Opens export form
   - All backup/restore/export features enforce Admin-only access via `PermissionChecker.RequireAdmin()`
   - Automatic backup runs silently on app startup if no backup exists for today
+- **Phase 8: Seeder tool**
+  - `SeederConfig` class for configuration management with command-line argument parsing
+  - `DataGenerators` helper class for generating realistic names, addresses (no PO boxes), phones (360-555-XXXX format), emails, and weighted random selection
+  - `HouseholdGenerator` class for generating households with realism guardrails (no child-only households, city/age distribution, size distribution)
+  - `PantryDayGenerator` class for generating pantry days using Jan-Oct/Nov-Dec Wednesday logic (duplicated from PantryDaysForm)
+  - `ServiceEventGenerator` class for generating completed PantryDay/Appointment events, scheduled appointments, and overrides with reasons
+  - `AuthRoleSeeder` class for seeding Entry and Admin roles with default passwords ("entry" and "admin")
+  - `DatabaseSeeder` orchestrator class coordinating all generation steps with database creation and migrations
+  - Command-line interface with options: `--households`, `--months-back`, `--seed`, `--output`, `--help`
+  - Deterministic generation support via RNG seed parameter
+  - Demo moments: ineligible households (already served this month), override reasons (Special Circumstance, Emergency Need, Admin Override, Other), scheduled appointments in future
+  - All constraints enforced: service area cities only (Winlock/Vader/Ryderwood), correct zip codes, no PO boxes, no child-only households
+  - Seeder configuration stored as JSON in config table for traceability
+  - Summary output showing counts of households, pantry days, service events, completed/scheduled events, and overrides
 
 ### Changed
 
-- PantryDeskSeeder now prints "Hello seed" message on run
+- PantryDeskSeeder now generates full demo database with realistic data (replaces "Hello seed" placeholder)
 - Application now requires authentication on every launch
 - Form1 test button updated to handle existing pantry days (prevents UNIQUE constraint violations)
 - Main application now shows CheckInForm instead of Form1 after login
