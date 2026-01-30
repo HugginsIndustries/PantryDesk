@@ -144,6 +144,34 @@ public static class ServiceEventRepository
         return events;
     }
 
+    /// <summary>
+    /// Gets the most recent completed service event for a household.
+    /// </summary>
+    /// <param name="connection">The database connection.</param>
+    /// <param name="householdId">The household ID.</param>
+    /// <returns>The most recent completed service event, or null if none exists.</returns>
+    public static ServiceEvent? GetLastCompletedByHouseholdId(SqliteConnection connection, int householdId)
+    {
+        connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.ServiceEventSelectLastCompletedByHouseholdId, connection);
+            cmd.Parameters.AddWithValue("@household_id", householdId);
+
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                return MapFromReader(reader);
+            }
+
+            return null;
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
     private static ServiceEvent MapFromReader(SqliteDataReader reader)
     {
         return new ServiceEvent

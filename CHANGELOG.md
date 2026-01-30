@@ -52,12 +52,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Form1 updated with Admin menu (visible only to Admin users)
   - Form1 title displays current logged-in role
   - Logout functionality
+- **Phase 3: Core workflow - Search + Check-in + Create Household**
+  - `EligibilityService` class for checking monthly service eligibility rules
+  - `HouseholdRepository.SearchByName()` method for partial, case-insensitive name search
+  - `ServiceEventRepository.GetLastCompletedByHouseholdId()` method to retrieve most recent completed service
+  - `CheckInForm` - Main check-in screen replacing Form1
+    - Large search textbox with real-time results
+    - DataGridView displaying household details: Name, City/Zip, Size breakdown, Last service, Eligibility status, Active/Inactive status
+    - Complete Service button with eligibility checking and pantry day detection
+    - New Household button
+    - Open Profile button (placeholder for Phase 4)
+  - `OverrideReasonForm` modal dialog for ineligible households
+    - Required reason dropdown (Special Circumstance, Emergency Need, Admin Override, Other)
+    - Optional notes field
+  - `NewHouseholdForm` for creating new households
+    - Required fields: PrimaryName, at least one person (Children/Adults/Seniors)
+    - Optional fields: Address, City, State, Zip, Phone, Email, Notes
+    - Validation with clear error messages
+  - Monthly eligibility checking: households can only be served once per calendar month
+  - Automatic event type classification: PantryDay if today matches active pantry day, else Appointment
+  - Search results update immediately after service completion or household creation
 
 ### Changed
 
 - PantryDeskSeeder now prints "Hello seed" message on run
 - Application now requires authentication on every launch
 - Form1 test button updated to handle existing pantry days (prevents UNIQUE constraint violations)
+- Main application now shows CheckInForm instead of Form1 after login
+- Program.cs updated to launch CheckInForm as the main screen
 
 ### Fixed
 

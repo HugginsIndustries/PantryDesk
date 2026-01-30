@@ -34,14 +34,14 @@ Implementation checklist based on phased plan.
 
 ## Phase 3 — Core workflow: Search + Check-in + Create Household
 
-- [ ] Main Check-In screen: big search box (PrimaryName)
-- [ ] Results list with: PrimaryName, City/Zip, HouseholdSize + breakdown, Last service date + type, Eligibility badge, Inactive badge
-- [ ] Buttons: Complete Service, New Household, Open Profile
-- [ ] Name search: partial matching, case-insensitive
-- [ ] Complete Service: pantry day vs appointment classification
-- [ ] Eligibility check: monthly rule + override modal (reason required)
-- [ ] Household creation: PrimaryName + composition (required), address fields, optional email
-- [ ] Verify: Search → create household → check in → see last-served update in <30 seconds; override prompt triggers
+- [x] Main Check-In screen: big search box (PrimaryName)
+- [x] Results list with: PrimaryName, City/Zip, HouseholdSize + breakdown, Last service date + type, Eligibility badge, Inactive badge
+- [x] Buttons: Complete Service, New Household, Open Profile
+- [x] Name search: partial matching, case-insensitive
+- [x] Complete Service: pantry day vs appointment classification
+- [x] Eligibility check: monthly rule + override modal (reason required)
+- [x] Household creation: PrimaryName + composition (required), address fields, optional email
+- [x] Verify: Search → create household → check in → see last-served update in <30 seconds; override prompt triggers
 
 ## Phase 4 — Household Profile + Service History + Appointments
 

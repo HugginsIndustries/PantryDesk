@@ -120,6 +120,14 @@ public static class Sql
         SET is_active = 0, updated_at = @updated_at
         WHERE id = @id";
 
+    public const string HouseholdSearchByName = @"
+        SELECT id, primary_name, address1, city, state, zip, phone, email,
+               children_count, adults_count, seniors_count, notes,
+               is_active, created_at, updated_at
+        FROM households
+        WHERE primary_name LIKE @search_term COLLATE NOCASE
+        ORDER BY primary_name";
+
     // ServiceEvent queries
     public const string ServiceEventInsert = @"
         INSERT INTO service_events (
@@ -150,6 +158,14 @@ public static class Sql
         FROM service_events
         WHERE event_date >= @start_date AND event_date <= @end_date
         ORDER BY event_date DESC, created_at DESC";
+
+    public const string ServiceEventSelectLastCompletedByHouseholdId = @"
+        SELECT id, household_id, event_type, event_status, event_date,
+               scheduled_text, override_reason, notes, created_at
+        FROM service_events
+        WHERE household_id = @household_id AND event_status = 'Completed'
+        ORDER BY event_date DESC, created_at DESC
+        LIMIT 1";
 
     // PantryDay queries
     public const string PantryDayInsert = @"

@@ -1,0 +1,282 @@
+using PantryDeskCore.Data;
+using PantryDeskCore.Models;
+using PantryDeskCore.Security;
+using PantryDeskCore.Services;
+
+namespace PantryDeskApp.Forms;
+
+/// <summary>
+/// Main check-in form for searching households and completing services.
+/// </summary>
+public partial class CheckInForm : Form
+{
+    private Household? _selectedHousehold;
+
+    public CheckInForm()
+    {
+        InitializeComponent();
+        UpdateMenuVisibility();
+        SetupDataGridView();
+    }
+
+    private void CheckInForm_Load(object? sender, EventArgs e)
+    {
+        // Load all households on initial load
+        SearchHouseholds(string.Empty);
+    }
+
+    private void UpdateMenuVisibility()
+    {
+        menuAdmin.Visible = SessionManager.IsAdmin;
+    }
+
+    private void SetupDataGridView()
+    {
+        dgvResults.Columns.Clear();
+        dgvResults.Columns.Add("Name", "Name");
+        dgvResults.Columns.Add("CityZip", "City/Zip");
+        dgvResults.Columns.Add("Size", "Size");
+        dgvResults.Columns.Add("LastService", "Last Service");
+        dgvResults.Columns.Add("Eligibility", "Eligibility");
+        dgvResults.Columns.Add("Status", "Status");
+        dgvResults.Columns.Add("HouseholdId", "HouseholdId");
+        var householdIdColumn = dgvResults.Columns["HouseholdId"];
+        if (householdIdColumn != null)
+        {
+            householdIdColumn.Visible = false;
+        }
+
+        // Set column widths
+        var nameColumn = dgvResults.Columns["Name"];
+        var cityZipColumn = dgvResults.Columns["CityZip"];
+        var sizeColumn = dgvResults.Columns["Size"];
+        var lastServiceColumn = dgvResults.Columns["LastService"];
+        var eligibilityColumn = dgvResults.Columns["Eligibility"];
+        var statusColumn = dgvResults.Columns["Status"];
+
+        if (nameColumn != null) nameColumn.Width = 200;
+        if (cityZipColumn != null) cityZipColumn.Width = 150;
+        if (sizeColumn != null) sizeColumn.Width = 100;
+        if (lastServiceColumn != null) lastServiceColumn.Width = 150;
+        if (eligibilityColumn != null) eligibilityColumn.Width = 150;
+        if (statusColumn != null) statusColumn.Width = 100;
+    }
+
+    private void TxtSearch_TextChanged(object? sender, EventArgs e)
+    {
+        // Debounce: search after user stops typing
+        // For now, search immediately (can add timer-based debounce if needed)
+        SearchHouseholds(txtSearch.Text);
+    }
+
+    private void TxtSearch_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.KeyCode == Keys.Enter)
+        {
+            SearchHouseholds(txtSearch.Text);
+            e.Handled = true;
+            e.SuppressKeyPress = true;
+        }
+    }
+
+    private void SearchHouseholds(string searchTerm)
+    {
+        dgvResults.Rows.Clear();
+        _selectedHousehold = null;
+        btnCompleteService.Enabled = false;
+        btnOpenProfile.Enabled = false;
+
+        try
+        {
+            using var connection = DatabaseManager.GetConnection();
+            var households = HouseholdRepository.SearchByName(connection, searchTerm);
+
+            foreach (var household in households)
+            {
+                // Get last completed service
+                var lastService = ServiceEventRepository.GetLastCompletedByHouseholdId(connection, household.Id);
+
+                // Format last service display
+                string lastServiceText = "Never";
+                if (lastService != null)
+                {
+                    lastServiceText = $"{lastService.EventDate:yyyy-MM-dd} {lastService.EventType}";
+                }
+
+                // Check eligibility
+                var isEligible = EligibilityService.IsEligibleThisMonth(connection, household.Id, DateTime.Today);
+                string eligibilityText = isEligible ? "Eligible" : "Already served this month";
+                var eligibilityColor = isEligible ? Color.Green : Color.OrangeRed;
+
+                // Format city/zip
+                string cityZip = string.Empty;
+                if (!string.IsNullOrWhiteSpace(household.City))
+                {
+                    cityZip = household.City;
+                    if (!string.IsNullOrWhiteSpace(household.Zip))
+                    {
+                        cityZip += $", {household.Zip}";
+                    }
+                }
+                else if (!string.IsNullOrWhiteSpace(household.Zip))
+                {
+                    cityZip = household.Zip;
+                }
+                if (string.IsNullOrWhiteSpace(cityZip))
+                {
+                    cityZip = "—";
+                }
+
+                // Format size breakdown
+                var totalSize = household.ChildrenCount + household.AdultsCount + household.SeniorsCount;
+                string sizeText = $"{totalSize} ({household.ChildrenCount}C/{household.AdultsCount}A/{household.SeniorsCount}S)";
+
+                // Status
+                string statusText = household.IsActive ? "Active" : "Inactive";
+                var statusColor = household.IsActive ? Color.Black : Color.Gray;
+
+                // Add row
+                var row = dgvResults.Rows.Add(
+                    household.PrimaryName,
+                    cityZip,
+                    sizeText,
+                    lastServiceText,
+                    eligibilityText,
+                    statusText,
+                    household.Id
+                );
+
+                // Color code eligibility and status
+                var rowObj = dgvResults.Rows[row];
+                rowObj.Cells["Eligibility"].Style.ForeColor = eligibilityColor;
+                rowObj.Cells["Status"].Style.ForeColor = statusColor;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error searching households: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void DgvResults_SelectionChanged(object? sender, EventArgs e)
+    {
+        if (dgvResults.SelectedRows.Count == 0)
+        {
+            _selectedHousehold = null;
+            btnCompleteService.Enabled = false;
+            btnOpenProfile.Enabled = false;
+            return;
+        }
+
+        var selectedRow = dgvResults.SelectedRows[0];
+        var householdIdValue = selectedRow.Cells["HouseholdId"].Value;
+        if (householdIdValue == null)
+        {
+            return;
+        }
+        var householdId = (int)householdIdValue;
+
+        try
+        {
+            using var connection = DatabaseManager.GetConnection();
+            _selectedHousehold = HouseholdRepository.GetById(connection, householdId);
+
+            btnCompleteService.Enabled = _selectedHousehold != null;
+            btnOpenProfile.Enabled = _selectedHousehold != null;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error loading household: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void BtnCompleteService_Click(object? sender, EventArgs e)
+    {
+        if (_selectedHousehold == null)
+        {
+            MessageBox.Show("Please select a household first.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        try
+        {
+            using var connection = DatabaseManager.GetConnection();
+
+            // Check eligibility
+            var isEligible = EligibilityService.IsEligibleThisMonth(connection, _selectedHousehold.Id, DateTime.Today);
+
+            string? overrideReason = null;
+            string? overrideNotes = null;
+
+            // If not eligible, show override modal
+            if (!isEligible)
+            {
+                using var overrideForm = new OverrideReasonForm();
+                if (overrideForm.ShowDialog() != DialogResult.OK)
+                {
+                    return; // User cancelled
+                }
+
+                overrideReason = overrideForm.OverrideReason;
+                overrideNotes = overrideForm.Notes;
+            }
+
+            // Determine event type: check if today is a pantry day
+            string eventType = "Appointment";
+            var pantryDay = PantryDayRepository.GetByDate(connection, DateTime.Today);
+            if (pantryDay != null && pantryDay.IsActive)
+            {
+                eventType = "PantryDay";
+            }
+
+            // Create service event
+            var serviceEvent = new ServiceEvent
+            {
+                HouseholdId = _selectedHousehold.Id,
+                EventType = eventType,
+                EventStatus = "Completed",
+                EventDate = DateTime.Today,
+                OverrideReason = overrideReason,
+                Notes = overrideNotes
+            };
+
+            ServiceEventRepository.Create(connection, serviceEvent);
+
+            // Refresh search results
+            SearchHouseholds(txtSearch.Text);
+
+            MessageBox.Show("Service completed successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error completing service: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void BtnNewHousehold_Click(object? sender, EventArgs e)
+    {
+        using var newHouseholdForm = new NewHouseholdForm();
+        if (newHouseholdForm.ShowDialog() == DialogResult.OK)
+        {
+            // Refresh search to show new household
+            SearchHouseholds(txtSearch.Text);
+        }
+    }
+
+    private void BtnOpenProfile_Click(object? sender, EventArgs e)
+    {
+        MessageBox.Show("Household Profile coming in Phase 4", "Coming Soon", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+
+    private void MenuItemChangePasswords_Click(object? sender, EventArgs e)
+    {
+        using var changePasswordForm = new ChangePasswordForm();
+        changePasswordForm.ShowDialog();
+    }
+
+    private void MenuItemLogout_Click(object? sender, EventArgs e)
+    {
+        SessionManager.Logout();
+        Application.Exit();
+    }
+}

@@ -44,7 +44,7 @@ static class Program
             return;
         }
 
-        // Login successful, show main form
-        Application.Run(new Form1());
+        // Login successful, show main check-in form
+        Application.Run(new Forms.CheckInForm());
     }    
 }

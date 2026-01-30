@@ -174,6 +174,46 @@ public static class HouseholdRepository
         }
     }
 
+    /// <summary>
+    /// Searches households by name using partial, case-insensitive matching.
+    /// </summary>
+    /// <param name="connection">The database connection.</param>
+    /// <param name="searchTerm">The search term (will be wrapped with % for LIKE matching).</param>
+    /// <returns>A list of matching households ordered by primary_name.</returns>
+    public static List<Household> SearchByName(SqliteConnection connection, string searchTerm)
+    {
+        var households = new List<Household>();
+
+        // If search term is empty, return all households
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return GetAll(connection);
+        }
+
+        // Wrap search term with % for partial matching
+        var likePattern = $"%{searchTerm.Trim()}%";
+
+        connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.HouseholdSearchByName, connection);
+            cmd.Parameters.AddWithValue("@search_term", likePattern);
+
+            using var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                households.Add(MapFromReader(reader));
+            }
+        }
+        finally
+        {
+            connection.Close();
+        }
+
+        return households;
+    }
+
     private static Household MapFromReader(SqliteDataReader reader)
     {
         return new Household
