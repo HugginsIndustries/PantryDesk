@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PantryDeskApp/PantryDeskApp.csproj" />
+    <Project Path="src/PantryDeskCore/PantryDeskCore.csproj" />
+    <Project Path="src/PantryDeskSeeder/PantryDeskSeeder.csproj" />
+  </Folder>
+</Solution>

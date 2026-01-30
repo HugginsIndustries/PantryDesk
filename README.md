@@ -1,0 +1,59 @@
+# PantryDesk
+
+**PantryDesk** is an offline-first Windows desktop application for food pantry client intake and tracking. It helps manage households, pantry day appointments, service eligibility, and monthly reporting—all without requiring an internet connection.
+
+## Features
+
+- **Household Management**: Search, create, and manage household profiles with composition tracking (Children/Adults/Seniors)
+- **Pantry Days & Appointments**: Calendar-based pantry day scheduling with appointment support
+- **Monthly Eligibility**: Automatic eligibility tracking with override support (requires reason)
+- **Statistics Dashboard**: Real-time stats on households, services, and service area breakdown
+- **Monthly Summary Reports**: Export to PDF or print monthly summaries
+- **Backup & Restore**: Automatic daily backups with manual backup/restore capabilities
+- **Data Export**: CSV and JSON exports for external analysis (Admin-only)
+- **Demo Data Seeder**: Separate console tool to generate realistic demo databases
+
+## Privacy & Security
+
+- **Offline-first**: No internet required at runtime. No web calls or SaaS dependencies.
+- **PII Protection**: All client data is treated as sensitive PII. No PII is logged or exposed in diagnostics.
+- **Role-based Access**: Two shared role logins (Entry/Admin) with salted password hashing.
+- **Least Privilege**: Admin-only features (backups, exports, calendar edits) are enforced.
+
+## Quick Start
+
+### Prerequisites
+
+- .NET SDK (latest LTS version)
+- Windows 10 or later
+
+### Build
+
+```bash
+dotnet restore
+dotnet build
+```
+
+### Run
+
+```bash
+# Run the desktop app
+dotnet run --project src/PantryDeskApp
+
+# Run the seeder tool
+dotnet run --project src/PantryDeskSeeder
+```
+
+## Repository Structure
+
+- `PantryDeskApp` — WinForms desktop application
+- `PantryDeskSeeder` — Console app to generate demo databases
+- `PantryDeskCore` — Shared models/data/services used by both app and seeder
+
+## License
+
+Licensed under **GNU GPL v3.0 or later**. See [LICENSE.md](LICENSE.md) for full license text.
+
+## Repository
+
+GitHub: https://github.com/HugginsIndustries/PantryDesk
