@@ -15,14 +15,14 @@ Implementation checklist based on phased plan.
 
 ## Phase 1 — Database schema + data access layer
 
-- [ ] SQLite schema creation + migrations (schema version tracking)
-- [ ] Data access layer: Create/open DB
-- [ ] Data access layer: CRUD households
-- [ ] Data access layer: Insert/query service events
-- [ ] Data access layer: Pantry day CRUD
-- [ ] Data access layer: AuthRoles read/write (hashed passwords)
-- [ ] Central config table: schema version, app version
-- [ ] Verify: App can create DB and insert/read 1 household, 1 pantry day, 1 service event
+- [x] SQLite schema creation + migrations (schema version tracking)
+- [x] Data access layer: Create/open DB
+- [x] Data access layer: CRUD households
+- [x] Data access layer: Insert/query service events
+- [x] Data access layer: Pantry day CRUD
+- [x] Data access layer: AuthRoles read/write (hashed passwords)
+- [x] Central config table: schema version, app version
+- [x] Verify: App can create DB and insert/read 1 household, 1 pantry day, 1 service event
 
 ## Phase 2 — Authentication (Entry/Admin)
 

@@ -28,11 +28,29 @@ partial class Form1
     /// </summary>
     private void InitializeComponent()
     {
-        components = new System.ComponentModel.Container();
+        btnTest = new Button();
+        SuspendLayout();
+        // 
+        // btnTest
+        // 
+        btnTest.Location = new Point(12, 12);
+        btnTest.Name = "btnTest";
+        btnTest.Size = new Size(200, 30);
+        btnTest.TabIndex = 0;
+        btnTest.Text = "Test Database (Phase 1)";
+        btnTest.UseVisualStyleBackColor = true;
+        btnTest.Click += BtnTest_Click;
+        // 
+        // Form1
+        // 
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(800, 450);
+        Controls.Add(btnTest);
         Text = "PantryDesk";
+        ResumeLayout(false);
     }
+
+    private Button btnTest;
 
     #endregion
 }
