@@ -240,4 +240,155 @@ public static class StatisticsService
 
         return (0, 0, 0);
     }
+
+    /// <summary>
+    /// Gets statistics for an arbitrary date range.
+    /// </summary>
+    public static MonthlyStatistics GetStatsForDateRange(SqliteConnection connection, DateTime startDate, DateTime endDate)
+    {
+        var startDateStr = startDate.ToString("yyyy-MM-dd");
+        var endDateStr = endDate.ToString("yyyy-MM-dd");
+
+        var stats = new MonthlyStatistics();
+
+        connection.Open();
+        try
+        {
+            // Total active households (not date-dependent, but included for consistency)
+            using (var cmd = new SqliteCommand(Sql.StatisticsCountActiveHouseholds, connection))
+            {
+                var result = cmd.ExecuteScalar();
+                stats.TotalActiveHouseholds = result != null ? Convert.ToInt32(result) : 0;
+            }
+
+            // Total people (not date-dependent, but included for consistency)
+            using (var cmd = new SqliteCommand(Sql.StatisticsSumTotalPeople, connection))
+            {
+                var result = cmd.ExecuteScalar();
+                stats.TotalPeople = result != null ? Convert.ToInt32(result) : 0;
+            }
+
+            // Completed services in range
+            using (var cmd = new SqliteCommand(Sql.StatisticsCountCompletedServicesInRange, connection))
+            {
+                cmd.Parameters.AddWithValue("@start_date", startDateStr);
+                cmd.Parameters.AddWithValue("@end_date", endDateStr);
+                var result = cmd.ExecuteScalar();
+                stats.CompletedServices = result != null ? Convert.ToInt32(result) : 0;
+            }
+
+            // Unique households served in range
+            using (var cmd = new SqliteCommand(Sql.StatisticsCountUniqueHouseholdsServedInRange, connection))
+            {
+                cmd.Parameters.AddWithValue("@start_date", startDateStr);
+                cmd.Parameters.AddWithValue("@end_date", endDateStr);
+                var result = cmd.ExecuteScalar();
+                stats.UniqueHouseholdsServed = result != null ? Convert.ToInt32(result) : 0;
+            }
+
+            // PantryDay vs Appointment breakdown
+            using (var cmd = new SqliteCommand(Sql.StatisticsCountCompletedServicesByTypeInRange, connection))
+            {
+                cmd.Parameters.AddWithValue("@start_date", startDateStr);
+                cmd.Parameters.AddWithValue("@end_date", endDateStr);
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    var eventType = reader.GetString(0);
+                    var count = reader.GetInt32(1);
+                    if (eventType == "PantryDay")
+                    {
+                        stats.PantryDayCompletions = count;
+                    }
+                    else if (eventType == "Appointment")
+                    {
+                        stats.AppointmentCompletions = count;
+                    }
+                }
+            }
+
+            // Overrides count
+            using (var cmd = new SqliteCommand(Sql.StatisticsCountOverridesInRange, connection))
+            {
+                cmd.Parameters.AddWithValue("@start_date", startDateStr);
+                cmd.Parameters.AddWithValue("@end_date", endDateStr);
+                var result = cmd.ExecuteScalar();
+                stats.OverridesCount = result != null ? Convert.ToInt32(result) : 0;
+            }
+        }
+        finally
+        {
+            connection.Close();
+        }
+
+        return stats;
+    }
+
+    /// <summary>
+    /// Gets monthly visits trend (completed services grouped by month) for a date range.
+    /// </summary>
+    public static List<MonthlyVisitsTrend> GetMonthlyVisitsTrend(SqliteConnection connection, DateTime startDate, DateTime endDate)
+    {
+        var trends = new List<MonthlyVisitsTrend>();
+        var startDateStr = startDate.ToString("yyyy-MM-dd");
+        var endDateStr = endDate.ToString("yyyy-MM-dd");
+
+        connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.StatisticsMonthlyVisitsTrend, connection);
+            cmd.Parameters.AddWithValue("@start_date", startDateStr);
+            cmd.Parameters.AddWithValue("@end_date", endDateStr);
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                trends.Add(new MonthlyVisitsTrend
+                {
+                    Month = reader.GetString(0),
+                    Count = reader.GetInt32(1)
+                });
+            }
+        }
+        finally
+        {
+            connection.Close();
+        }
+
+        return trends;
+    }
+
+    /// <summary>
+    /// Gets pantry day volume by event (completed services per pantry day) for a date range.
+    /// </summary>
+    public static List<PantryDayBreakdown> GetPantryDayVolumeByEvent(SqliteConnection connection, DateTime startDate, DateTime endDate)
+    {
+        var breakdowns = new List<PantryDayBreakdown>();
+        var startDateStr = startDate.ToString("yyyy-MM-dd");
+        var endDateStr = endDate.ToString("yyyy-MM-dd");
+
+        connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.StatisticsPantryDayBreakdownInRange, connection);
+            cmd.Parameters.AddWithValue("@start_date", startDateStr);
+            cmd.Parameters.AddWithValue("@end_date", endDateStr);
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                breakdowns.Add(new PantryDayBreakdown
+                {
+                    PantryDate = DateTime.Parse(reader.GetString(0)),
+                    CompletedServices = reader.GetInt32(1)
+                });
+            }
+        }
+        finally
+        {
+            connection.Close();
+        }
+
+        return breakdowns;
+    }
 }

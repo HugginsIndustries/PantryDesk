@@ -332,4 +332,14 @@ public static class Sql
             WHERE event_status = 'Completed'
             AND event_date >= @start_date AND event_date <= @end_date
         )";
+
+    public const string StatisticsMonthlyVisitsTrend = @"
+        SELECT 
+            strftime('%Y-%m', event_date) as month,
+            COUNT(*) as count
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND event_date >= @start_date AND event_date <= @end_date
+        GROUP BY strftime('%Y-%m', event_date)
+        ORDER BY month";
 }

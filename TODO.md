@@ -140,7 +140,7 @@ Implementation checklist based on phased plan.
 
 ### Statistics Dashboard Redesign
 
-- [ ] Redesign unified Statistics Dashboard with date range selector and charts
+- [x] Redesign unified Statistics Dashboard with date range selector and charts
   - Impact: High
   - Complexity: Medium
   - Acceptance Criteria:
@@ -148,24 +148,38 @@ Implementation checklist based on phased plan.
     - Add date range selector with quick options: This Month, Last Month, Past 3 Months, Past 6 Months, Past Year, This Year, Last Year, Custom Range
     - Default to "This Month" to match current behavior
     - Top row: Summary cards with big numbers (Total Active Households, Total People, Completed Services, Unique Households Served)
-    - Middle row: Charts using System.Windows.Forms.DataVisualization.Charting:
-      - City Distribution (Pie/Donut chart) - households served by city
-      - Age Group Distribution (Pie/Donut chart) - Children/Adults/Seniors from composition data
+    - Charts using OxyPlot.WindowsForms:
+      - City Distribution (Pie chart) - households served by city
+      - Age Group Distribution (Pie chart) - Children/Adults/Seniors from composition data
       - Monthly Visits Trend (Line chart) - completed services by month for selected range
-    - Bottom row: Bar charts:
       - Pantry Day Volume by Event (Bar chart) - completed services per pantry day in range
-      - Overrides by Reason (Bar/Stacked chart) - override counts by reason
-    - Use ColorBrewer or standard colorblind-friendly palette
-    - All charts include labels/legends and tooltip values for exact counts
+    - Use colorblind-friendly palette
+    - All charts include labels/legends and hover tooltips for exact counts
     - Export PDF and Print buttons export/print the currently selected date range
-    - PDF format includes all charts and maintains similar structure to current monthly summary
+    - PDF format includes all charts as embedded images and maintains similar structure to current monthly summary
   - Likely files:
     - `src/PantryDeskApp/Forms/StatsForm.cs`
     - `src/PantryDeskApp/Forms/StatsForm.Designer.cs`
     - `src/PantryDeskCore/Services/StatisticsService.cs` (extend for date ranges)
     - `src/PantryDeskCore/Services/ReportService.cs` (update PDF generation to include charts)
-    - `src/PantryDeskApp/PantryDeskApp.csproj` (add System.Windows.Forms.DataVisualization NuGet package)
+    - `src/PantryDeskApp/PantryDeskApp.csproj` (add OxyPlot.WindowsForms and OxyPlot.ImageSharp NuGet packages)
   - Rationale: Current dashboard is text/grids only, harder to scan quickly; unified view with charts improves readability and decision-making
+
+- [ ] Improve chart tooltip formatting and behavior
+  - Impact: Medium
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - Custom tooltip implementation with improved formatting:
+      - Date formatting: "Pantry Day: 2025-02-25" instead of including time ("2025-02-25 18:00:00 2025-02-26 06:00:00")
+      - Count formatting: "Count: 39" instead of "Count: 0 39" (remove zero values)
+      - Better overall formatting and readability
+    - Improved hover behavior (smoother, less flicker)
+    - Disable built-in OxyPlot tooltips in favor of custom implementation
+    - Tooltips appear consistently on hover across all chart types
+  - Likely files:
+    - `src/PantryDeskApp/Forms/StatsForm.cs` (custom tooltip implementation)
+    - May require custom WinForms ToolTip control or custom rendering
+  - Rationale: Current OxyPlot tooltips show raw data with timestamps and multiple values, making them hard to read. Custom implementation would provide cleaner, more user-friendly tooltips with better hover behavior.
 
 ### Search & Check-In Improvements
 

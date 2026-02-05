@@ -318,12 +318,6 @@ public partial class CheckInForm : Form
         statsForm.ShowDialog();
     }
 
-    private void MenuItemMonthlySummary_Click(object? sender, EventArgs e)
-    {
-        using var monthlySummaryForm = new MonthlySummaryForm();
-        monthlySummaryForm.ShowDialog();
-    }
-
     private void MenuItemLogout_Click(object? sender, EventArgs e)
     {
         SessionManager.Logout();

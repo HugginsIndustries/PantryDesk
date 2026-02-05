@@ -171,9 +171,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Seeder now filters pantry days to only generate those within the requested date range
   - Seeder summary now separates PantryDay events from Appointment events
   - Application icon support: executable icon and form icons for all windows (title bar and taskbar)
+- **Phase 10: Statistics Dashboard Redesign**
+  - Unified Statistics Dashboard with date range selector replacing separate Statistics and Monthly Summary forms
+  - Date range presets: This Month, Last Month, Past 3/6/12 Months, This Year, Last Year, Custom Range
+  - Summary cards displaying key metrics: Total Active Households, Total People, Completed Services, Unique Households Served
+  - Interactive charts using OxyPlot.WindowsForms:
+    - City Distribution (pie chart) - households served by city
+    - Age Group Distribution (pie chart) - Children/Adults/Seniors composition
+    - Monthly Visits Trend (line chart) - completed services by month with gridlines
+    - Pantry Day Volume by Event (bar chart) - completed services per pantry day
+  - Hover tooltips on all charts showing detailed values
+  - Colorblind-friendly color palette (ColorBrewer Set2)
+  - Chart export to PNG for PDF embedding using OxyPlot.ImageSharp
+  - PDF reports with embedded chart images organized by section
+  - Export PDF and Print buttons respect selected date range
+  - OxyPlot.WindowsForms and OxyPlot.ImageSharp NuGet packages added to PantryDeskApp
+  - Extended `StatisticsService` with date range methods: `GetStatsForDateRange()`, `GetMonthlyVisitsTrend()`, `GetPantryDayVolumeByEvent()`
+  - Updated `ReportService.GenerateStatisticsPdf()` to accept and embed chart images
+  - New SQL queries in `Sql.cs` for monthly visits trend and pantry day volume by event
 
 ### Changed
 
+- Statistics Dashboard now supports flexible date ranges instead of fixed monthly view
+- Monthly Summary functionality merged into unified Statistics Dashboard
+- PDF reports now include actual chart images instead of simple bar representations
+- Charts are organized into their respective sections in PDF (City Breakdown, Household Composition, Pantry Day Breakdown, Monthly Visits Trend)
 - PantryDeskSeeder now generates full demo database with realistic data (replaces "Hello seed" placeholder)
 - Application now requires authentication on every launch
 - Form1 test button updated to handle existing pantry days (prevents UNIQUE constraint violations)
@@ -184,6 +206,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Seeder default household count increased from 150 to 300
 - Seeder override logic improved: pantry days never have overrides, appointments have 1-2% override rate
 - Seeder now only generates pantry days within the requested date range (not full years)
+
+### Removed
+
+- `MonthlySummaryForm` - functionality merged into `StatsForm`
+- "Monthly Summary" menu item - replaced by unified Statistics Dashboard
 
 ### Fixed
 

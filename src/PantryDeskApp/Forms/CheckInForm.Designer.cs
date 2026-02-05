@@ -39,7 +39,6 @@ partial class CheckInForm
         menuStrip = new MenuStrip();
         menuReports = new ToolStripMenuItem();
         menuItemStatisticsDashboard = new ToolStripMenuItem();
-        menuItemMonthlySummary = new ToolStripMenuItem();
         menuAdmin = new ToolStripMenuItem();
         menuItemBackupNow = new ToolStripMenuItem();
         menuItemBackupToUsb = new ToolStripMenuItem();
@@ -139,7 +138,7 @@ partial class CheckInForm
         // 
         // menuReports
         // 
-        menuReports.DropDownItems.AddRange(new ToolStripItem[] { menuItemStatisticsDashboard, menuItemMonthlySummary });
+        menuReports.DropDownItems.AddRange(new ToolStripItem[] { menuItemStatisticsDashboard });
         menuReports.Name = "menuReports";
         menuReports.Size = new Size(59, 20);
         menuReports.Text = "Reports";
@@ -150,13 +149,6 @@ partial class CheckInForm
         menuItemStatisticsDashboard.Size = new Size(195, 22);
         menuItemStatisticsDashboard.Text = "Statistics Dashboard";
         menuItemStatisticsDashboard.Click += MenuItemStatisticsDashboard_Click;
-        // 
-        // menuItemMonthlySummary
-        // 
-        menuItemMonthlySummary.Name = "menuItemMonthlySummary";
-        menuItemMonthlySummary.Size = new Size(195, 22);
-        menuItemMonthlySummary.Text = "Monthly Summary";
-        menuItemMonthlySummary.Click += MenuItemMonthlySummary_Click;
         // 
         // menuAdmin
         // 
@@ -265,7 +257,6 @@ partial class CheckInForm
     private MenuStrip menuStrip;
     private ToolStripMenuItem menuReports;
     private ToolStripMenuItem menuItemStatisticsDashboard;
-    private ToolStripMenuItem menuItemMonthlySummary;
     private ToolStripMenuItem menuAdmin;
     private ToolStripMenuItem menuItemBackupNow;
     private ToolStripMenuItem menuItemBackupToUsb;

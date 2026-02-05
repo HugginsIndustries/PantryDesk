@@ -32,3 +32,9 @@ public class PantryDayBreakdown
     public DateTime PantryDate { get; set; }
     public int CompletedServices { get; set; }
 }
+
+public class MonthlyVisitsTrend
+{
+    public string Month { get; set; } = string.Empty; // Format: "YYYY-MM"
+    public int Count { get; set; }
+}

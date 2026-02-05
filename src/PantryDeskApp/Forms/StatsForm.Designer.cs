@@ -28,301 +28,487 @@ partial class StatsForm
     /// </summary>
     private void InitializeComponent()
     {
-        grpMainStats = new GroupBox();
-        lblTotalActiveHouseholds = new Label();
-        txtTotalActiveHouseholds = new TextBox();
-        lblTotalPeople = new Label();
-        txtTotalPeople = new TextBox();
-        lblCompletedServices = new Label();
-        txtCompletedServices = new TextBox();
-        lblUniqueHouseholdsServed = new Label();
-        txtUniqueHouseholdsServed = new TextBox();
-        lblPantryDayCompletions = new Label();
-        txtPantryDayCompletions = new TextBox();
-        lblAppointmentCompletions = new Label();
-        txtAppointmentCompletions = new TextBox();
-        lblOverridesCount = new Label();
-        txtOverridesCount = new TextBox();
-        grpCityBreakdown = new GroupBox();
-        dgvCityBreakdown = new DataGridView();
-        grpOverrideBreakdown = new GroupBox();
-        dgvOverrideBreakdown = new DataGridView();
-        btnRefresh = new Button();
-        btnMonthlySummary = new Button();
-        grpMainStats.SuspendLayout();
-        grpCityBreakdown.SuspendLayout();
-        ((System.ComponentModel.ISupportInitialize)dgvCityBreakdown).BeginInit();
-        grpOverrideBreakdown.SuspendLayout();
-        ((System.ComponentModel.ISupportInitialize)dgvOverrideBreakdown).BeginInit();
+        grpDateRange = new GroupBox();
+        lblDateRange = new Label();
+        cmbDateRange = new ComboBox();
+        lblStartDate = new Label();
+        dtpStartDate = new DateTimePicker();
+        lblEndDate = new Label();
+        dtpEndDate = new DateTimePicker();
+        pnlSummaryCards = new Panel();
+        pnlCardTotalActiveHouseholds = new Panel();
+        lblCardTotalActiveHouseholds = new Label();
+        lblCardTotalActiveHouseholdsValue = new Label();
+        pnlCardTotalPeople = new Panel();
+        lblCardTotalPeople = new Label();
+        lblCardTotalPeopleValue = new Label();
+        pnlCardCompletedServices = new Panel();
+        lblCardCompletedServices = new Label();
+        lblCardCompletedServicesValue = new Label();
+        pnlCardUniqueHouseholdsServed = new Panel();
+        lblCardUniqueHouseholdsServed = new Label();
+        lblCardUniqueHouseholdsServedValue = new Label();
+        grpChartsRow1 = new GroupBox();
+        tableLayoutChartsRow1 = new TableLayoutPanel();
+        pnlChartCityDistribution = new Panel();
+        plotViewCityDistribution = new OxyPlot.WindowsForms.PlotView();
+        pnlChartAgeGroupDistribution = new Panel();
+        plotViewAgeGroupDistribution = new OxyPlot.WindowsForms.PlotView();
+        pnlChartMonthlyVisitsTrend = new Panel();
+        plotViewMonthlyVisitsTrend = new OxyPlot.WindowsForms.PlotView();
+        grpChartsRow2 = new GroupBox();
+        pnlChartPantryDayVolume = new Panel();
+        plotViewPantryDayVolume = new OxyPlot.WindowsForms.PlotView();
+        btnExportPdf = new Button();
+        btnPrint = new Button();
+        grpDateRange.SuspendLayout();
+        pnlSummaryCards.SuspendLayout();
+        pnlCardTotalActiveHouseholds.SuspendLayout();
+        pnlCardTotalPeople.SuspendLayout();
+        pnlCardCompletedServices.SuspendLayout();
+        pnlCardUniqueHouseholdsServed.SuspendLayout();
+        grpChartsRow1.SuspendLayout();
+        tableLayoutChartsRow1.SuspendLayout();
+        pnlChartCityDistribution.SuspendLayout();
+        pnlChartAgeGroupDistribution.SuspendLayout();
+        pnlChartMonthlyVisitsTrend.SuspendLayout();
+        grpChartsRow2.SuspendLayout();
+        pnlChartPantryDayVolume.SuspendLayout();
         SuspendLayout();
         // 
-        // grpMainStats
+        // grpDateRange
         // 
-        grpMainStats.Controls.Add(lblTotalActiveHouseholds);
-        grpMainStats.Controls.Add(txtTotalActiveHouseholds);
-        grpMainStats.Controls.Add(lblTotalPeople);
-        grpMainStats.Controls.Add(txtTotalPeople);
-        grpMainStats.Controls.Add(lblCompletedServices);
-        grpMainStats.Controls.Add(txtCompletedServices);
-        grpMainStats.Controls.Add(lblUniqueHouseholdsServed);
-        grpMainStats.Controls.Add(txtUniqueHouseholdsServed);
-        grpMainStats.Controls.Add(lblPantryDayCompletions);
-        grpMainStats.Controls.Add(txtPantryDayCompletions);
-        grpMainStats.Controls.Add(lblAppointmentCompletions);
-        grpMainStats.Controls.Add(txtAppointmentCompletions);
-        grpMainStats.Controls.Add(lblOverridesCount);
-        grpMainStats.Controls.Add(txtOverridesCount);
-        grpMainStats.Location = new Point(12, 12);
-        grpMainStats.Name = "grpMainStats";
-        grpMainStats.Size = new Size(400, 280);
-        grpMainStats.TabIndex = 0;
-        grpMainStats.TabStop = false;
-        grpMainStats.Text = "Current Month Statistics";
+        grpDateRange.Controls.Add(btnPrint);
+        grpDateRange.Controls.Add(btnExportPdf);
+        grpDateRange.Controls.Add(lblDateRange);
+        grpDateRange.Controls.Add(cmbDateRange);
+        grpDateRange.Controls.Add(lblStartDate);
+        grpDateRange.Controls.Add(dtpStartDate);
+        grpDateRange.Controls.Add(lblEndDate);
+        grpDateRange.Controls.Add(dtpEndDate);
+        grpDateRange.Location = new Point(12, 12);
+        grpDateRange.Name = "grpDateRange";
+        grpDateRange.Size = new Size(1600, 60);
+        grpDateRange.TabIndex = 0;
+        grpDateRange.TabStop = false;
+        grpDateRange.Text = "Date Range";
+        grpDateRange.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         // 
-        // lblTotalActiveHouseholds
+        // lblDateRange
         // 
-        lblTotalActiveHouseholds.AutoSize = true;
-        lblTotalActiveHouseholds.Location = new Point(12, 25);
-        lblTotalActiveHouseholds.Name = "lblTotalActiveHouseholds";
-        lblTotalActiveHouseholds.Size = new Size(140, 15);
-        lblTotalActiveHouseholds.TabIndex = 0;
-        lblTotalActiveHouseholds.Text = "Total Active Households:";
+        lblDateRange.AutoSize = true;
+        lblDateRange.Location = new Point(12, 25);
+        lblDateRange.Name = "lblDateRange";
+        lblDateRange.Size = new Size(68, 15);
+        lblDateRange.TabIndex = 0;
+        lblDateRange.Text = "Date Range:";
         // 
-        // txtTotalActiveHouseholds
+        // cmbDateRange
         // 
-        txtTotalActiveHouseholds.Location = new Point(158, 22);
-        txtTotalActiveHouseholds.Name = "txtTotalActiveHouseholds";
-        txtTotalActiveHouseholds.ReadOnly = true;
-        txtTotalActiveHouseholds.Size = new Size(150, 23);
-        txtTotalActiveHouseholds.TabIndex = 1;
-        txtTotalActiveHouseholds.TextAlign = HorizontalAlignment.Right;
+        cmbDateRange.DropDownStyle = ComboBoxStyle.DropDownList;
+        cmbDateRange.FormattingEnabled = true;
+        cmbDateRange.Location = new Point(86, 22);
+        cmbDateRange.Name = "cmbDateRange";
+        cmbDateRange.Size = new Size(200, 23);
+        cmbDateRange.TabIndex = 1;
+        cmbDateRange.SelectedIndexChanged += CmbDateRange_SelectedIndexChanged;
         // 
-        // lblTotalPeople
+        // lblStartDate
         // 
-        lblTotalPeople.AutoSize = true;
-        lblTotalPeople.Location = new Point(12, 55);
-        lblTotalPeople.Name = "lblTotalPeople";
-        lblTotalPeople.Size = new Size(80, 15);
-        lblTotalPeople.TabIndex = 2;
-        lblTotalPeople.Text = "Total People:";
+        lblStartDate.AutoSize = true;
+        lblStartDate.Location = new Point(300, 25);
+        lblStartDate.Name = "lblStartDate";
+        lblStartDate.Size = new Size(61, 15);
+        lblStartDate.TabIndex = 2;
+        lblStartDate.Text = "Start Date:";
+        lblStartDate.Visible = false;
         // 
-        // txtTotalPeople
+        // dtpStartDate
         // 
-        txtTotalPeople.Location = new Point(158, 52);
-        txtTotalPeople.Name = "txtTotalPeople";
-        txtTotalPeople.ReadOnly = true;
-        txtTotalPeople.Size = new Size(150, 23);
-        txtTotalPeople.TabIndex = 3;
-        txtTotalPeople.TextAlign = HorizontalAlignment.Right;
+        dtpStartDate.Location = new Point(367, 22);
+        dtpStartDate.Name = "dtpStartDate";
+        dtpStartDate.Size = new Size(200, 23);
+        dtpStartDate.TabIndex = 3;
+        dtpStartDate.Visible = false;
+        dtpStartDate.ValueChanged += DtpStartDate_ValueChanged;
         // 
-        // lblCompletedServices
+        // lblEndDate
         // 
-        lblCompletedServices.AutoSize = true;
-        lblCompletedServices.Location = new Point(12, 85);
-        lblCompletedServices.Name = "lblCompletedServices";
-        lblCompletedServices.Size = new Size(115, 15);
-        lblCompletedServices.TabIndex = 4;
-        lblCompletedServices.Text = "Completed Services:";
+        lblEndDate.AutoSize = true;
+        lblEndDate.Location = new Point(580, 25);
+        lblEndDate.Name = "lblEndDate";
+        lblEndDate.Size = new Size(57, 15);
+        lblEndDate.TabIndex = 4;
+        lblEndDate.Text = "End Date:";
+        lblEndDate.Visible = false;
         // 
-        // txtCompletedServices
+        // dtpEndDate
         // 
-        txtCompletedServices.Location = new Point(158, 82);
-        txtCompletedServices.Name = "txtCompletedServices";
-        txtCompletedServices.ReadOnly = true;
-        txtCompletedServices.Size = new Size(150, 23);
-        txtCompletedServices.TabIndex = 5;
-        txtCompletedServices.TextAlign = HorizontalAlignment.Right;
+        dtpEndDate.Location = new Point(643, 22);
+        dtpEndDate.Name = "dtpEndDate";
+        dtpEndDate.Size = new Size(200, 23);
+        dtpEndDate.TabIndex = 5;
+        dtpEndDate.Visible = false;
+        dtpEndDate.ValueChanged += DtpEndDate_ValueChanged;
         // 
-        // lblUniqueHouseholdsServed
+        // pnlSummaryCards
         // 
-        lblUniqueHouseholdsServed.AutoSize = true;
-        lblUniqueHouseholdsServed.Location = new Point(12, 115);
-        lblUniqueHouseholdsServed.Name = "lblUniqueHouseholdsServed";
-        lblUniqueHouseholdsServed.Size = new Size(150, 15);
-        lblUniqueHouseholdsServed.TabIndex = 6;
-        lblUniqueHouseholdsServed.Text = "Unique Households Served:";
+        pnlSummaryCards.Controls.Add(pnlCardTotalActiveHouseholds);
+        pnlSummaryCards.Controls.Add(pnlCardTotalPeople);
+        pnlSummaryCards.Controls.Add(pnlCardCompletedServices);
+        pnlSummaryCards.Controls.Add(pnlCardUniqueHouseholdsServed);
+        pnlSummaryCards.Location = new Point(12, 78);
+        pnlSummaryCards.Name = "pnlSummaryCards";
+        pnlSummaryCards.Size = new Size(1600, 100);
+        pnlSummaryCards.TabIndex = 1;
+        pnlSummaryCards.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        pnlSummaryCards.Dock = DockStyle.None;
         // 
-        // txtUniqueHouseholdsServed
+        // pnlCardTotalActiveHouseholds
         // 
-        txtUniqueHouseholdsServed.Location = new Point(168, 112);
-        txtUniqueHouseholdsServed.Name = "txtUniqueHouseholdsServed";
-        txtUniqueHouseholdsServed.ReadOnly = true;
-        txtUniqueHouseholdsServed.Size = new Size(140, 23);
-        txtUniqueHouseholdsServed.TabIndex = 7;
-        txtUniqueHouseholdsServed.TextAlign = HorizontalAlignment.Right;
+        pnlCardTotalActiveHouseholds.BorderStyle = BorderStyle.FixedSingle;
+        pnlCardTotalActiveHouseholds.Controls.Add(lblCardTotalActiveHouseholds);
+        pnlCardTotalActiveHouseholds.Controls.Add(lblCardTotalActiveHouseholdsValue);
+        pnlCardTotalActiveHouseholds.Location = new Point(0, 0);
+        pnlCardTotalActiveHouseholds.Name = "pnlCardTotalActiveHouseholds";
+        pnlCardTotalActiveHouseholds.Size = new Size(390, 100);
+        pnlCardTotalActiveHouseholds.TabIndex = 0;
+        pnlCardTotalActiveHouseholds.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         // 
-        // lblPantryDayCompletions
+        // lblCardTotalActiveHouseholds
         // 
-        lblPantryDayCompletions.AutoSize = true;
-        lblPantryDayCompletions.Location = new Point(12, 145);
-        lblPantryDayCompletions.Name = "lblPantryDayCompletions";
-        lblPantryDayCompletions.Size = new Size(135, 15);
-        lblPantryDayCompletions.TabIndex = 8;
-        lblPantryDayCompletions.Text = "PantryDay Completions:";
+        lblCardTotalActiveHouseholds.AutoSize = true;
+        lblCardTotalActiveHouseholds.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+        lblCardTotalActiveHouseholds.Location = new Point(10, 10);
+        lblCardTotalActiveHouseholds.Name = "lblCardTotalActiveHouseholds";
+        lblCardTotalActiveHouseholds.Size = new Size(150, 15);
+        lblCardTotalActiveHouseholds.TabIndex = 0;
+        lblCardTotalActiveHouseholds.Text = "Total Active Households";
         // 
-        // txtPantryDayCompletions
+        // lblCardTotalActiveHouseholdsValue
         // 
-        txtPantryDayCompletions.Location = new Point(158, 142);
-        txtPantryDayCompletions.Name = "txtPantryDayCompletions";
-        txtPantryDayCompletions.ReadOnly = true;
-        txtPantryDayCompletions.Size = new Size(150, 23);
-        txtPantryDayCompletions.TabIndex = 9;
-        txtPantryDayCompletions.TextAlign = HorizontalAlignment.Right;
+        lblCardTotalActiveHouseholdsValue.AutoSize = true;
+        lblCardTotalActiveHouseholdsValue.Font = new Font("Segoe UI", 24F, FontStyle.Bold, GraphicsUnit.Point);
+        lblCardTotalActiveHouseholdsValue.Location = new Point(10, 35);
+        lblCardTotalActiveHouseholdsValue.Name = "lblCardTotalActiveHouseholdsValue";
+        lblCardTotalActiveHouseholdsValue.Size = new Size(38, 45);
+        lblCardTotalActiveHouseholdsValue.TabIndex = 1;
+        lblCardTotalActiveHouseholdsValue.Text = "0";
         // 
-        // lblAppointmentCompletions
+        // pnlCardTotalPeople
         // 
-        lblAppointmentCompletions.AutoSize = true;
-        lblAppointmentCompletions.Location = new Point(12, 175);
-        lblAppointmentCompletions.Name = "lblAppointmentCompletions";
-        lblAppointmentCompletions.Size = new Size(145, 15);
-        lblAppointmentCompletions.TabIndex = 10;
-        lblAppointmentCompletions.Text = "Appointment Completions:";
+        pnlCardTotalPeople.BorderStyle = BorderStyle.FixedSingle;
+        pnlCardTotalPeople.Controls.Add(lblCardTotalPeople);
+        pnlCardTotalPeople.Controls.Add(lblCardTotalPeopleValue);
+        pnlCardTotalPeople.Location = new Point(400, 0);
+        pnlCardTotalPeople.Name = "pnlCardTotalPeople";
+        pnlCardTotalPeople.Size = new Size(390, 100);
+        pnlCardTotalPeople.TabIndex = 1;
+        pnlCardTotalPeople.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         // 
-        // txtAppointmentCompletions
+        // lblCardTotalPeople
         // 
-        txtAppointmentCompletions.Location = new Point(163, 172);
-        txtAppointmentCompletions.Name = "txtAppointmentCompletions";
-        txtAppointmentCompletions.ReadOnly = true;
-        txtAppointmentCompletions.Size = new Size(145, 23);
-        txtAppointmentCompletions.TabIndex = 11;
-        txtAppointmentCompletions.TextAlign = HorizontalAlignment.Right;
+        lblCardTotalPeople.AutoSize = true;
+        lblCardTotalPeople.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+        lblCardTotalPeople.Location = new Point(10, 10);
+        lblCardTotalPeople.Name = "lblCardTotalPeople";
+        lblCardTotalPeople.Size = new Size(75, 15);
+        lblCardTotalPeople.TabIndex = 0;
+        lblCardTotalPeople.Text = "Total People";
         // 
-        // lblOverridesCount
+        // lblCardTotalPeopleValue
         // 
-        lblOverridesCount.AutoSize = true;
-        lblOverridesCount.Location = new Point(12, 205);
-        lblOverridesCount.Name = "lblOverridesCount";
-        lblOverridesCount.Size = new Size(95, 15);
-        lblOverridesCount.TabIndex = 12;
-        lblOverridesCount.Text = "Overrides Count:";
+        lblCardTotalPeopleValue.AutoSize = true;
+        lblCardTotalPeopleValue.Font = new Font("Segoe UI", 24F, FontStyle.Bold, GraphicsUnit.Point);
+        lblCardTotalPeopleValue.Location = new Point(10, 35);
+        lblCardTotalPeopleValue.Name = "lblCardTotalPeopleValue";
+        lblCardTotalPeopleValue.Size = new Size(38, 45);
+        lblCardTotalPeopleValue.TabIndex = 1;
+        lblCardTotalPeopleValue.Text = "0";
         // 
-        // txtOverridesCount
+        // pnlCardCompletedServices
         // 
-        txtOverridesCount.Location = new Point(158, 202);
-        txtOverridesCount.Name = "txtOverridesCount";
-        txtOverridesCount.ReadOnly = true;
-        txtOverridesCount.Size = new Size(150, 23);
-        txtOverridesCount.TabIndex = 13;
-        txtOverridesCount.TextAlign = HorizontalAlignment.Right;
+        pnlCardCompletedServices.BorderStyle = BorderStyle.FixedSingle;
+        pnlCardCompletedServices.Controls.Add(lblCardCompletedServices);
+        pnlCardCompletedServices.Controls.Add(lblCardCompletedServicesValue);
+        pnlCardCompletedServices.Location = new Point(800, 0);
+        pnlCardCompletedServices.Name = "pnlCardCompletedServices";
+        pnlCardCompletedServices.Size = new Size(390, 100);
+        pnlCardCompletedServices.TabIndex = 2;
+        pnlCardCompletedServices.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         // 
-        // grpCityBreakdown
+        // lblCardCompletedServices
         // 
-        grpCityBreakdown.Controls.Add(dgvCityBreakdown);
-        grpCityBreakdown.Location = new Point(418, 12);
-        grpCityBreakdown.Name = "grpCityBreakdown";
-        grpCityBreakdown.Size = new Size(370, 200);
-        grpCityBreakdown.TabIndex = 1;
-        grpCityBreakdown.TabStop = false;
-        grpCityBreakdown.Text = "By City";
+        lblCardCompletedServices.AutoSize = true;
+        lblCardCompletedServices.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+        lblCardCompletedServices.Location = new Point(10, 10);
+        lblCardCompletedServices.Name = "lblCardCompletedServices";
+        lblCardCompletedServices.Size = new Size(120, 15);
+        lblCardCompletedServices.TabIndex = 0;
+        lblCardCompletedServices.Text = "Completed Services";
         // 
-        // dgvCityBreakdown
+        // lblCardCompletedServicesValue
         // 
-        dgvCityBreakdown.AllowUserToAddRows = false;
-        dgvCityBreakdown.AllowUserToDeleteRows = false;
-        dgvCityBreakdown.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-        dgvCityBreakdown.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-        dgvCityBreakdown.Dock = DockStyle.Fill;
-        dgvCityBreakdown.Location = new Point(3, 19);
-        dgvCityBreakdown.MultiSelect = false;
-        dgvCityBreakdown.Name = "dgvCityBreakdown";
-        dgvCityBreakdown.ReadOnly = true;
-        dgvCityBreakdown.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        dgvCityBreakdown.Size = new Size(364, 178);
-        dgvCityBreakdown.TabIndex = 0;
+        lblCardCompletedServicesValue.AutoSize = true;
+        lblCardCompletedServicesValue.Font = new Font("Segoe UI", 24F, FontStyle.Bold, GraphicsUnit.Point);
+        lblCardCompletedServicesValue.Location = new Point(10, 35);
+        lblCardCompletedServicesValue.Name = "lblCardCompletedServicesValue";
+        lblCardCompletedServicesValue.Size = new Size(38, 45);
+        lblCardCompletedServicesValue.TabIndex = 1;
+        lblCardCompletedServicesValue.Text = "0";
         // 
-        // grpOverrideBreakdown
+        // pnlCardUniqueHouseholdsServed
         // 
-        grpOverrideBreakdown.Controls.Add(dgvOverrideBreakdown);
-        grpOverrideBreakdown.Location = new Point(418, 218);
-        grpOverrideBreakdown.Name = "grpOverrideBreakdown";
-        grpOverrideBreakdown.Size = new Size(370, 200);
-        grpOverrideBreakdown.TabIndex = 2;
-        grpOverrideBreakdown.TabStop = false;
-        grpOverrideBreakdown.Text = "Override Breakdown";
+        pnlCardUniqueHouseholdsServed.BorderStyle = BorderStyle.FixedSingle;
+        pnlCardUniqueHouseholdsServed.Controls.Add(lblCardUniqueHouseholdsServed);
+        pnlCardUniqueHouseholdsServed.Controls.Add(lblCardUniqueHouseholdsServedValue);
+        pnlCardUniqueHouseholdsServed.Location = new Point(1200, 0);
+        pnlCardUniqueHouseholdsServed.Name = "pnlCardUniqueHouseholdsServed";
+        pnlCardUniqueHouseholdsServed.Size = new Size(390, 100);
+        pnlCardUniqueHouseholdsServed.TabIndex = 3;
+        pnlCardUniqueHouseholdsServed.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         // 
-        // dgvOverrideBreakdown
+        // lblCardUniqueHouseholdsServed
         // 
-        dgvOverrideBreakdown.AllowUserToAddRows = false;
-        dgvOverrideBreakdown.AllowUserToDeleteRows = false;
-        dgvOverrideBreakdown.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-        dgvOverrideBreakdown.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-        dgvOverrideBreakdown.Dock = DockStyle.Fill;
-        dgvOverrideBreakdown.Location = new Point(3, 19);
-        dgvOverrideBreakdown.MultiSelect = false;
-        dgvOverrideBreakdown.Name = "dgvOverrideBreakdown";
-        dgvOverrideBreakdown.ReadOnly = true;
-        dgvOverrideBreakdown.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        dgvOverrideBreakdown.Size = new Size(364, 178);
-        dgvOverrideBreakdown.TabIndex = 0;
+        lblCardUniqueHouseholdsServed.AutoSize = true;
+        lblCardUniqueHouseholdsServed.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+        lblCardUniqueHouseholdsServed.Location = new Point(10, 10);
+        lblCardUniqueHouseholdsServed.Name = "lblCardUniqueHouseholdsServed";
+        lblCardUniqueHouseholdsServed.Size = new Size(180, 15);
+        lblCardUniqueHouseholdsServed.TabIndex = 0;
+        lblCardUniqueHouseholdsServed.Text = "Unique Households Served";
         // 
-        // btnRefresh
+        // lblCardUniqueHouseholdsServedValue
         // 
-        btnRefresh.Location = new Point(12, 300);
-        btnRefresh.Name = "btnRefresh";
-        btnRefresh.Size = new Size(150, 35);
-        btnRefresh.TabIndex = 3;
-        btnRefresh.Text = "Refresh";
-        btnRefresh.UseVisualStyleBackColor = true;
-        btnRefresh.Click += BtnRefresh_Click;
+        lblCardUniqueHouseholdsServedValue.AutoSize = true;
+        lblCardUniqueHouseholdsServedValue.Font = new Font("Segoe UI", 24F, FontStyle.Bold, GraphicsUnit.Point);
+        lblCardUniqueHouseholdsServedValue.Location = new Point(10, 35);
+        lblCardUniqueHouseholdsServedValue.Name = "lblCardUniqueHouseholdsServedValue";
+        lblCardUniqueHouseholdsServedValue.Size = new Size(38, 45);
+        lblCardUniqueHouseholdsServedValue.TabIndex = 1;
+        lblCardUniqueHouseholdsServedValue.Text = "0";
         // 
-        // btnMonthlySummary
+        // grpChartsRow1
         // 
-        btnMonthlySummary.Location = new Point(168, 300);
-        btnMonthlySummary.Name = "btnMonthlySummary";
-        btnMonthlySummary.Size = new Size(150, 35);
-        btnMonthlySummary.TabIndex = 4;
-        btnMonthlySummary.Text = "Monthly Summary";
-        btnMonthlySummary.UseVisualStyleBackColor = true;
-        btnMonthlySummary.Click += BtnMonthlySummary_Click;
+        grpChartsRow1.Controls.Add(tableLayoutChartsRow1);
+        grpChartsRow1.Location = new Point(12, 184);
+        grpChartsRow1.Name = "grpChartsRow1";
+        grpChartsRow1.Size = new Size(1600, 450);
+        grpChartsRow1.TabIndex = 2;
+        grpChartsRow1.TabStop = false;
+        grpChartsRow1.Text = "Charts";
+        grpChartsRow1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        // 
+        // tableLayoutChartsRow1
+        // 
+        tableLayoutChartsRow1.ColumnCount = 3;
+        tableLayoutChartsRow1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        tableLayoutChartsRow1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        tableLayoutChartsRow1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        tableLayoutChartsRow1.Controls.Add(pnlChartCityDistribution, 0, 0);
+        tableLayoutChartsRow1.Controls.Add(pnlChartAgeGroupDistribution, 1, 0);
+        tableLayoutChartsRow1.Controls.Add(pnlChartMonthlyVisitsTrend, 2, 0);
+        tableLayoutChartsRow1.Dock = DockStyle.Fill;
+        tableLayoutChartsRow1.Location = new Point(3, 19);
+        tableLayoutChartsRow1.Name = "tableLayoutChartsRow1";
+        tableLayoutChartsRow1.RowCount = 1;
+        tableLayoutChartsRow1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        tableLayoutChartsRow1.Size = new Size(1594, 428);
+        tableLayoutChartsRow1.TabIndex = 0;
+        // 
+        // pnlChartCityDistribution
+        // 
+        pnlChartCityDistribution.Controls.Add(plotViewCityDistribution);
+        pnlChartCityDistribution.Dock = DockStyle.Fill;
+        pnlChartCityDistribution.Location = new Point(3, 3);
+        pnlChartCityDistribution.Name = "pnlChartCityDistribution";
+        pnlChartCityDistribution.Size = new Size(392, 422);
+        pnlChartCityDistribution.TabIndex = 0;
+        // 
+        // plotViewCityDistribution
+        // 
+        plotViewCityDistribution.Dock = DockStyle.Fill;
+        plotViewCityDistribution.Location = new Point(0, 0);
+        plotViewCityDistribution.Name = "plotViewCityDistribution";
+        plotViewCityDistribution.PanCursor = Cursors.Hand;
+        plotViewCityDistribution.Size = new Size(392, 422);
+        plotViewCityDistribution.TabIndex = 0;
+        plotViewCityDistribution.Text = "City Distribution";
+        plotViewCityDistribution.ZoomHorizontalCursor = Cursors.SizeWE;
+        plotViewCityDistribution.ZoomRectangleCursor = Cursors.SizeNWSE;
+        plotViewCityDistribution.ZoomVerticalCursor = Cursors.SizeNS;
+        // 
+        // pnlChartAgeGroupDistribution
+        // 
+        pnlChartAgeGroupDistribution.Controls.Add(plotViewAgeGroupDistribution);
+        pnlChartAgeGroupDistribution.Dock = DockStyle.Fill;
+        pnlChartAgeGroupDistribution.Location = new Point(401, 3);
+        pnlChartAgeGroupDistribution.Name = "pnlChartAgeGroupDistribution";
+        pnlChartAgeGroupDistribution.Size = new Size(392, 422);
+        pnlChartAgeGroupDistribution.TabIndex = 1;
+        // 
+        // plotViewAgeGroupDistribution
+        // 
+        plotViewAgeGroupDistribution.Dock = DockStyle.Fill;
+        plotViewAgeGroupDistribution.Location = new Point(0, 0);
+        plotViewAgeGroupDistribution.Name = "plotViewAgeGroupDistribution";
+        plotViewAgeGroupDistribution.PanCursor = Cursors.Hand;
+        plotViewAgeGroupDistribution.Size = new Size(392, 422);
+        plotViewAgeGroupDistribution.TabIndex = 0;
+        plotViewAgeGroupDistribution.Text = "Age Group Distribution";
+        plotViewAgeGroupDistribution.ZoomHorizontalCursor = Cursors.SizeWE;
+        plotViewAgeGroupDistribution.ZoomRectangleCursor = Cursors.SizeNWSE;
+        plotViewAgeGroupDistribution.ZoomVerticalCursor = Cursors.SizeNS;
+        // 
+        // pnlChartMonthlyVisitsTrend
+        // 
+        pnlChartMonthlyVisitsTrend.Controls.Add(plotViewMonthlyVisitsTrend);
+        pnlChartMonthlyVisitsTrend.Dock = DockStyle.Fill;
+        pnlChartMonthlyVisitsTrend.Location = new Point(799, 3);
+        pnlChartMonthlyVisitsTrend.Name = "pnlChartMonthlyVisitsTrend";
+        pnlChartMonthlyVisitsTrend.Size = new Size(792, 422);
+        pnlChartMonthlyVisitsTrend.TabIndex = 2;
+        // 
+        // plotViewMonthlyVisitsTrend
+        // 
+        plotViewMonthlyVisitsTrend.Dock = DockStyle.Fill;
+        plotViewMonthlyVisitsTrend.Location = new Point(0, 0);
+        plotViewMonthlyVisitsTrend.Name = "plotViewMonthlyVisitsTrend";
+        plotViewMonthlyVisitsTrend.PanCursor = Cursors.Hand;
+        plotViewMonthlyVisitsTrend.Size = new Size(792, 422);
+        plotViewMonthlyVisitsTrend.TabIndex = 0;
+        plotViewMonthlyVisitsTrend.Text = "Monthly Visits Trend";
+        plotViewMonthlyVisitsTrend.ZoomHorizontalCursor = Cursors.SizeWE;
+        plotViewMonthlyVisitsTrend.ZoomRectangleCursor = Cursors.SizeNWSE;
+        plotViewMonthlyVisitsTrend.ZoomVerticalCursor = Cursors.SizeNS;
+        // 
+        // grpChartsRow2
+        // 
+        grpChartsRow2.Controls.Add(pnlChartPantryDayVolume);
+        grpChartsRow2.Location = new Point(12, 640);
+        grpChartsRow2.Name = "grpChartsRow2";
+        grpChartsRow2.Size = new Size(1600, 330);
+        grpChartsRow2.TabIndex = 3;
+        grpChartsRow2.TabStop = false;
+        grpChartsRow2.Text = "Pantry Day Volume";
+        grpChartsRow2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        // 
+        // pnlChartPantryDayVolume
+        // 
+        pnlChartPantryDayVolume.Controls.Add(plotViewPantryDayVolume);
+        pnlChartPantryDayVolume.Location = new Point(6, 22);
+        pnlChartPantryDayVolume.Name = "pnlChartPantryDayVolume";
+        pnlChartPantryDayVolume.Size = new Size(1588, 300);
+        pnlChartPantryDayVolume.TabIndex = 0;
+        pnlChartPantryDayVolume.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        pnlChartPantryDayVolume.Dock = DockStyle.Fill;
+        // 
+        // plotViewPantryDayVolume
+        // 
+        plotViewPantryDayVolume.Dock = DockStyle.Fill;
+        plotViewPantryDayVolume.Location = new Point(0, 0);
+        plotViewPantryDayVolume.Name = "plotViewPantryDayVolume";
+        plotViewPantryDayVolume.PanCursor = Cursors.Hand;
+        plotViewPantryDayVolume.Size = new Size(1588, 300);
+        plotViewPantryDayVolume.TabIndex = 0;
+        plotViewPantryDayVolume.Text = "Pantry Day Volume by Event";
+        plotViewPantryDayVolume.ZoomHorizontalCursor = Cursors.SizeWE;
+        plotViewPantryDayVolume.ZoomRectangleCursor = Cursors.SizeNWSE;
+        plotViewPantryDayVolume.ZoomVerticalCursor = Cursors.SizeNS;
+        // 
+        // btnExportPdf
+        // 
+        btnExportPdf.Location = new Point(1400, 22);
+        btnExportPdf.Name = "btnExportPdf";
+        btnExportPdf.Size = new Size(90, 23);
+        btnExportPdf.TabIndex = 6;
+        btnExportPdf.Text = "Export PDF";
+        btnExportPdf.UseVisualStyleBackColor = true;
+        btnExportPdf.Click += BtnExportPdf_Click;
+        btnExportPdf.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        // 
+        // btnPrint
+        // 
+        btnPrint.Location = new Point(1496, 22);
+        btnPrint.Name = "btnPrint";
+        btnPrint.Size = new Size(90, 23);
+        btnPrint.TabIndex = 7;
+        btnPrint.Text = "Print";
+        btnPrint.UseVisualStyleBackColor = true;
+        btnPrint.Click += BtnPrint_Click;
+        btnPrint.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         // 
         // StatsForm
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(800, 350);
-        MinimumSize = new Size(600, 350);
-        Controls.Add(btnMonthlySummary);
-        Controls.Add(btnRefresh);
-        Controls.Add(grpOverrideBreakdown);
-        Controls.Add(grpCityBreakdown);
-        Controls.Add(grpMainStats);
+        ClientSize = new Size(1624, 980);
+        MinimumSize = new Size(1624, 980);
+        Controls.Add(grpChartsRow2);
+        Controls.Add(grpChartsRow1);
+        Controls.Add(pnlSummaryCards);
+        Controls.Add(grpDateRange);
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
-        MinimizeBox = false;
+        MinimizeBox = true;
         Name = "StatsForm";
         StartPosition = FormStartPosition.CenterParent;
         Text = "Statistics Dashboard";
         Load += StatsForm_Load;
-        grpMainStats.ResumeLayout(false);
-        grpMainStats.PerformLayout();
-        grpCityBreakdown.ResumeLayout(false);
-        ((System.ComponentModel.ISupportInitialize)dgvCityBreakdown).EndInit();
-        grpOverrideBreakdown.ResumeLayout(false);
-        ((System.ComponentModel.ISupportInitialize)dgvOverrideBreakdown).EndInit();
+        grpDateRange.ResumeLayout(false);
+        grpDateRange.PerformLayout();
+        pnlSummaryCards.ResumeLayout(false);
+        pnlCardTotalActiveHouseholds.ResumeLayout(false);
+        pnlCardTotalActiveHouseholds.PerformLayout();
+        pnlCardTotalPeople.ResumeLayout(false);
+        pnlCardTotalPeople.PerformLayout();
+        pnlCardCompletedServices.ResumeLayout(false);
+        pnlCardCompletedServices.PerformLayout();
+        pnlCardUniqueHouseholdsServed.ResumeLayout(false);
+        pnlCardUniqueHouseholdsServed.PerformLayout();
+        grpChartsRow1.ResumeLayout(false);
+        tableLayoutChartsRow1.ResumeLayout(false);
+        pnlChartCityDistribution.ResumeLayout(false);
+        pnlChartAgeGroupDistribution.ResumeLayout(false);
+        pnlChartMonthlyVisitsTrend.ResumeLayout(false);
+        grpChartsRow2.ResumeLayout(false);
+        pnlChartPantryDayVolume.ResumeLayout(false);
         ResumeLayout(false);
     }
 
     #endregion
 
-    private GroupBox grpMainStats;
-    private Label lblTotalActiveHouseholds;
-    private TextBox txtTotalActiveHouseholds;
-    private Label lblTotalPeople;
-    private TextBox txtTotalPeople;
-    private Label lblCompletedServices;
-    private TextBox txtCompletedServices;
-    private Label lblUniqueHouseholdsServed;
-    private TextBox txtUniqueHouseholdsServed;
-    private Label lblPantryDayCompletions;
-    private TextBox txtPantryDayCompletions;
-    private Label lblAppointmentCompletions;
-    private TextBox txtAppointmentCompletions;
-    private Label lblOverridesCount;
-    private TextBox txtOverridesCount;
-    private GroupBox grpCityBreakdown;
-    private DataGridView dgvCityBreakdown;
-    private GroupBox grpOverrideBreakdown;
-    private DataGridView dgvOverrideBreakdown;
-    private Button btnRefresh;
-    private Button btnMonthlySummary;
+    private GroupBox grpDateRange;
+    private Label lblDateRange;
+    private ComboBox cmbDateRange;
+    private Label lblStartDate;
+    private DateTimePicker dtpStartDate;
+    private Label lblEndDate;
+    private DateTimePicker dtpEndDate;
+    private Panel pnlSummaryCards;
+    private Panel pnlCardTotalActiveHouseholds;
+    private Label lblCardTotalActiveHouseholds;
+    private Label lblCardTotalActiveHouseholdsValue;
+    private Panel pnlCardTotalPeople;
+    private Label lblCardTotalPeople;
+    private Label lblCardTotalPeopleValue;
+    private Panel pnlCardCompletedServices;
+    private Label lblCardCompletedServices;
+    private Label lblCardCompletedServicesValue;
+    private Panel pnlCardUniqueHouseholdsServed;
+    private Label lblCardUniqueHouseholdsServed;
+    private Label lblCardUniqueHouseholdsServedValue;
+    private GroupBox grpChartsRow1;
+    private TableLayoutPanel tableLayoutChartsRow1;
+    private Panel pnlChartCityDistribution;
+    private OxyPlot.WindowsForms.PlotView plotViewCityDistribution;
+    private Panel pnlChartAgeGroupDistribution;
+    private OxyPlot.WindowsForms.PlotView plotViewAgeGroupDistribution;
+    private Panel pnlChartMonthlyVisitsTrend;
+    private OxyPlot.WindowsForms.PlotView plotViewMonthlyVisitsTrend;
+    private GroupBox grpChartsRow2;
+    private Panel pnlChartPantryDayVolume;
+    private OxyPlot.WindowsForms.PlotView plotViewPantryDayVolume;
+    private Button btnExportPdf;
+    private Button btnPrint;
 }
