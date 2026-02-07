@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using PantryDeskCore.Data;
+using PantryDeskCore.Helpers;
 using PantryDeskCore.Models;
 
 namespace PantryDeskCore.Services;
@@ -209,28 +210,25 @@ public static class StatisticsService
     }
 
     /// <summary>
-    /// Gets household composition totals (Children/Adults/Seniors) for unique households served in a date range.
+    /// Gets household composition totals by age group (Infant, Child, Adult, Senior) for unique households served in a date range.
+    /// Age groups derived from member birthdays using endDate as reference.
     /// </summary>
-    public static (int Children, int Adults, int Seniors) GetCompositionServed(SqliteConnection connection, DateTime startDate, DateTime endDate)
+    public static (int Infant, int Child, int Adult, int Senior) GetCompositionServed(SqliteConnection connection, DateTime startDate, DateTime endDate)
     {
         var startDateStr = startDate.ToString("yyyy-MM-dd");
         var endDateStr = endDate.ToString("yyyy-MM-dd");
 
+        var householdIds = new List<int>();
         connection.Open();
         try
         {
-            using var cmd = new SqliteCommand(Sql.StatisticsCompositionServedInRange, connection);
+            using var cmd = new SqliteCommand(Sql.StatisticsSelectServedHouseholdIdsInRange, connection);
             cmd.Parameters.AddWithValue("@start_date", startDateStr);
             cmd.Parameters.AddWithValue("@end_date", endDateStr);
-
             using var reader = cmd.ExecuteReader();
-            if (reader.Read())
+            while (reader.Read())
             {
-                return (
-                    reader.GetInt32(0), // total_children
-                    reader.GetInt32(1), // total_adults
-                    reader.GetInt32(2)  // total_seniors
-                );
+                householdIds.Add(reader.GetInt32(0));
             }
         }
         finally
@@ -238,7 +236,28 @@ public static class StatisticsService
             connection.Close();
         }
 
-        return (0, 0, 0);
+        var infant = 0;
+        var child = 0;
+        var adult = 0;
+        var senior = 0;
+
+        foreach (var householdId in householdIds)
+        {
+            var members = HouseholdMemberRepository.GetByHouseholdId(connection, householdId);
+            foreach (var member in members)
+            {
+                var ageGroup = AgeGroupHelper.GetAgeGroup(member.Birthday, endDate);
+                switch (ageGroup)
+                {
+                    case "Infant": infant++; break;
+                    case "Child": child++; break;
+                    case "Adult": adult++; break;
+                    case "Senior": senior++; break;
+                }
+            }
+        }
+
+        return (infant, child, adult, senior);
     }
 
     /// <summary>

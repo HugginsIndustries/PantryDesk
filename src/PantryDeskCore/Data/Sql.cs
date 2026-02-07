@@ -62,6 +62,25 @@ public static class Sql
             updated_at TEXT NOT NULL
         )";
 
+    public const string CreateHouseholdMembersTable = @"
+        CREATE TABLE IF NOT EXISTS household_members (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            household_id INTEGER NOT NULL REFERENCES households(id),
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            birthday TEXT NOT NULL,
+            is_primary INTEGER NOT NULL DEFAULT 0,
+            race TEXT,
+            veteran_status TEXT,
+            disabled_status TEXT
+        )";
+
+    public const string CreateHouseholdMembersIndexHouseholdId = @"
+        CREATE INDEX IF NOT EXISTS idx_household_members_household_id ON household_members(household_id)";
+
+    public const string CreateHouseholdMembersIndexName = @"
+        CREATE INDEX IF NOT EXISTS idx_household_members_name ON household_members(first_name, last_name)";
+
     // Config queries
     public const string ConfigGetValue = @"
         SELECT value FROM config WHERE key = @key";
@@ -145,6 +164,17 @@ public static class Sql
         WHERE primary_name LIKE @search_term COLLATE NOCASE
         ORDER BY primary_name";
 
+    public const string HouseholdSearchByMemberName = @"
+        SELECT DISTINCT h.id, h.primary_name, h.address1, h.city, h.state, h.zip, h.phone, h.email,
+               h.children_count, h.adults_count, h.seniors_count, h.notes,
+               h.is_active, h.created_at, h.updated_at
+        FROM households h
+        INNER JOIN household_members m ON m.household_id = h.id
+        WHERE (m.first_name || ' ' || m.last_name) LIKE @search_term COLLATE NOCASE
+           OR m.first_name LIKE @search_term COLLATE NOCASE
+           OR m.last_name LIKE @search_term COLLATE NOCASE
+        ORDER BY h.primary_name";
+
     public const string HouseholdFindPotentialDuplicates = @"
         SELECT id, primary_name, address1, city, state, zip, phone, email,
                children_count, adults_count, seniors_count, notes,
@@ -155,6 +185,60 @@ public static class Sql
           AND (@phone IS NULL OR phone = @phone)
         ORDER BY primary_name
         LIMIT 10";
+
+    // HouseholdMember queries
+    public const string HouseholdMemberInsert = @"
+        INSERT INTO household_members (
+            household_id, first_name, last_name, birthday, is_primary,
+            race, veteran_status, disabled_status
+        )
+        VALUES (
+            @household_id, @first_name, @last_name, @birthday, @is_primary,
+            @race, @veteran_status, @disabled_status
+        )";
+
+    public const string HouseholdMemberUpdate = @"
+        UPDATE household_members
+        SET first_name = @first_name,
+            last_name = @last_name,
+            birthday = @birthday,
+            is_primary = @is_primary,
+            race = @race,
+            veteran_status = @veteran_status,
+            disabled_status = @disabled_status
+        WHERE id = @id";
+
+    public const string HouseholdMemberDelete = @"
+        DELETE FROM household_members WHERE id = @id";
+
+    public const string HouseholdMemberDeleteByHouseholdId = @"
+        DELETE FROM household_members WHERE household_id = @household_id";
+
+    public const string HouseholdMemberSelectById = @"
+        SELECT id, household_id, first_name, last_name, birthday, is_primary,
+               race, veteran_status, disabled_status
+        FROM household_members
+        WHERE id = @id";
+
+    public const string HouseholdMemberSelectByHouseholdId = @"
+        SELECT id, household_id, first_name, last_name, birthday, is_primary,
+               race, veteran_status, disabled_status
+        FROM household_members
+        WHERE household_id = @household_id
+        ORDER BY is_primary DESC, last_name, first_name";
+
+    public const string HouseholdMemberSelectPrimaryByHouseholdId = @"
+        SELECT id, household_id, first_name, last_name, birthday, is_primary,
+               race, veteran_status, disabled_status
+        FROM household_members
+        WHERE household_id = @household_id AND is_primary = 1
+        LIMIT 1";
+
+    public const string HouseholdMemberSelectAll = @"
+        SELECT id, household_id, first_name, last_name, birthday, is_primary,
+               race, veteran_status, disabled_status
+        FROM household_members
+        ORDER BY household_id, is_primary DESC, last_name, first_name";
 
     // ServiceEvent queries
     public const string ServiceEventInsert = @"
@@ -270,9 +354,10 @@ public static class Sql
         SELECT COUNT(*) FROM households WHERE is_active = 1";
 
     public const string StatisticsSumTotalPeople = @"
-        SELECT COALESCE(SUM(children_count + adults_count + seniors_count), 0)
-        FROM households
-        WHERE is_active = 1";
+        SELECT COALESCE(
+            (SELECT COUNT(*) FROM household_members m
+             INNER JOIN households h ON m.household_id = h.id
+             WHERE h.is_active = 1), 0)";
 
     public const string StatisticsCountCompletedServicesInRange = @"
         SELECT COUNT(*)
@@ -334,21 +419,11 @@ public static class Sql
         GROUP BY se.event_date
         ORDER BY se.event_date";
 
-    public const string StatisticsCompositionServedInRange = @"
-        SELECT 
-            COALESCE(SUM(h.children_count), 0) as total_children,
-            COALESCE(SUM(h.adults_count), 0) as total_adults,
-            COALESCE(SUM(h.seniors_count), 0) as total_seniors
-        FROM service_events se
-        INNER JOIN households h ON se.household_id = h.id
-        WHERE se.event_status = 'Completed'
-        AND se.event_date >= @start_date AND se.event_date <= @end_date
-        AND se.household_id IN (
-            SELECT DISTINCT household_id
-            FROM service_events
-            WHERE event_status = 'Completed'
-            AND event_date >= @start_date AND event_date <= @end_date
-        )";
+    public const string StatisticsSelectServedHouseholdIdsInRange = @"
+        SELECT DISTINCT household_id
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND event_date >= @start_date AND event_date <= @end_date";
 
     public const string StatisticsMonthlyVisitsTrend = @"
         SELECT 

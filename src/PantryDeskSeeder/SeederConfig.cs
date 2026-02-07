@@ -9,6 +9,10 @@ public class SeederConfig
     public int MonthsBack { get; set; } = 6;
     public Dictionary<string, int> CityWeights { get; set; } = new();
     public Dictionary<string, int> AgeWeights { get; set; } = new();
+    public Dictionary<string, int> AgeGroupWeights { get; set; } = new();
+    public Dictionary<string, int> RaceWeights { get; set; } = new();
+    public Dictionary<string, int> VeteranWeights { get; set; } = new();
+    public Dictionary<string, int> DisabledWeights { get; set; } = new();
     public Dictionary<int, int> HouseholdSizeDistribution { get; set; } = new();
     public (int Min, int Max) EventsPerPantryDayRange { get; set; } = (25, 50);
     public (int Min, int Max) AppointmentsPerWeekRange { get; set; } = (2, 8);
@@ -35,6 +39,37 @@ public class SeederConfig
                 { "Child", 30 },
                 { "Adult", 50 },
                 { "Senior", 20 }
+            },
+            AgeGroupWeights = new Dictionary<string, int>
+            {
+                { "Infant", 2 },
+                { "Child", 19 },
+                { "Adult", 45 },
+                { "Senior", 34 }
+            },
+            RaceWeights = new Dictionary<string, int>
+            {
+                { "White", 81 },
+                { "Hispanic", 12 },
+                { "Native American", 2 },
+                { "Black", 1 },
+                { "Not Specified", 4 }
+            },
+            VeteranWeights = new Dictionary<string, int>
+            {
+                { "None", 858 },
+                { "Veteran", 110 },
+                { "Active Duty", 4 },
+                { "Reserve", 3 },
+                { "Unknown", 15 },
+                { "Prefer Not To Answer", 10 }
+            },
+            DisabledWeights = new Dictionary<string, int>
+            {
+                { "Not Disabled", 82 },
+                { "Disabled", 14 },
+                { "Unknown", 2 },
+                { "Prefer Not To Answer", 2 }
             },
             HouseholdSizeDistribution = new Dictionary<int, int>
             {

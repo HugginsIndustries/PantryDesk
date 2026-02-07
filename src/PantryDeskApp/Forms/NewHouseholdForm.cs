@@ -8,11 +8,13 @@ namespace PantryDeskApp.Forms;
 /// </summary>
 public partial class NewHouseholdForm : Form
 {
+    private List<HouseholdMember> _members = new();
+
     public NewHouseholdForm()
     {
         InitializeComponent();
-        
-        // Set form icon if available
+        SetupMembersGrid();
+
         var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
         if (File.Exists(iconPath))
         {
@@ -20,107 +22,178 @@ public partial class NewHouseholdForm : Form
         }
     }
 
+    private void SetupMembersGrid()
+    {
+        grdMembers.Columns.Clear();
+        grdMembers.Columns.Add("FirstName", "First Name");
+        grdMembers.Columns.Add("LastName", "Last Name");
+        grdMembers.Columns.Add("Birthday", "Birthday");
+        grdMembers.Columns.Add("Primary", "Primary");
+        grdMembers.Columns[0].Width = 100;
+        grdMembers.Columns[1].Width = 100;
+        grdMembers.Columns[2].Width = 90;
+        grdMembers.Columns[3].Width = 60;
+    }
+
+    private void RefreshMembersGrid()
+    {
+        grdMembers.Rows.Clear();
+        foreach (var m in _members)
+        {
+            var idx = grdMembers.Rows.Add(m.FirstName, m.LastName, m.Birthday.ToString("yyyy-MM-dd"), m.IsPrimary ? "Yes" : "");
+            grdMembers.Rows[idx].Tag = m;
+        }
+    }
+
+    private void BtnAddMember_Click(object? sender, EventArgs e)
+    {
+        using var form = new MemberEditForm(null, _members.Count > 0);
+        if (form.ShowDialog() != DialogResult.OK)
+            return;
+
+        var member = form.Member;
+        if (member.IsPrimary && _members.Count > 0)
+        {
+            foreach (var m in _members)
+                m.IsPrimary = false;
+        }
+        if (_members.Count == 0)
+            member.IsPrimary = true;
+
+        _members.Add(member);
+        RefreshMembersGrid();
+    }
+
+    private void BtnEditMember_Click(object? sender, EventArgs e)
+    {
+        if (grdMembers.SelectedRows.Count == 0)
+        {
+            MessageBox.Show("Please select a member to edit.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        var existing = (HouseholdMember)grdMembers.SelectedRows[0].Tag!;
+        using var form = new MemberEditForm(existing, true);
+        if (form.ShowDialog() != DialogResult.OK)
+            return;
+
+        var member = form.Member;
+        if (member.IsPrimary && !existing.IsPrimary)
+        {
+            foreach (var m in _members)
+                m.IsPrimary = false;
+        }
+        var idx = _members.IndexOf(existing);
+        _members[idx] = member;
+        RefreshMembersGrid();
+    }
+
+    private void BtnRemoveMember_Click(object? sender, EventArgs e)
+    {
+        if (grdMembers.SelectedRows.Count == 0)
+        {
+            MessageBox.Show("Please select a member to remove.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        var member = (HouseholdMember)grdMembers.SelectedRows[0].Tag!;
+        var wasPrimary = member.IsPrimary;
+        _members.Remove(member);
+        if (wasPrimary && _members.Count > 0)
+            _members[0].IsPrimary = true;
+        RefreshMembersGrid();
+    }
+
+    private void BtnSetPrimary_Click(object? sender, EventArgs e)
+    {
+        if (grdMembers.SelectedRows.Count == 0)
+        {
+            MessageBox.Show("Please select a member to set as primary.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        var member = (HouseholdMember)grdMembers.SelectedRows[0].Tag!;
+        foreach (var m in _members)
+            m.IsPrimary = false;
+        member.IsPrimary = true;
+        RefreshMembersGrid();
+    }
+
     private void BtnSave_Click(object? sender, EventArgs e)
     {
-        // Clear previous errors
         lblError.Text = string.Empty;
         lblError.Visible = false;
 
-        // Validate PrimaryName
-        if (string.IsNullOrWhiteSpace(txtPrimaryName.Text))
+        if (_members.Count == 0)
         {
-            ShowError("Primary Name is required.");
-            txtPrimaryName.Focus();
+            ShowError("At least one household member is required.");
             return;
         }
 
-        // Validate at least one person in household
-        var childrenCount = (int)numChildren.Value;
-        var adultsCount = (int)numAdults.Value;
-        var seniorsCount = (int)numSeniors.Value;
-
-        if (childrenCount == 0 && adultsCount == 0 && seniorsCount == 0)
+        var primary = _members.FirstOrDefault(m => m.IsPrimary);
+        if (primary == null)
         {
-            ShowError("At least one person (child, adult, or senior) must be specified.");
-            numChildren.Focus();
+            ShowError("One member must be set as primary contact.");
             return;
         }
+
+        var primaryName = primary.FullName;
 
         try
         {
-            // Create household
             var household = new Household
             {
-                PrimaryName = txtPrimaryName.Text.Trim(),
+                PrimaryName = primaryName,
                 Address1 = string.IsNullOrWhiteSpace(txtAddress1.Text) ? null : txtAddress1.Text.Trim(),
                 City = string.IsNullOrWhiteSpace(txtCity.Text) ? null : txtCity.Text.Trim(),
                 State = string.IsNullOrWhiteSpace(txtState.Text) ? null : txtState.Text.Trim(),
                 Zip = string.IsNullOrWhiteSpace(txtZip.Text) ? null : txtZip.Text.Trim(),
                 Phone = string.IsNullOrWhiteSpace(txtPhone.Text) ? null : txtPhone.Text.Trim(),
                 Email = string.IsNullOrWhiteSpace(txtEmail.Text) ? null : txtEmail.Text.Trim(),
-                ChildrenCount = childrenCount,
-                AdultsCount = adultsCount,
-                SeniorsCount = seniorsCount,
+                ChildrenCount = 0,
+                AdultsCount = 0,
+                SeniorsCount = 0,
                 Notes = string.IsNullOrWhiteSpace(txtNotes.Text) ? null : txtNotes.Text.Trim(),
                 IsActive = true
             };
 
-            // Check for potential duplicates before saving
-            using (var connection = DatabaseManager.GetConnection())
+            using var connection = DatabaseManager.GetConnection();
+
+            var potentialDuplicates = HouseholdRepository.FindPotentialDuplicates(
+                connection,
+                primaryName,
+                household.City,
+                household.Phone);
+
+            if (potentialDuplicates.Count > 0)
             {
-                var potentialDuplicates = HouseholdRepository.FindPotentialDuplicates(
-                    connection,
-                    household.PrimaryName,
-                    household.City,
-                    household.Phone);
-
-                if (potentialDuplicates.Count > 0)
-                {
-                    var summaryLines = potentialDuplicates
-                        .Select(h =>
-                        {
-                            var cityZip = string.Empty;
-                            if (!string.IsNullOrWhiteSpace(h.City))
-                            {
-                                cityZip = h.City;
-                                if (!string.IsNullOrWhiteSpace(h.Zip))
-                                {
-                                    cityZip += $", {h.Zip}";
-                                }
-                            }
-                            else if (!string.IsNullOrWhiteSpace(h.Zip))
-                            {
-                                cityZip = h.Zip;
-                            }
-
-                            if (string.IsNullOrWhiteSpace(cityZip))
-                            {
-                                cityZip = "—";
-                            }
-
-                            return $"{h.PrimaryName} ({cityZip})";
-                        })
-                        .Distinct()
-                        .Take(5);
-
-                    var message =
-                        "Households with a similar name already exist:\n\n" +
-                        string.Join("\n", summaryLines) +
-                        "\n\nDo you still want to create this new household?";
-
-                    var result = MessageBox.Show(
-                        message,
-                        "Possible Duplicate Household",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Warning);
-
-                    if (result == DialogResult.No)
+                var summaryLines = potentialDuplicates
+                    .Select(h =>
                     {
-                        return;
-                    }
-                }
+                        var cityZip = !string.IsNullOrWhiteSpace(h.City) ? h.City + (string.IsNullOrWhiteSpace(h.Zip) ? "" : ", " + h.Zip) : h.Zip ?? "—";
+                        return $"{h.PrimaryName} ({cityZip})";
+                    })
+                    .Distinct()
+                    .Take(5);
 
-                HouseholdRepository.Create(connection, household);
+                var result = MessageBox.Show(
+                    "Households with a similar name already exist:\n\n" +
+                    string.Join("\n", summaryLines) +
+                    "\n\nDo you still want to create this new household?",
+                    "Possible Duplicate Household",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (result == DialogResult.No)
+                    return;
+            }
+
+            HouseholdRepository.Create(connection, household);
+
+            foreach (var member in _members)
+            {
+                member.HouseholdId = household.Id;
+                HouseholdMemberRepository.Create(connection, member);
             }
 
             DialogResult = DialogResult.OK;

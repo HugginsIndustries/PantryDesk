@@ -4,7 +4,7 @@
 
 ## Features
 
-- **Household Management**: Search, create, and manage household profiles with composition tracking (Children/Adults/Seniors). Active status is system-managed from last qualifying service date (annual reset, default Jan 1; Admin can change reset date)
+- **Household Management**: Search, create, and manage household profiles with per-member tracking and age groups (Infant, Child, Adult, Senior). Active status is system-managed from last qualifying service date (annual reset, default Jan 1; Admin can change reset date)
 - **Pantry Days & Appointments**: Calendar-based pantry day scheduling with appointment support
 - **Monthly Eligibility**: Automatic eligibility tracking with override support (requires reason)
 - **Statistics Dashboard**: Unified dashboard with date range selection (This Month, Last Month, Past 3/6/12 Months, This/Last Year, Custom Range) showing:

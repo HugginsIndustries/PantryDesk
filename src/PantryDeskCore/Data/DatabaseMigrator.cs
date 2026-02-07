@@ -8,7 +8,7 @@ namespace PantryDeskCore.Data;
 /// </summary>
 public static class DatabaseMigrator
 {
-    private const int CurrentSchemaVersion = 1;
+    private const int CurrentSchemaVersion = 2;
 
     /// <summary>
     /// Migrates the database to the latest schema version.
@@ -53,8 +53,7 @@ public static class DatabaseMigrator
                 }
                 else if (currentVersion < CurrentSchemaVersion)
                 {
-                    // Future migrations would go here
-                    // For Phase 1, we only have version 1, so this is a placeholder
+                    MigrateFromV1ToV2(connection, transaction);
                     SetSchemaVersion(connection, transaction, CurrentSchemaVersion);
                 }
                 else if (currentVersion > CurrentSchemaVersion)
@@ -92,9 +91,100 @@ public static class DatabaseMigrator
         // Create all tables in order (respecting foreign key dependencies)
         ExecuteCommand(connection, transaction, Sql.CreateConfigTable);
         ExecuteCommand(connection, transaction, Sql.CreateHouseholdsTable);
+        ExecuteCommand(connection, transaction, Sql.CreateHouseholdMembersTable);
+        ExecuteCommand(connection, transaction, Sql.CreateHouseholdMembersIndexHouseholdId);
+        ExecuteCommand(connection, transaction, Sql.CreateHouseholdMembersIndexName);
         ExecuteCommand(connection, transaction, Sql.CreateServiceEventsTable);
         ExecuteCommand(connection, transaction, Sql.CreatePantryDaysTable);
         ExecuteCommand(connection, transaction, Sql.CreateAuthRolesTable);
+    }
+
+    private static void MigrateFromV1ToV2(SqliteConnection connection, SqliteTransaction transaction)
+    {
+        // Create household_members table
+        ExecuteCommand(connection, transaction, Sql.CreateHouseholdMembersTable);
+        ExecuteCommand(connection, transaction, Sql.CreateHouseholdMembersIndexHouseholdId);
+        ExecuteCommand(connection, transaction, Sql.CreateHouseholdMembersIndexName);
+
+        // Backfill members from existing households
+        using var selectCmd = new SqliteCommand(
+            "SELECT id, primary_name, children_count, adults_count, seniors_count FROM households",
+            connection,
+            transaction);
+        using var reader = selectCmd.ExecuteReader();
+
+        var households = new List<(int Id, string PrimaryName, int Children, int Adults, int Seniors)>();
+        while (reader.Read())
+        {
+            households.Add((
+                reader.GetInt32(0),
+                reader.GetString(1),
+                reader.GetInt32(2),
+                reader.GetInt32(3),
+                reader.GetInt32(4)));
+        }
+        reader.Close();
+
+        foreach (var (id, primaryName, children, adults, seniors) in households)
+        {
+            // Parse primary name: "FirstName LastName" or single word
+            var nameParts = primaryName.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+            var primaryFirstName = nameParts.Length >= 2 ? nameParts[0] : primaryName.Trim();
+            var primaryLastName = nameParts.Length >= 2 ? nameParts[1] : "Household";
+
+            if (string.IsNullOrWhiteSpace(primaryFirstName))
+            {
+                primaryFirstName = "Primary";
+            }
+
+            // Primary member: adult or senior (if no adults). Never child-only.
+            var primaryIsAdult = adults > 0 || (adults == 0 && seniors == 0);
+            var primaryBirthday = primaryIsAdult
+                ? new DateTime(1980, 6, 15).ToString("yyyy-MM-dd")
+                : new DateTime(1950, 6, 15).ToString("yyyy-MM-dd");
+            InsertMember(connection, transaction, id, primaryFirstName, primaryLastName, primaryBirthday, isPrimary: true);
+
+            // Additional members from counts (primary counts as one adult or one senior)
+            // Child-only households: primary replaces one child, so add (children - 1) children
+            var isChildOnly = children > 0 && adults == 0 && seniors == 0;
+            var childrenToAdd = isChildOnly ? children - 1 : children;
+            var memberIdx = 1;
+            for (var i = 0; i < childrenToAdd; i++)
+            {
+                var bday = new DateTime(2010, 1, 1).AddDays(memberIdx).ToString("yyyy-MM-dd");
+                InsertMember(connection, transaction, id, "Child", (memberIdx).ToString(), bday, false);
+                memberIdx++;
+            }
+            var extraAdults = primaryIsAdult ? adults - 1 : adults;
+            for (var i = 0; i < extraAdults; i++)
+            {
+                var bday = new DateTime(1985, 1, 1).AddDays(memberIdx).ToString("yyyy-MM-dd");
+                InsertMember(connection, transaction, id, "Adult", (memberIdx).ToString(), bday, false);
+                memberIdx++;
+            }
+            var extraSeniors = primaryIsAdult ? seniors : seniors - 1;
+            for (var i = 0; i < extraSeniors; i++)
+            {
+                var bday = new DateTime(1950, 1, 1).AddDays(memberIdx).ToString("yyyy-MM-dd");
+                InsertMember(connection, transaction, id, "Senior", (memberIdx).ToString(), bday, false);
+                memberIdx++;
+            }
+        }
+    }
+
+    private static void InsertMember(SqliteConnection connection, SqliteTransaction transaction,
+        int householdId, string firstName, string lastName, string birthday, bool isPrimary)
+    {
+        using var cmd = new SqliteCommand(Sql.HouseholdMemberInsert, connection, transaction);
+        cmd.Parameters.AddWithValue("@household_id", householdId);
+        cmd.Parameters.AddWithValue("@first_name", firstName);
+        cmd.Parameters.AddWithValue("@last_name", lastName);
+        cmd.Parameters.AddWithValue("@birthday", birthday);
+        cmd.Parameters.AddWithValue("@is_primary", isPrimary ? 1 : 0);
+        cmd.Parameters.AddWithValue("@race", DBNull.Value);
+        cmd.Parameters.AddWithValue("@veteran_status", DBNull.Value);
+        cmd.Parameters.AddWithValue("@disabled_status", DBNull.Value);
+        cmd.ExecuteNonQuery();
     }
 
     private static void ExecuteCommand(SqliteConnection connection, SqliteTransaction transaction, string sql)

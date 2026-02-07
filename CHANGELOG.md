@@ -197,6 +197,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Complete Service (CheckInForm and HouseholdProfileForm) sets `IsActive` = true when recording a qualifying service
   - `HouseholdRepository.SetIsActive()` for lightweight updates; config keys `active_status_reset_month` / `active_status_reset_day`
   - Seeder: households and events generated for all households; sync produces inactive households naturally from service dates
+- **Per-Household Member Tracking (with Age-Group Calculation)** (COMPLETED: 2025-02-06, TODO: Client Requirements/Per-Household Member Tracking)
+  - `household_members` table with migration from schema v1 to v2; backfill of existing households into members
+  - `HouseholdMember` model: FirstName, LastName, Birthday (required), IsPrimary, optional Race, VeteranStatus, DisabledStatus
+  - `AgeGroupHelper`: derives Infant (0-2), Child (2-18), Adult (18-55), Senior (55+) from birthday
+  - `HouseholdMemberRepository` with full CRUD; `HouseholdRepository.SearchByMemberName()` for search by any member
+  - `NewHouseholdForm` and `HouseholdProfileForm`: member list UI (Add/Edit/Remove/Set Primary) replacing count sliders
+  - `MemberEditForm` for adding/editing individual members
+  - Household Profile members table: Race, Veteran, Disabled columns; fills available width
+  - Household Profile: form height 600px; controls anchor to fill window width
+  - Check-in: Name (Primary), Members, Size (bold), Age(s) (I/C/A/S), Last Service, Eligibility, Status, City/Zip
+  - Check-in: fixed column widths (grid AutoSizeColumnsMode.None); Members Fill with MinimumWidth 200px; tooltips for truncated cells
+  - Statistics: composition from members' age groups (4 groups); StatsForm and ReportService updated
+  - Export: household_members CSV and JSON
+  - Seeder: generates members with birthdays from age-group distribution; Lewis County demographic weights (Race, Veteran, Disabled)
 
 ### Changed
 

@@ -236,9 +236,9 @@ public static class ReportService
         });
     }
 
-    private static void RenderCompositionSection(IContainer container, (int Children, int Adults, int Seniors) composition, Dictionary<string, string>? chartImages = null)
+    private static void RenderCompositionSection(IContainer container, (int Infant, int Child, int Adult, int Senior) composition, Dictionary<string, string>? chartImages = null)
     {
-        var total = composition.Children + composition.Adults + composition.Seniors;
+        var total = composition.Infant + composition.Child + composition.Adult + composition.Senior;
 
         container.Column(column =>
         {
@@ -247,19 +247,19 @@ public static class ReportService
             column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
             column.Item().PaddingTop(5);
 
-            // Chart first (if available)
             if (chartImages != null && chartImages.ContainsKey("AgeGroupDistribution") && File.Exists(chartImages["AgeGroupDistribution"]))
             {
                 column.Item().Image(chartImages["AgeGroupDistribution"]).FitArea();
                 column.Item().PaddingBottom(10);
             }
 
-            column.Item().Text($"Children: {composition.Children:N0}");
-            column.Item().Text($"Adults: {composition.Adults:N0}");
-            column.Item().Text($"Seniors: {composition.Seniors:N0}");
+            column.Item().Text($"Infant (0-2): {composition.Infant:N0}");
+            column.Item().Text($"Child (2-18): {composition.Child:N0}");
+            column.Item().Text($"Adult (18-55): {composition.Adult:N0}");
+            column.Item().Text($"Senior (55+): {composition.Senior:N0}");
             column.Item().Text($"Total: {total:N0}").Bold();
             column.Item().PaddingTop(2);
-            column.Item().Text("(Totals across unique households served this month)").FontSize(8).FontColor(Colors.Grey.Medium);
+            column.Item().Text("(Totals across unique households served in date range)").FontSize(8).FontColor(Colors.Grey.Medium);
             column.Item().PaddingBottom(10);
         });
     }

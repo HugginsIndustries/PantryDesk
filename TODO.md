@@ -178,6 +178,40 @@ Implementation checklist based on phased plan.
     - Config/settings for reset date
   - Rationale: Annual reporting cycle; automatic status from service history simplifies workflow; demo data stays realistic without manual seeding
 
+#### Per-Household Member Tracking (with Age-Group Calculation) (Complete)
+
+- [x] Add per-household member tracking and age-group calculation (replace single household name with individual members; birthdays drive age groups)
+  - Impact: High
+  - Complexity: High
+  - Acceptance Criteria:
+    - Each household has one or more members; each member requires:
+      - First name (required)
+      - Last name (required)
+      - Birthday (required)
+    - Optional member fields:
+      - Race: White, Black, Hispanic, Native American, Not Specified (used when client refuses/declines; preferred to collect when possible for grants)
+      - Veteran status: None, Active Duty, Reserve, Veteran, Unknown, Prefer Not To Answer (default: Prefer Not To Answer; self-reported)
+      - Disabled status: Not Disabled, Disabled, Unknown, Prefer Not To Answer (default: Prefer Not To Answer; self-reported)
+    - No edit history required for member changes
+    - "Disabled Veteran" derived field (Veteran + Disabled) optionally included as reportable
+    - **Age groups:** Infant (0–2), Child (2–18), Adult (18–55), Senior (55+). Derived from birthday; no unknown age group. Age group updates automatically on birthdays (e.g., 18th birthday moves member into Adult). Used for reporting and deck-only form.
+    - **Main check-in table:** Rename "Name" to "Name (Primary)"; add "Members" column to the right of Name (Primary) with comma-separated list of non-primary members (alphabetical). Each household remains one row. Column widths: AllCells for content-fit columns; Members uses Fill for remaining space. Truncated Members cells show full list via built-in DataGridView tooltip on hover.
+    - **Search:** Works on any household member name (primary or other members) — staff can find households when different members come to shop.
+  - Update **PantryDeskSeeder** to generate member data (Lewis County, WA defaults; configurable weights; RNG seed for reproducibility):
+    - **Birthdays:** Generated from age-group distribution. Household composition defines counts per age band (Infant, Child, Adult, Senior); for each member, assign an age band, then generate a random birthday within that band so age group and birthday align.
+    - **Age groups:** Infant (0–2) 2%, Child (2–18) 19%, Adult (18–55) 45%, Senior (55+) 34%
+    - **Race:** White 81%, Hispanic 12%, Native American 2%, Black 1%, Not Specified 4%
+    - **Veteran status:** None 85.8%, Veteran 11%, Active Duty 0.4%, Reserve 0.3%, Unknown 1.5%, Prefer Not To Answer 1%
+    - **Disabled status:** Not Disabled 82%, Disabled 14%, Unknown 2%, Prefer Not To Answer 2%
+  - Likely files:
+    - Schema migration (household_members table or equivalent)
+    - `PantryDeskCore` models, repositories, age-group helper
+    - `NewHouseholdForm`, `HouseholdProfileForm`, composition UI
+    - `CheckInForm.cs`, `CheckInForm.Designer.cs` (main table columns, search by any member)
+    - `PantryDeskSeeder` (member generation, birthday-from-age-group, demographic weights)
+    - Reporting queries, deck-only form
+  - Rationale: Client needs individual member tracking for grants; demo data should reflect Lewis County; age groups and birthdays must align; staff find households when any member shops
+
 ---
 
 ## Open
@@ -387,40 +421,6 @@ Implementation checklist based on phased plan.
 ---
 
 ### Client Requirements
-
-#### Per-Household Member Tracking (with Age-Group Calculation)
-
-- [ ] Add per-household member tracking and age-group calculation (replace single household name with individual members; birthdays drive age groups)
-  - Impact: High
-  - Complexity: High
-  - Acceptance Criteria:
-    - Each household has one or more members; each member requires:
-      - First name (required)
-      - Last name (required)
-      - Birthday (required)
-    - Optional member fields:
-      - Race: White, Black, Hispanic, Native American, Not Specified (used when client refuses/declines; preferred to collect when possible for grants)
-      - Veteran status: None, Active Duty, Reserve, Veteran, Unknown, Prefer Not To Answer (default: Prefer Not To Answer; self-reported)
-      - Disabled status: Not Disabled, Disabled, Unknown, Prefer Not To Answer (default: Prefer Not To Answer; self-reported)
-    - No edit history required for member changes
-    - "Disabled Veteran" derived field (Veteran + Disabled) optionally included as reportable
-    - **Age groups:** Infant (0–2), Child (2–18), Adult (18–55), Senior (55+). Derived from birthday; no unknown age group. Age group updates automatically on birthdays (e.g., 18th birthday moves member into Adult). Used for reporting and deck-only form.
-    - **Main check-in table:** Rename "Name" to "Name (Primary)"; add "Members" column to the right of Name (Primary) with comma-separated list of non-primary members (alphabetical). Each household remains one row. Column widths: AllCells for content-fit columns; Members uses Fill for remaining space. Truncated Members cells show full list via built-in DataGridView tooltip on hover.
-    - **Search:** Works on any household member name (primary or other members) — staff can find households when different members come to shop.
-  - Update **PantryDeskSeeder** to generate member data (Lewis County, WA defaults; configurable weights; RNG seed for reproducibility):
-    - **Birthdays:** Generated from age-group distribution. Household composition defines counts per age band (Infant, Child, Adult, Senior); for each member, assign an age band, then generate a random birthday within that band so age group and birthday align.
-    - **Age groups:** Infant (0–2) 2%, Child (2–18) 19%, Adult (18–55) 45%, Senior (55+) 34%
-    - **Race:** White 81%, Hispanic 12%, Native American 2%, Black 1%, Not Specified 4%
-    - **Veteran status:** None 85.8%, Veteran 11%, Active Duty 0.4%, Reserve 0.3%, Unknown 1.5%, Prefer Not To Answer 1%
-    - **Disabled status:** Not Disabled 82%, Disabled 14%, Unknown 2%, Prefer Not To Answer 2%
-  - Likely files:
-    - Schema migration (household_members table or equivalent)
-    - `PantryDeskCore` models, repositories, age-group helper
-    - `NewHouseholdForm`, `HouseholdProfileForm`, composition UI
-    - `CheckInForm.cs`, `CheckInForm.Designer.cs` (main table columns, search by any member)
-    - `PantryDeskSeeder` (member generation, birthday-from-age-group, demographic weights)
-    - Reporting queries, deck-only form
-  - Rationale: Client needs individual member tracking for grants; demo data should reflect Lewis County; age groups and birthdays must align; staff find households when any member shops
 
 #### Member Demographics Aggregate Reporting
 

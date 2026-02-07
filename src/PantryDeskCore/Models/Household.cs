@@ -7,6 +7,7 @@ public class Household
 {
     public int Id { get; set; }
     public string PrimaryName { get; set; } = string.Empty;
+    public List<HouseholdMember> Members { get; set; } = new();
     public string? Address1 { get; set; }
     public string? City { get; set; }
     public string? State { get; set; }

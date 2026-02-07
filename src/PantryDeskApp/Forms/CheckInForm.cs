@@ -1,4 +1,5 @@
 using PantryDeskCore.Data;
+using PantryDeskCore.Helpers;
 using PantryDeskCore.Models;
 using PantryDeskCore.Security;
 using PantryDeskCore.Services;
@@ -41,8 +42,10 @@ public partial class CheckInForm : Form
     {
         dgvResults.Columns.Clear();
         // City/Zip in far-right column per client requirement
-        dgvResults.Columns.Add("Name", "Name");
+        dgvResults.Columns.Add("Name", "Name (Primary)");
+        dgvResults.Columns.Add("Members", "Members");
         dgvResults.Columns.Add("Size", "Size");
+        dgvResults.Columns.Add("Ages", "Age(s)");
         dgvResults.Columns.Add("LastService", "Last Service");
         dgvResults.Columns.Add("Eligibility", "Eligibility");
         dgvResults.Columns.Add("Status", "Status");
@@ -54,20 +57,38 @@ public partial class CheckInForm : Form
             householdIdColumn.Visible = false;
         }
 
-        // Set column widths
-        var nameColumn = dgvResults.Columns["Name"];
-        var sizeColumn = dgvResults.Columns["Size"];
-        var lastServiceColumn = dgvResults.Columns["LastService"];
-        var eligibilityColumn = dgvResults.Columns["Eligibility"];
-        var statusColumn = dgvResults.Columns["Status"];
-        var cityZipColumn = dgvResults.Columns["CityZip"];
+        dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+        // Fixed column widths (always respected; Members uses Fill; horizontal scrollbar if window too small)
+        dgvResults.Columns[0].Width = 230;   // Name (Primary)
+        dgvResults.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        dgvResults.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;  // Members
+        dgvResults.Columns[1].MinimumWidth = 200;
+        dgvResults.Columns[2].Width = 45;    // Size
+        dgvResults.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        dgvResults.Columns[3].Width = 110;   // Age(s)
+        dgvResults.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        dgvResults.Columns[4].Width = 200;   // Last Service
+        dgvResults.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        dgvResults.Columns[5].Width = 225;   // Eligibility ("Already served this month")
+        dgvResults.Columns[5].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        dgvResults.Columns[6].Width = 75;    // Status
+        dgvResults.Columns[6].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        dgvResults.Columns[7].Width = 200;   // City/Zip
+        dgvResults.Columns[7].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
 
-        if (nameColumn != null) nameColumn.Width = 200;
-        if (sizeColumn != null) sizeColumn.Width = 100;
-        if (lastServiceColumn != null) lastServiceColumn.Width = 150;
-        if (eligibilityColumn != null) eligibilityColumn.Width = 150;
-        if (statusColumn != null) statusColumn.Width = 100;
-        if (cityZipColumn != null) cityZipColumn.Width = 150;
+        dgvResults.CellToolTipTextNeeded += DgvResults_CellToolTipTextNeeded;
+    }
+
+    private void DgvResults_CellToolTipTextNeeded(object? sender, DataGridViewCellToolTipTextNeededEventArgs e)
+    {
+        if (e.ColumnIndex < 0 || e.RowIndex < 0) return;
+        var colName = dgvResults.Columns[e.ColumnIndex].Name;
+        if (colName == "Members" || colName == "Eligibility" || colName == "Status" || colName == "CityZip")
+        {
+            var value = dgvResults.Rows[e.RowIndex].Cells[colName].Value?.ToString();
+            if (!string.IsNullOrEmpty(value))
+                e.ToolTipText = value;
+        }
     }
 
     private void TxtSearch_TextChanged(object? sender, EventArgs e)
@@ -135,18 +156,35 @@ public partial class CheckInForm : Form
                     cityZip = "—";
                 }
 
-                // Format size breakdown
-                var totalSize = household.ChildrenCount + household.AdultsCount + household.SeniorsCount;
-                string sizeText = $"{totalSize} ({household.ChildrenCount}C/{household.AdultsCount}A/{household.SeniorsCount}S)";
+                // Load members for primary name and members column
+                var members = HouseholdMemberRepository.GetByHouseholdId(connection, household.Id);
+                var primaryName = members.FirstOrDefault(m => m.IsPrimary)?.FullName ?? household.PrimaryName;
+                var nonPrimary = members.Where(m => !m.IsPrimary)
+                    .OrderBy(m => m.LastName).ThenBy(m => m.FirstName)
+                    .Select(m => m.FullName)
+                    .ToList();
+                var membersText = string.Join(", ", nonPrimary);
+                var totalSize = members.Count;
+
+                // Size: total count. Ages: age-group breakdown (I/C/A/S)
+                var today = DateTime.Today;
+                var infants = members.Count(m => AgeGroupHelper.GetAgeGroup(m.Birthday, today) == "Infant");
+                var children = members.Count(m => AgeGroupHelper.GetAgeGroup(m.Birthday, today) == "Child");
+                var adults = members.Count(m => AgeGroupHelper.GetAgeGroup(m.Birthday, today) == "Adult");
+                var seniors = members.Count(m => AgeGroupHelper.GetAgeGroup(m.Birthday, today) == "Senior");
+                string sizeText = totalSize.ToString();
+                string agesText = $"{infants}I/{children}C/{adults}A/{seniors}S";
 
                 // Status
                 string statusText = household.IsActive ? "Active" : "Inactive";
                 var statusColor = household.IsActive ? Color.Black : Color.Gray;
 
-                // Add row (column order: Name, Size, LastService, Eligibility, Status, CityZip, HouseholdId)
+                // Add row (column order: Name, Members, Size, Ages, LastService, Eligibility, Status, CityZip, HouseholdId)
                 var row = dgvResults.Rows.Add(
-                    household.PrimaryName,
+                    primaryName,
+                    membersText,
                     sizeText,
+                    agesText,
                     lastServiceText,
                     eligibilityText,
                     statusText,
@@ -154,15 +192,16 @@ public partial class CheckInForm : Form
                     household.Id
                 );
 
-                // Color code eligibility and status
                 var rowObj = dgvResults.Rows[row];
                 rowObj.Cells["Eligibility"].Style.ForeColor = eligibilityColor;
                 rowObj.Cells["Status"].Style.ForeColor = statusColor;
+                rowObj.Cells["Size"].Style.Font = new Font(dgvResults.Font, FontStyle.Bold);
             }
         }
         catch (Exception ex)
         {
             MessageBox.Show($"Error searching households: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
         }
     }
 

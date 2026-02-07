@@ -60,16 +60,24 @@ public static class DatabaseSeeder
         }
         Console.WriteLine($"  Created {pantryDaysInRange.Count} pantry days");
 
-        // Generate households
+        // Generate households with members
         Console.WriteLine($"Generating {config.HouseholdsCount} households...");
-        var households = HouseholdGenerator.GenerateHouseholds(config, rng, baseDate);
+        var householdData = HouseholdGenerator.GenerateHouseholds(config, rng, baseDate);
+        var households = householdData.Select(x => x.Household).ToList();
 
-        // Insert households
-        foreach (var household in households)
+        // Insert households and members
+        var totalMembers = 0;
+        foreach (var (household, members) in householdData)
         {
             HouseholdRepository.Create(connection, household);
+            foreach (var member in members)
+            {
+                member.HouseholdId = household.Id;
+                HouseholdMemberRepository.Create(connection, member);
+                totalMembers++;
+            }
         }
-        Console.WriteLine($"  Created {households.Count} households");
+        Console.WriteLine($"  Created {households.Count} households with {totalMembers} members");
 
         // Generate service events
         Console.WriteLine("Generating service events...");
@@ -112,6 +120,7 @@ public static class DatabaseSeeder
         Console.WriteLine();
         Console.WriteLine("Summary:");
         Console.WriteLine($"  Households: {households.Count}");
+        Console.WriteLine($"  Household Members: {totalMembers}");
         Console.WriteLine($"  Pantry Days: {pantryDaysInRange.Count}");
         Console.WriteLine($"  Service Events: {serviceEvents.Count}");
         Console.WriteLine($"    PantryDay Events: {serviceEvents.Count(e => e.EventType == "PantryDay")}");

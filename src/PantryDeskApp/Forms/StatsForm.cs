@@ -236,16 +236,16 @@ public partial class StatsForm : Form
         plotViewCityDistribution.Model = plotModel;
     }
 
-    private void PopulateAgeGroupDistributionChart((int Children, int Adults, int Seniors) composition)
+    private void PopulateAgeGroupDistributionChart((int Infant, int Child, int Adult, int Senior) composition)
     {
         var plotModel = new PlotModel 
         { 
             Title = "Age Group Distribution",
             PlotAreaBorderThickness = new OxyThickness(0),
-            PlotMargins = new OxyThickness(60, 40, 60, 60) // Left, Top, Right, Bottom - extra space for labels
+            PlotMargins = new OxyThickness(60, 40, 60, 60)
         };
         
-        var total = composition.Children + composition.Adults + composition.Seniors;
+        var total = composition.Infant + composition.Child + composition.Adult + composition.Senior;
         if (total == 0)
         {
             plotModel.Title = "Age Group Distribution (No Data)";
@@ -255,26 +255,15 @@ public partial class StatsForm : Form
 
         var pieSeries = new PieSeries
         {
-            InsideLabelPosition = 0.5, // Smaller value = labels closer to center, more room at edges
+            InsideLabelPosition = 0.5,
             AngleSpan = 360,
             StartAngle = 0
         };
 
-        pieSeries.Slices.Add(new PieSlice("Children", composition.Children)
-        {
-            Fill = ChartColors[0],
-            IsExploded = false
-        });
-        pieSeries.Slices.Add(new PieSlice("Adults", composition.Adults)
-        {
-            Fill = ChartColors[1],
-            IsExploded = false
-        });
-        pieSeries.Slices.Add(new PieSlice("Seniors", composition.Seniors)
-        {
-            Fill = ChartColors[2],
-            IsExploded = false
-        });
+        pieSeries.Slices.Add(new PieSlice("Infant (0-2)", composition.Infant) { Fill = ChartColors[0], IsExploded = false });
+        pieSeries.Slices.Add(new PieSlice("Child (2-18)", composition.Child) { Fill = ChartColors[1], IsExploded = false });
+        pieSeries.Slices.Add(new PieSlice("Adult (18-55)", composition.Adult) { Fill = ChartColors[2], IsExploded = false });
+        pieSeries.Slices.Add(new PieSlice("Senior (55+)", composition.Senior) { Fill = ChartColors[3], IsExploded = false });
 
         plotModel.Series.Add(pieSeries);
         plotViewAgeGroupDistribution.Model = plotModel;

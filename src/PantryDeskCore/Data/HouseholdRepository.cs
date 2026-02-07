@@ -57,7 +57,7 @@ public static class HouseholdRepository
     }
 
     /// <summary>
-    /// Gets a household by ID.
+    /// Gets a household by ID, with members loaded. PrimaryName is derived from the primary member when members exist.
     /// </summary>
     /// <param name="connection">The database connection.</param>
     /// <param name="id">The household ID.</param>
@@ -67,16 +67,25 @@ public static class HouseholdRepository
         connection.Open();
         try
         {
-            using var cmd = new SqliteCommand(Sql.HouseholdSelectById, connection);
-            cmd.Parameters.AddWithValue("@id", id);
-
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
+            Household? household;
+            using (var cmd = new SqliteCommand(Sql.HouseholdSelectById, connection))
             {
-                return MapFromReader(reader);
+                cmd.Parameters.AddWithValue("@id", id);
+                using var reader = cmd.ExecuteReader();
+                household = reader.Read() ? MapFromReader(reader) : null;
             }
 
-            return null;
+            if (household == null)
+                return null;
+
+            var members = HouseholdMemberRepository.GetByHouseholdId(connection, id);
+            household.Members = members;
+            var primary = members.FirstOrDefault(m => m.IsPrimary);
+            if (primary != null)
+            {
+                household.PrimaryName = primary.FullName;
+            }
+            return household;
         }
         finally
         {
@@ -201,27 +210,36 @@ public static class HouseholdRepository
 
     /// <summary>
     /// Searches households by name using partial, case-insensitive matching.
+    /// When search term is provided, searches any household member name (primary or other members).
     /// </summary>
     /// <param name="connection">The database connection.</param>
     /// <param name="searchTerm">The search term (will be wrapped with % for LIKE matching).</param>
     /// <returns>A list of matching households ordered by primary_name.</returns>
     public static List<Household> SearchByName(SqliteConnection connection, string searchTerm)
     {
-        var households = new List<Household>();
-
-        // If search term is empty, return all households
         if (string.IsNullOrWhiteSpace(searchTerm))
         {
             return GetAll(connection);
         }
 
-        // Wrap search term with % for partial matching
+        return SearchByMemberName(connection, searchTerm);
+    }
+
+    /// <summary>
+    /// Searches households by any member name (first, last, or full name) using partial, case-insensitive matching.
+    /// </summary>
+    /// <param name="connection">The database connection.</param>
+    /// <param name="searchTerm">The search term (will be wrapped with % for LIKE matching).</param>
+    /// <returns>A list of matching households ordered by primary_name.</returns>
+    public static List<Household> SearchByMemberName(SqliteConnection connection, string searchTerm)
+    {
+        var households = new List<Household>();
         var likePattern = $"%{searchTerm.Trim()}%";
 
         connection.Open();
         try
         {
-            using var cmd = new SqliteCommand(Sql.HouseholdSearchByName, connection);
+            using var cmd = new SqliteCommand(Sql.HouseholdSearchByMemberName, connection);
             cmd.Parameters.AddWithValue("@search_term", likePattern);
 
             using var reader = cmd.ExecuteReader();

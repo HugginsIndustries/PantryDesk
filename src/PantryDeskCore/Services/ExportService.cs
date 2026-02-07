@@ -45,6 +45,12 @@ public static class ExportService
         WritePantryDaysCsv(pantryDays, pantryDaysPath);
         files.Add(pantryDaysPath);
 
+        // Export household members
+        var members = HouseholdMemberRepository.GetAll(connection);
+        var membersPath = Path.Combine(outputFolder, $"{baseFileName}_household_members.csv");
+        WriteHouseholdMembersCsv(members, membersPath);
+        files.Add(membersPath);
+
         return files.ToArray();
     }
 
@@ -66,6 +72,7 @@ public static class ExportService
         {
             ExportDate = DateTime.UtcNow,
             Households = HouseholdRepository.GetAll(connection),
+            HouseholdMembers = HouseholdMemberRepository.GetAll(connection),
             ServiceEvents = ServiceEventRepository.GetAll(connection),
             PantryDays = PantryDayRepository.GetAll(connection)
         };
@@ -138,6 +145,30 @@ public static class ExportService
         }
     }
 
+    private static void WriteHouseholdMembersCsv(List<HouseholdMember> members, string filePath)
+    {
+        using var writer = new StreamWriter(filePath, false, new UTF8Encoding(true));
+
+        writer.WriteLine("Id,HouseholdId,FirstName,LastName,Birthday,IsPrimary,Race,VeteranStatus,DisabledStatus");
+
+        foreach (var m in members)
+        {
+            var row = new List<string>
+            {
+                EscapeCsvField(m.Id.ToString()),
+                EscapeCsvField(m.HouseholdId.ToString()),
+                EscapeCsvField(m.FirstName),
+                EscapeCsvField(m.LastName),
+                EscapeCsvField(m.Birthday.ToString("yyyy-MM-dd")),
+                EscapeCsvField(m.IsPrimary ? "1" : "0"),
+                EscapeCsvField(m.Race),
+                EscapeCsvField(m.VeteranStatus),
+                EscapeCsvField(m.DisabledStatus)
+            };
+            writer.WriteLine(string.Join(",", row));
+        }
+    }
+
     private static void WritePantryDaysCsv(List<PantryDay> pantryDays, string filePath)
     {
         using var writer = new StreamWriter(filePath, false, new UTF8Encoding(true)); // UTF-8 with BOM
@@ -183,6 +214,7 @@ public static class ExportService
     {
         public DateTime ExportDate { get; set; }
         public List<Household> Households { get; set; } = new();
+        public List<HouseholdMember> HouseholdMembers { get; set; } = new();
         public List<ServiceEvent> ServiceEvents { get; set; } = new();
         public List<PantryDay> PantryDays { get; set; } = new();
     }

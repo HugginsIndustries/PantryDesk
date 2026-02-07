@@ -19,6 +19,7 @@ public partial class HouseholdProfileForm : Form
     {
         _householdId = householdId;
         InitializeComponent();
+        SetupMembersGrid();
         SetupServiceHistoryGrid();
         SetupFilters();
         SetupContextMenu();
@@ -74,6 +75,119 @@ public partial class HouseholdProfileForm : Form
         cmbFilterType.SelectedIndex = 0;
     }
 
+    private void SetupMembersGrid()
+    {
+        grdMembers.Columns.Clear();
+        grdMembers.Columns.Add("FirstName", "First Name");
+        grdMembers.Columns.Add("LastName", "Last Name");
+        grdMembers.Columns.Add("Birthday", "Birthday");
+        grdMembers.Columns.Add("Primary", "Primary");
+        grdMembers.Columns.Add("Race", "Race");
+        grdMembers.Columns.Add("Veteran", "Veteran");
+        grdMembers.Columns.Add("Disabled", "Disabled");
+
+        // AllCells for content-fit; Fill for last column so table fills available width
+        for (var i = 0; i < grdMembers.Columns.Count - 1; i++)
+        {
+            grdMembers.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+        }
+        var disabledCol = grdMembers.Columns["Disabled"];
+        if (disabledCol != null)
+            disabledCol.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+    }
+
+    private void RefreshMembersGrid()
+    {
+        grdMembers.Rows.Clear();
+        if (_household?.Members == null) return;
+        foreach (var m in _household.Members)
+        {
+            var idx = grdMembers.Rows.Add(
+                m.FirstName,
+                m.LastName,
+                m.Birthday.ToString("yyyy-MM-dd"),
+                m.IsPrimary ? "Yes" : "",
+                m.Race ?? "",
+                m.VeteranStatus ?? "",
+                m.DisabledStatus ?? ""
+            );
+            grdMembers.Rows[idx].Tag = m;
+        }
+    }
+
+    private void BtnAddMember_Click(object? sender, EventArgs e)
+    {
+        if (_household == null) return;
+        using var form = new MemberEditForm(null, true);
+        if (form.ShowDialog() != DialogResult.OK) return;
+
+        var member = form.Member;
+        member.HouseholdId = _householdId;
+        if (member.IsPrimary)
+        {
+            foreach (var m in _household.Members)
+                m.IsPrimary = false;
+        }
+        if (_household.Members.Count == 0)
+            member.IsPrimary = true;
+
+        _household.Members.Add(member);
+        RefreshMembersGrid();
+    }
+
+    private void BtnEditMember_Click(object? sender, EventArgs e)
+    {
+        if (grdMembers.SelectedRows.Count == 0 || _household == null)
+        {
+            MessageBox.Show("Please select a member to edit.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+        var existing = (HouseholdMember)grdMembers.SelectedRows[0].Tag!;
+        using var form = new MemberEditForm(existing, true);
+        if (form.ShowDialog() != DialogResult.OK) return;
+
+        var member = form.Member;
+        if (member.IsPrimary && !existing.IsPrimary)
+        {
+            foreach (var m in _household.Members)
+                m.IsPrimary = false;
+        }
+        member.Id = existing.Id;
+        member.HouseholdId = _householdId;
+        var idx = _household.Members.IndexOf(existing);
+        _household.Members[idx] = member;
+        RefreshMembersGrid();
+    }
+
+    private void BtnRemoveMember_Click(object? sender, EventArgs e)
+    {
+        if (grdMembers.SelectedRows.Count == 0 || _household == null)
+        {
+            MessageBox.Show("Please select a member to remove.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+        var member = (HouseholdMember)grdMembers.SelectedRows[0].Tag!;
+        var wasPrimary = member.IsPrimary;
+        _household.Members.Remove(member);
+        if (wasPrimary && _household.Members.Count > 0)
+            _household.Members[0].IsPrimary = true;
+        RefreshMembersGrid();
+    }
+
+    private void BtnSetPrimary_Click(object? sender, EventArgs e)
+    {
+        if (grdMembers.SelectedRows.Count == 0 || _household == null)
+        {
+            MessageBox.Show("Please select a member to set as primary.", "No Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+        var member = (HouseholdMember)grdMembers.SelectedRows[0].Tag!;
+        foreach (var m in _household.Members)
+            m.IsPrimary = false;
+        member.IsPrimary = true;
+        RefreshMembersGrid();
+    }
+
     private void SetupContextMenu()
     {
         _contextMenu = new ContextMenuStrip();
@@ -115,29 +229,15 @@ public partial class HouseholdProfileForm : Form
             txtZip.Text = _household.Zip ?? string.Empty;
             txtPhone.Text = _household.Phone ?? string.Empty;
             txtEmail.Text = _household.Email ?? string.Empty;
-            numChildren.Value = _household.ChildrenCount;
-            numAdults.Value = _household.AdultsCount;
-            numSeniors.Value = _household.SeniorsCount;
             txtNotes.Text = _household.Notes ?? string.Empty;
             lblStatusValue.Text = _household.IsActive ? "Active" : "Inactive";
 
-            UpdateTotalSize();
+            RefreshMembersGrid();
         }
         catch (Exception ex)
         {
             MessageBox.Show($"Error loading household: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
-    }
-
-    private void UpdateTotalSize()
-    {
-        var total = (int)numChildren.Value + (int)numAdults.Value + (int)numSeniors.Value;
-        lblTotalSizeValue.Text = total.ToString();
-    }
-
-    private void NumCount_ValueChanged(object? sender, EventArgs e)
-    {
-        UpdateTotalSize();
     }
 
     private void BtnSave_Click(object? sender, EventArgs e)
@@ -151,50 +251,48 @@ public partial class HouseholdProfileForm : Form
         lblError.Text = string.Empty;
         lblError.Visible = false;
 
-        // Validate PrimaryName
-        if (string.IsNullOrWhiteSpace(txtPrimaryName.Text))
-        {
-            ShowError("Primary Name is required.");
-            txtPrimaryName.Focus();
-            return;
-        }
-
-        // Validate at least one person in household
-        var childrenCount = (int)numChildren.Value;
-        var adultsCount = (int)numAdults.Value;
-        var seniorsCount = (int)numSeniors.Value;
-
-        if (childrenCount == 0 && adultsCount == 0 && seniorsCount == 0)
-        {
-            ShowError("At least one person (child, adult, or senior) must be specified.");
-            numChildren.Focus();
-            return;
-        }
-
         if (_household == null)
         {
             ShowError("Household data not loaded.");
             return;
         }
 
+        if (_household.Members.Count == 0)
+        {
+            ShowError("At least one household member is required.");
+            return;
+        }
+
+        var primary = _household.Members.FirstOrDefault(m => m.IsPrimary);
+        if (primary == null)
+        {
+            ShowError("One member must be set as primary contact.");
+            return;
+        }
+
         try
         {
-            // Update household object
-            _household.PrimaryName = txtPrimaryName.Text.Trim();
+            _household.PrimaryName = primary.FullName;
             _household.Address1 = string.IsNullOrWhiteSpace(txtAddress1.Text) ? null : txtAddress1.Text.Trim();
             _household.City = string.IsNullOrWhiteSpace(txtCity.Text) ? null : txtCity.Text.Trim();
             _household.State = string.IsNullOrWhiteSpace(txtState.Text) ? null : txtState.Text.Trim();
             _household.Zip = string.IsNullOrWhiteSpace(txtZip.Text) ? null : txtZip.Text.Trim();
             _household.Phone = string.IsNullOrWhiteSpace(txtPhone.Text) ? null : txtPhone.Text.Trim();
             _household.Email = string.IsNullOrWhiteSpace(txtEmail.Text) ? null : txtEmail.Text.Trim();
-            _household.ChildrenCount = childrenCount;
-            _household.AdultsCount = adultsCount;
-            _household.SeniorsCount = seniorsCount;
+            _household.ChildrenCount = 0;
+            _household.AdultsCount = 0;
+            _household.SeniorsCount = 0;
             _household.Notes = string.IsNullOrWhiteSpace(txtNotes.Text) ? null : txtNotes.Text.Trim();
-            // IsActive is system-managed; do not persist from form
 
             using var connection = DatabaseManager.GetConnection();
             HouseholdRepository.Update(connection, _household);
+
+            HouseholdMemberRepository.DeleteByHouseholdId(connection, _householdId);
+            foreach (var member in _household.Members)
+            {
+                member.HouseholdId = _householdId;
+                HouseholdMemberRepository.Create(connection, member);
+            }
 
             DialogResult = DialogResult.OK;
             Close();

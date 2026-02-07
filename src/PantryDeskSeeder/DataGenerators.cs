@@ -106,9 +106,39 @@ public static class DataGenerators
     /// </summary>
     public static string GenerateName(Random rng)
     {
-        var firstName = FirstNames[rng.Next(FirstNames.Length)];
-        var lastName = LastNames[rng.Next(LastNames.Length)];
-        return $"{firstName} {lastName}";
+        return $"{GenerateFirstName(rng)} {GenerateLastName(rng)}";
+    }
+
+    /// <summary>
+    /// Generates a random first name.
+    /// </summary>
+    public static string GenerateFirstName(Random rng)
+    {
+        return FirstNames[rng.Next(FirstNames.Length)];
+    }
+
+    /// <summary>
+    /// Generates a random last name.
+    /// </summary>
+    public static string GenerateLastName(Random rng)
+    {
+        return LastNames[rng.Next(LastNames.Length)];
+    }
+
+    /// <summary>
+    /// Generates a birthday within the specified age group, as of the reference date.
+    /// Age groups: Infant (0-2), Child (2-18), Adult (18-55), Senior (55+).
+    /// </summary>
+    public static DateTime GenerateBirthdayFromAgeGroup(string ageGroup, DateTime asOfDate, Random rng)
+    {
+        return ageGroup switch
+        {
+            "Infant" => asOfDate.AddYears(-2).AddDays(rng.Next(1, 730)),
+            "Child" => asOfDate.AddYears(-18).AddDays(rng.Next(1, 365 * 16)),
+            "Adult" => asOfDate.AddYears(-55).AddDays(rng.Next(1, 365 * 37)),
+            "Senior" => asOfDate.AddYears(-100).AddDays(rng.Next(1, 365 * 45)),
+            _ => asOfDate.AddYears(-30)
+        };
     }
 
     /// <summary>
