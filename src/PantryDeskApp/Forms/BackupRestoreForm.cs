@@ -1,3 +1,4 @@
+using PantryDeskCore.Data;
 using PantryDeskCore.Services;
 
 namespace PantryDeskApp.Forms;
@@ -7,7 +8,13 @@ public partial class BackupRestoreForm : Form
     public BackupRestoreForm()
     {
         InitializeComponent();
-        
+
+        lblDbPath.Text = "Database path: " + DatabaseManager.GetDatabasePath();
+        var autoDate = BackupService.GetLastAutoBackupDate();
+        var manualDate = BackupService.GetLastManualBackupDate();
+        lblAutoBackup.Text = "Last Auto Backup: " + (autoDate.HasValue ? autoDate.Value.ToString("yyyy-MM-dd") : "No backup yet");
+        lblManualBackup.Text = "Last Manual Backup: " + (manualDate.HasValue ? manualDate.Value.ToString("yyyy-MM-dd") : "No backup yet");
+
         // Set form icon if available
         var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
         if (File.Exists(iconPath))

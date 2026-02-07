@@ -5,7 +5,7 @@
 ## Features
 
 - **Household Management**: Search, create, and manage household profiles with per-member tracking and age groups (Infant, Child, Adult, Senior). Active status is system-managed from last qualifying service date (annual reset, default Jan 1; Admin can change reset date)
-- **Check-in**: Search by name (250ms debounce; Enter for immediate search). Eligibility column shows ✅ Eligible / ❌ Already Served with color coding for accessibility
+- **Check-in**: Search and action buttons on one row; search by name (250ms debounce; Enter for immediate search). Eligibility column shows ✅ Eligible / ❌ Already Served with color coding for accessibility. Status bar shows current role and last auto/manual backup dates. "Switch Role" (replaces Logout) returns to Login without exiting.
 - **Pantry Days & Appointments**: Calendar-based pantry day scheduling with appointment support
 - **Monthly Eligibility**: Visit types (Shop with TEFAP, Shop, TEFAP Only, Deck Only); only Shop/Shop with TEFAP count toward 1 visit/month limit. Override support (requires reason)
 - **Statistics Dashboard**: Unified dashboard with date range selection (This Month, Last Month, Past 3/6/12 Months, This/Last Year, Custom Range) showing:
@@ -13,7 +13,7 @@
   - Interactive charts: City Distribution (pie), Age Group Distribution (pie), Monthly Visits Trend (line), Pantry Day Volume by Event (bar)
   - Colorblind-friendly color palette (ColorBrewer Set2)
   - Export to PDF or print with embedded charts
-- **Backup & Restore**: Automatic daily encrypted backups (AES-GCM with DPAPI or passphrase), manual backup to default location or USB, one-click restore with safety copy (Admin-only). Backups respect demo mode configuration.
+- **Backup & Restore**: Automatic daily encrypted backup on first launch each day (AES-GCM with DPAPI or passphrase). Admin-only "Backup to USB…" for manual backup to a chosen folder (max 8 backups per folder; rotation removes oldest zip and its `.meta.json`). Separate tracking for last auto vs last manual backup; status bar and Restore form show both. Weekly reminder if no manual backup in 7+ days (Snooze or Backup Now). Restore form displays database path and last backup dates. One-click restore with safety copy (Admin-only). Backups respect demo mode configuration.
 - **Data Export**: CSV (Excel-compatible) and JSON exports for external analysis (Admin-only)
 - **Demo Data Seeder**: Separate console tool (`PantryDeskSeeder`) to generate realistic demo databases with configurable parameters (household count, date range, RNG seed for deterministic generation). Enforces all data constraints (service area addresses, phone format, no PO boxes, no child-only households) and includes demo moments (ineligible households, overrides, scheduled appointments)
 

@@ -222,6 +222,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Export CSV and JSON include VisitType
   - Type and Last Service columns display EventType - VisitType format (e.g. "PantryDay - Shop with TEFAP"); fallback to EventType when VisitType is null
   - Column widths: Last Service 320px, Service History Type 190px/Date 80px/Status 80px (more room for Notes)
+- **Role Management, Check-In Layout & Backup UX** (COMPLETED: 2026-02-07, TODO: Phase 10 — UX Improvements & Workflow Enhancements/Role Management, Check-In Layout & Backup UX)
+  - "Switch Role" replaces Logout: returns to Login dialog without exiting app; role and Admin menu/status bar refresh on success
+  - Check-In: search and action buttons (Complete Service, New Household, Open Profile) on one row; "Search Name:" label removed, placeholder only
+  - Status bar on Check-In: current role (left), Last Auto Backup and Last Manual Backup dates (right), Segoe UI 12pt bold; updates on role switch and after backup
+  - BackupRestoreForm: read-only panel at top with database path, Last Auto Backup, Last Manual Backup (YYYY-MM-DD or "No backup yet")
+  - Separate config keys for last auto vs last manual backup date; automatic daily backup and Backup to USB update the correct one
+  - Backup to USB: fixed for in-use DB (temp DB read into memory while connection open, then zipped); rotation keeps max 8 backups per folder and deletes matching `.zip.meta.json` with each removed zip
+  - Weekly manual-backup reminder on launch (7+ days): dialog with Snooze and Backup Now (Admin opens Backup to USB; Entry sees disabled button and note to log in as Admin)
+  - "Backup Now" menu item removed (automatic backup still runs once per day on first launch)
 
 ### Changed
 

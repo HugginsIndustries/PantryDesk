@@ -31,16 +31,15 @@ partial class CheckInForm
     private void InitializeComponent()
     {
         txtSearch = new TextBox();
-        lblSearch = new Label();
         dgvResults = new DataGridView();
         btnCompleteService = new Button();
         btnNewHousehold = new Button();
         btnOpenProfile = new Button();
+        panelTopRow = new TableLayoutPanel();
         menuStrip = new MenuStrip();
         menuReports = new ToolStripMenuItem();
         menuItemStatisticsDashboard = new ToolStripMenuItem();
         menuAdmin = new ToolStripMenuItem();
-        menuItemBackupNow = new ToolStripMenuItem();
         menuItemBackupToUsb = new ToolStripMenuItem();
         menuItemRestore = new ToolStripMenuItem();
         menuItemExport = new ToolStripMenuItem();
@@ -51,31 +50,84 @@ partial class CheckInForm
         menuItemPantryDays = new ToolStripMenuItem();
         menuItemActiveStatusSettings = new ToolStripMenuItem();
         menuItemLogout = new ToolStripMenuItem();
+        statusStrip = new StatusStrip();
+        statusLabelRole = new ToolStripStatusLabel();
+        statusLabelBackup = new ToolStripStatusLabel();
         ((System.ComponentModel.ISupportInitialize)dgvResults).BeginInit();
         menuStrip.SuspendLayout();
+        statusStrip.SuspendLayout();
         SuspendLayout();
         // 
-        // lblSearch
+        // panelTopRow
         // 
-        lblSearch.AutoSize = true;
-        lblSearch.Location = new Point(12, 35);
-        lblSearch.Name = "lblSearch";
-        lblSearch.Size = new Size(79, 15);
-        lblSearch.TabIndex = 0;
-        lblSearch.Text = "Search Name:";
-        lblSearch.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        panelTopRow.ColumnCount = 4;
+        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+        panelTopRow.Controls.Add(txtSearch, 0, 0);
+        panelTopRow.Controls.Add(btnCompleteService, 1, 0);
+        panelTopRow.Controls.Add(btnNewHousehold, 2, 0);
+        panelTopRow.Controls.Add(btnOpenProfile, 3, 0);
+        panelTopRow.Dock = DockStyle.Top;
+        panelTopRow.Location = new Point(0, 24);
+        panelTopRow.Name = "panelTopRow";
+        panelTopRow.Padding = new Padding(12, 8, 12, 4);
+        panelTopRow.RowCount = 1;
+        panelTopRow.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+        panelTopRow.Size = new Size(800, 50);
+        panelTopRow.TabIndex = 0;
         // 
         // txtSearch
         // 
+        txtSearch.Dock = DockStyle.Fill;
         txtSearch.Font = new Font("Segoe UI", 12F);
-        txtSearch.Location = new Point(12, 53);
+        txtSearch.Location = new Point(15, 11);
+        txtSearch.Margin = new Padding(3, 3, 6, 3);
         txtSearch.Name = "txtSearch";
         txtSearch.PlaceholderText = "Search by name...";
-        txtSearch.Size = new Size(776, 29);
-        txtSearch.TabIndex = 1;
-        txtSearch.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        txtSearch.Size = new Size(614, 29);
+        txtSearch.TabIndex = 0;
         txtSearch.TextChanged += TxtSearch_TextChanged;
         txtSearch.KeyDown += TxtSearch_KeyDown;
+        // 
+        // btnCompleteService
+        // 
+        btnCompleteService.Dock = DockStyle.Fill;
+        btnCompleteService.Enabled = false;
+        btnCompleteService.Location = new Point(635, 11);
+        btnCompleteService.Margin = new Padding(6, 3, 3, 3);
+        btnCompleteService.Name = "btnCompleteService";
+        btnCompleteService.Size = new Size(144, 32);
+        btnCompleteService.TabIndex = 1;
+        btnCompleteService.Text = "Complete Service";
+        btnCompleteService.UseVisualStyleBackColor = true;
+        btnCompleteService.Click += BtnCompleteService_Click;
+        // 
+        // btnNewHousehold
+        // 
+        btnNewHousehold.Dock = DockStyle.Fill;
+        btnNewHousehold.Location = new Point(788, 11);
+        btnNewHousehold.Margin = new Padding(6, 3, 3, 3);
+        btnNewHousehold.Name = "btnNewHousehold";
+        btnNewHousehold.Size = new Size(144, 32);
+        btnNewHousehold.TabIndex = 2;
+        btnNewHousehold.Text = "New Household";
+        btnNewHousehold.UseVisualStyleBackColor = true;
+        btnNewHousehold.Click += BtnNewHousehold_Click;
+        // 
+        // btnOpenProfile
+        // 
+        btnOpenProfile.Dock = DockStyle.Fill;
+        btnOpenProfile.Enabled = false;
+        btnOpenProfile.Location = new Point(941, 11);
+        btnOpenProfile.Margin = new Padding(6, 3, 3, 3);
+        btnOpenProfile.Name = "btnOpenProfile";
+        btnOpenProfile.Size = new Size(144, 32);
+        btnOpenProfile.TabIndex = 3;
+        btnOpenProfile.Text = "Open Profile";
+        btnOpenProfile.UseVisualStyleBackColor = true;
+        btnOpenProfile.Click += BtnOpenProfile_Click;
         // 
         // dgvResults
         // 
@@ -83,51 +135,14 @@ partial class CheckInForm
         dgvResults.AllowUserToDeleteRows = false;
         dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         dgvResults.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        dgvResults.Dock = DockStyle.Fill;
         dgvResults.Font = new Font("Segoe UI", 12F);
-        dgvResults.Location = new Point(12, 88);
         dgvResults.MultiSelect = false;
         dgvResults.Name = "dgvResults";
         dgvResults.ReadOnly = true;
         dgvResults.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        dgvResults.Size = new Size(776, 350);
         dgvResults.TabIndex = 2;
-        dgvResults.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         dgvResults.SelectionChanged += DgvResults_SelectionChanged;
-        // 
-        // btnCompleteService
-        // 
-        btnCompleteService.Enabled = false;
-        btnCompleteService.Location = new Point(12, 444);
-        btnCompleteService.Name = "btnCompleteService";
-        btnCompleteService.Size = new Size(150, 35);
-        btnCompleteService.TabIndex = 3;
-        btnCompleteService.Text = "Complete Service";
-        btnCompleteService.UseVisualStyleBackColor = true;
-        btnCompleteService.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-        btnCompleteService.Click += BtnCompleteService_Click;
-        // 
-        // btnNewHousehold
-        // 
-        btnNewHousehold.Location = new Point(168, 444);
-        btnNewHousehold.Name = "btnNewHousehold";
-        btnNewHousehold.Size = new Size(150, 35);
-        btnNewHousehold.TabIndex = 4;
-        btnNewHousehold.Text = "New Household";
-        btnNewHousehold.UseVisualStyleBackColor = true;
-        btnNewHousehold.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-        btnNewHousehold.Click += BtnNewHousehold_Click;
-        // 
-        // btnOpenProfile
-        // 
-        btnOpenProfile.Enabled = false;
-        btnOpenProfile.Location = new Point(324, 444);
-        btnOpenProfile.Name = "btnOpenProfile";
-        btnOpenProfile.Size = new Size(150, 35);
-        btnOpenProfile.TabIndex = 5;
-        btnOpenProfile.Text = "Open Profile";
-        btnOpenProfile.UseVisualStyleBackColor = true;
-        btnOpenProfile.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-        btnOpenProfile.Click += BtnOpenProfile_Click;
         // 
         // menuStrip
         // 
@@ -154,7 +169,7 @@ partial class CheckInForm
         // 
         // menuAdmin
         // 
-        menuAdmin.DropDownItems.AddRange(new ToolStripItem[] { menuSeparator1, menuItemBackupNow, menuItemBackupToUsb, menuSeparator2, menuItemRestore, menuSeparator3, menuItemExport, menuItemChangePasswords, menuItemPantryDays, menuItemActiveStatusSettings });
+        menuAdmin.DropDownItems.AddRange(new ToolStripItem[] { menuSeparator1, menuItemBackupToUsb, menuSeparator2, menuItemRestore, menuSeparator3, menuItemExport, menuItemChangePasswords, menuItemPantryDays, menuItemActiveStatusSettings });
         menuAdmin.Name = "menuAdmin";
         menuAdmin.Size = new Size(55, 20);
         menuAdmin.Text = "Admin";
@@ -163,13 +178,6 @@ partial class CheckInForm
         // 
         menuSeparator1.Name = "menuSeparator1";
         menuSeparator1.Size = new Size(177, 6);
-        // 
-        // menuItemBackupNow
-        // 
-        menuItemBackupNow.Name = "menuItemBackupNow";
-        menuItemBackupNow.Size = new Size(180, 22);
-        menuItemBackupNow.Text = "Backup Now";
-        menuItemBackupNow.Click += MenuItemBackupNow_Click;
         // 
         // menuItemBackupToUsb
         // 
@@ -227,8 +235,33 @@ partial class CheckInForm
         // 
         menuItemLogout.Name = "menuItemLogout";
         menuItemLogout.Size = new Size(57, 20);
-        menuItemLogout.Text = "Logout";
-        menuItemLogout.Click += MenuItemLogout_Click;
+        menuItemLogout.Text = "Switch Role";
+        menuItemLogout.Click += MenuItemSwitchRole_Click;
+        // 
+        // statusStrip
+        // 
+        statusStrip.Dock = DockStyle.Bottom;
+        statusStrip.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+        statusStrip.Items.AddRange(new ToolStripItem[] { statusLabelRole, statusLabelBackup });
+        statusStrip.Location = new Point(0, 478);
+        statusStrip.Name = "statusStrip";
+        statusStrip.Size = new Size(800, 22);
+        statusStrip.TabIndex = 7;
+        statusStrip.Text = "statusStrip";
+        // 
+        // statusLabelRole
+        // 
+        statusLabelRole.Name = "statusLabelRole";
+        statusLabelRole.Size = new Size(42, 17);
+        statusLabelRole.Text = "Entry";
+        // 
+        // statusLabelBackup
+        // 
+        statusLabelBackup.Name = "statusLabelBackup";
+        statusLabelBackup.Size = new Size(743, 17);
+        statusLabelBackup.Spring = true;
+        statusLabelBackup.Text = "Last Auto Backup: No backup yet  Last Manual Backup: No backup yet";
+        statusLabelBackup.TextAlign = ContentAlignment.MiddleRight;
         // 
         // CheckInForm
         // 
@@ -236,13 +269,10 @@ partial class CheckInForm
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(800, 500);
         MinimumSize = new Size(600, 400);
-        Controls.Add(btnOpenProfile);
-        Controls.Add(btnNewHousehold);
-        Controls.Add(btnCompleteService);
         Controls.Add(dgvResults);
-        Controls.Add(txtSearch);
-        Controls.Add(lblSearch);
+        Controls.Add(panelTopRow);
         Controls.Add(menuStrip);
+        Controls.Add(statusStrip);
         MainMenuStrip = menuStrip;
         Name = "CheckInForm";
         StartPosition = FormStartPosition.CenterScreen;
@@ -251,13 +281,15 @@ partial class CheckInForm
         ((System.ComponentModel.ISupportInitialize)dgvResults).EndInit();
         menuStrip.ResumeLayout(false);
         menuStrip.PerformLayout();
+        statusStrip.ResumeLayout(false);
+        statusStrip.PerformLayout();
         ResumeLayout(false);
         PerformLayout();
     }
 
     #endregion
 
-    private Label lblSearch;
+    private TableLayoutPanel panelTopRow;
     private TextBox txtSearch;
     private DataGridView dgvResults;
     private Button btnCompleteService;
@@ -267,7 +299,6 @@ partial class CheckInForm
     private ToolStripMenuItem menuReports;
     private ToolStripMenuItem menuItemStatisticsDashboard;
     private ToolStripMenuItem menuAdmin;
-    private ToolStripMenuItem menuItemBackupNow;
     private ToolStripMenuItem menuItemBackupToUsb;
     private ToolStripMenuItem menuItemRestore;
     private ToolStripMenuItem menuItemExport;
@@ -278,4 +309,7 @@ partial class CheckInForm
     private ToolStripMenuItem menuItemPantryDays;
     private ToolStripMenuItem menuItemActiveStatusSettings;
     private ToolStripMenuItem menuItemLogout;
+    private StatusStrip statusStrip;
+    private ToolStripStatusLabel statusLabelRole;
+    private ToolStripStatusLabel statusLabelBackup;
 }

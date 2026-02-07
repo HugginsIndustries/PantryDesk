@@ -48,11 +48,36 @@ public partial class CheckInForm : Form
     {
         // Load all households on initial load
         SearchHouseholds(string.Empty);
+        RefreshStatusBar();
+        ShowManualBackupReminderIfNeeded();
+    }
+
+    private void ShowManualBackupReminderIfNeeded()
+    {
+        var lastManual = BackupService.GetLastManualBackupDate();
+        if (lastManual.HasValue && (DateTime.Today - lastManual.Value).TotalDays < 7)
+        {
+            return;
+        }
+        using var reminderForm = new ManualBackupReminderForm(this);
+        reminderForm.ShowDialog();
     }
 
     private void UpdateMenuVisibility()
     {
         menuAdmin.Visible = SessionManager.IsAdmin;
+    }
+
+    internal void RefreshStatusBar()
+    {
+        if (statusStrip == null || statusLabelRole == null || statusLabelBackup == null)
+        {
+            return;
+        }
+        statusLabelRole.Text = SessionManager.CurrentRole ?? string.Empty;
+        var autoDate = BackupService.GetLastAutoBackupDate();
+        var manualDate = BackupService.GetLastManualBackupDate();
+        statusLabelBackup.Text = $"Last Auto Backup: {(autoDate.HasValue ? autoDate.Value.ToString("yyyy-MM-dd") : "No backup yet")}  Last Manual Backup: {(manualDate.HasValue ? manualDate.Value.ToString("yyyy-MM-dd") : "No backup yet")}";
     }
 
     private void SetupDataGridView()
@@ -423,44 +448,13 @@ public partial class CheckInForm : Form
         statsForm.ShowDialog();
     }
 
-    private void MenuItemLogout_Click(object? sender, EventArgs e)
+    private void MenuItemSwitchRole_Click(object? sender, EventArgs e)
     {
-        SessionManager.Logout();
-        Application.Exit();
-    }
-
-    private void MenuItemBackupNow_Click(object? sender, EventArgs e)
-    {
-        try
+        using var loginForm = new LoginForm();
+        if (loginForm.ShowDialog() == DialogResult.OK)
         {
-            PermissionChecker.RequireAdmin();
-
-            Cursor = Cursors.WaitCursor;
-            var backupPath = BackupService.CreateBackup();
-            Cursor = Cursors.Default;
-
-            MessageBox.Show(
-                $"Backup created successfully.\n\nLocation: {backupPath}",
-                "Backup Complete",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            MessageBox.Show(
-                "This action requires Admin privileges.",
-                "Access Denied",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning);
-        }
-        catch (Exception ex)
-        {
-            Cursor = Cursors.Default;
-            MessageBox.Show(
-                $"Failed to create backup:\n\n{ex.Message}",
-                "Backup Failed",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
+            UpdateMenuVisibility();
+            RefreshStatusBar();
         }
     }
 
@@ -498,7 +492,7 @@ public partial class CheckInForm : Form
                 }
 
                 Cursor = Cursors.WaitCursor;
-                var backupPath = BackupService.CreateBackup(targetFolder);
+                var backupPath = BackupService.CreateBackup(targetFolder, passphrase: null, isAutomatic: false);
                 Cursor = Cursors.Default;
 
                 MessageBox.Show(
@@ -506,6 +500,7 @@ public partial class CheckInForm : Form
                     "Backup Complete",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
+                RefreshStatusBar();
             }
         }
         catch (UnauthorizedAccessException)

@@ -259,6 +259,80 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskApp/Forms/CheckInForm.cs`
   - Rationale: Reduces database load during rapid typing while maintaining responsiveness (low priority - user prefers immediate search but acknowledges benefit)
 
+#### Role Management, Check-In Layout & Backup UX
+
+- [x] Replace "Logout" with "Switch Role" functionality
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Remove "Logout" menu item that exits application
+    - Add "Switch Role" menu item that returns to Login dialog without exiting app
+    - Current role is preserved in session until switch completes
+    - After successful login with different role, Check-In form reopens with new role context
+  - Likely files:
+    - `src/PantryDeskApp/Forms/CheckInForm.cs`
+    - `src/PantryDeskApp/Forms/CheckInForm.Designer.cs`
+    - `src/PantryDeskApp/Program.cs` (may need to adjust flow)
+  - Rationale: Enables quick role switching during busy periods without full app restart
+
+- [x] Move action buttons to same row as search; remove search label
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Search box and Complete Service, New Household, Open Profile buttons on one row
+    - Search box fills remaining space on left; buttons on right
+    - Remove "Search Name:" label; use "Search by name..." placeholder only (saves space on smaller displays)
+  - Likely files:
+    - `src/PantryDeskApp/Forms/CheckInForm.cs`
+    - `src/PantryDeskApp/Forms/CheckInForm.Designer.cs`
+  - Rationale: More compact top area and clearer layout
+
+- [x] Add Check-In status bar with role and backup dates
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Status bar at bottom of Check-In window
+    - Same font and size as main table (Segoe UI 12pt), bold
+    - Left: current role (Entry/Admin)
+    - Right: backup status in format "Last Auto Backup: YYYY-MM-DD  Last Manual Backup: YYYY-MM-DD" (use "No backup yet" if never run); consistent date format throughout
+    - Updates when role switches or backup completes
+  - Likely files:
+    - `src/PantryDeskApp/Forms/CheckInForm.cs`
+    - `src/PantryDeskApp/Forms/CheckInForm.Designer.cs`
+    - `src/PantryDeskCore/Services/BackupService.cs` (methods to get last backup dates)
+  - Rationale: Clear visibility of role and backup status at a glance
+
+- [x] Show data path and last backup dates on BackupRestoreForm
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Read-only panel at top of BackupRestoreForm displays:
+      - Current database path (full path)
+      - Last Auto Backup: YYYY-MM-DD (or "No backup yet")
+      - Last Manual Backup: YYYY-MM-DD (or "No backup yet")
+    - Information helps users verify correct database before restore
+  - Likely files:
+    - `src/PantryDeskApp/Forms/BackupRestoreForm.cs`
+    - `src/PantryDeskApp/Forms/BackupRestoreForm.Designer.cs`
+  - Rationale: Provides confidence and context before performing restore operations
+
+- [x] Fix Backup to USB; add rotation, separate tracking, and weekly reminder
+  - Impact: High
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - **Fix:** Use SQLite backup API (or equivalent) so Backup to USB works while database is open instead of copying locked file
+    - **Separate tracking:** Store last automatic backup date and last manual backup date separately
+    - **Backup rotation:** When Backup to USB targets same folder, keep max 8 backups; delete oldest when creating 9th (per-folder)
+    - **Weekly reminder (7 days):** On app launch, if no manual backup in 7+ days, show popup with:
+      - Snooze — hides popup until next app launch
+      - Backup Now — admin-only, opens Backup to USB dialog; for Entry users, show button disabled with note "Login as Admin to complete manual backup ASAP."
+    - Status bar shows both last auto and last manual backup (see status bar item above)
+  - Likely files:
+    - `src/PantryDeskCore/Services/BackupService.cs`
+    - `src/PantryDeskApp/Forms/CheckInForm.cs` (launch reminder)
+    - Config/metadata for last manual backup date
+  - Rationale: Backup to USB fails with locked DB; separate tracking and weekly reminder encourage regular manual backups; rotation prevents folder clutter
+
 ---
 
 ## Open
@@ -326,93 +400,7 @@ Implementation checklist based on phased plan.
     - May require custom WinForms ToolTip control or custom rendering
   - Rationale: Current OxyPlot tooltips show raw data with timestamps and multiple values, making them hard to read. Custom implementation would provide cleaner, more user-friendly tooltips with better hover behavior.
 
-#### Role Management, Check-In Layout & Backup UX
-
-- [ ] Replace "Logout" with "Switch Role" functionality
-  - Impact: Medium
-  - Complexity: Small
-  - Acceptance Criteria:
-    - Remove "Logout" menu item that exits application
-    - Add "Switch Role" menu item that returns to Login dialog without exiting app
-    - Current role is preserved in session until switch completes
-    - After successful login with different role, Check-In form reopens with new role context
-  - Likely files:
-    - `src/PantryDeskApp/Forms/CheckInForm.cs`
-    - `src/PantryDeskApp/Forms/CheckInForm.Designer.cs`
-    - `src/PantryDeskApp/Program.cs` (may need to adjust flow)
-  - Rationale: Enables quick role switching during busy periods without full app restart
-
-- [ ] Move action buttons to same row as search; remove search label
-  - Impact: Medium
-  - Complexity: Small
-  - Acceptance Criteria:
-    - Search box and Complete Service, New Household, Open Profile buttons on one row
-    - Search box fills remaining space on left; buttons on right
-    - Remove "Search Name:" label; use "Search by name..." placeholder only (saves space on smaller displays)
-  - Likely files:
-    - `src/PantryDeskApp/Forms/CheckInForm.cs`
-    - `src/PantryDeskApp/Forms/CheckInForm.Designer.cs`
-  - Rationale: More compact top area and clearer layout
-
-- [ ] Add Check-In status bar with role and backup dates
-  - Impact: Medium
-  - Complexity: Small
-  - Acceptance Criteria:
-    - Status bar at bottom of Check-In window
-    - Same font and size as main table (Segoe UI 12pt), bold
-    - Left: current role (Entry/Admin)
-    - Right: backup status in format "Last Auto Backup: YYYY-MM-DD  Last Manual Backup: YYYY-MM-DD" (use "No backup yet" if never run); consistent date format throughout
-    - Updates when role switches or backup completes
-  - Likely files:
-    - `src/PantryDeskApp/Forms/CheckInForm.cs`
-    - `src/PantryDeskApp/Forms/CheckInForm.Designer.cs`
-    - `src/PantryDeskCore/Services/BackupService.cs` (methods to get last backup dates)
-  - Rationale: Clear visibility of role and backup status at a glance
-
-- [ ] Show data path and last backup dates on BackupRestoreForm
-  - Impact: Medium
-  - Complexity: Small
-  - Acceptance Criteria:
-    - Read-only panel at top of BackupRestoreForm displays:
-      - Current database path (full path)
-      - Last Auto Backup: YYYY-MM-DD (or "No backup yet")
-      - Last Manual Backup: YYYY-MM-DD (or "No backup yet")
-    - Information helps users verify correct database before restore
-  - Likely files:
-    - `src/PantryDeskApp/Forms/BackupRestoreForm.cs`
-    - `src/PantryDeskApp/Forms/BackupRestoreForm.Designer.cs`
-  - Rationale: Provides confidence and context before performing restore operations
-
-- [ ] Fix Backup to USB; add rotation, separate tracking, and weekly reminder
-  - Impact: High
-  - Complexity: Medium
-  - Acceptance Criteria:
-    - **Fix:** Use SQLite backup API (or equivalent) so Backup to USB works while database is open instead of copying locked file
-    - **Separate tracking:** Store last automatic backup date and last manual backup date separately
-    - **Backup rotation:** When Backup to USB targets same folder, keep max 8 backups; delete oldest when creating 9th (per-folder)
-    - **Weekly reminder (7 days):** On app launch, if no manual backup in 7+ days, show popup with:
-      - Snooze — hides popup until next app launch
-      - Backup Now — admin-only, opens Backup to USB dialog; for Entry users, show button disabled with note "Login as Admin to complete manual backup ASAP."
-    - Status bar shows both last auto and last manual backup (see status bar item above)
-  - Likely files:
-    - `src/PantryDeskCore/Services/BackupService.cs`
-    - `src/PantryDeskApp/Forms/CheckInForm.cs` (launch reminder)
-    - Config/metadata for last manual backup date
-  - Rationale: Backup to USB fails with locked DB; separate tracking and weekly reminder encourage regular manual backups; rotation prevents folder clutter
-
 #### Household Form Improvements
-
-- [ ] Improve New Household form layout with group boxes and auto-sizing
-  - Impact: Medium
-  - Complexity: Small
-  - Acceptance Criteria:
-    - Form auto-sizes with vertical scrolling if content exceeds screen
-    - Group boxes organize fields: "Contact Information" (address, phone, email) and "Household Size" (children/adults/seniors)
-    - Form remains functional on small screens without feeling cramped
-  - Likely files:
-    - `src/PantryDeskApp/Forms/NewHouseholdForm.cs`
-    - `src/PantryDeskApp/Forms/NewHouseholdForm.Designer.cs`
-  - Rationale: Current form is long and fixed-size, causing usability issues on smaller screens
 
 - [ ] Add "Possible duplicates" hint on name field focus loss
   - Impact: Medium

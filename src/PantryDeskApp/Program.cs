@@ -28,13 +28,13 @@ static class Program
         // Check if automatic backup is needed for today
         try
         {
-            var lastBackupDate = BackupService.GetLastBackupDate();
+            var lastAutoBackupDate = BackupService.GetLastAutoBackupDate();
             var today = DateTime.Today;
 
-            if (lastBackupDate == null || lastBackupDate < today)
+            if (lastAutoBackupDate == null || lastAutoBackupDate < today)
             {
                 // Create automatic backup
-                var backupPath = BackupService.CreateBackup();
+                BackupService.CreateBackup(targetFolder: null, passphrase: null, isAutomatic: true);
                 // Silent success - backup created automatically
             }
         }

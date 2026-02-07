@@ -15,6 +15,8 @@ public static class BackupService
 {
     private const string BackupMetadataFileName = "backup_metadata.json";
     private const string ConfigKeyLastBackupDate = "last_backup_date";
+    private const string ConfigKeyLastAutoBackupDate = "last_auto_backup_date";
+    private const string ConfigKeyLastManualBackupDate = "last_manual_backup_date";
     private const string BackupMetadataFileExtension = ".meta.json";
 
     /// <summary>
@@ -22,9 +24,10 @@ public static class BackupService
     /// </summary>
     /// <param name="targetFolder">Optional target folder. If null, uses default backup location.</param>
     /// <param name="passphrase">Optional passphrase for manual/USB backups. If null, uses DPAPI for automatic backups.</param>
+    /// <param name="isAutomatic">True for automatic daily backup; false for manual (Backup Now / Backup to USB).</param>
     /// <returns>The full path to the created backup file.</returns>
     /// <exception cref="IOException">Thrown if backup creation fails.</exception>
-    public static string CreateBackup(string? targetFolder = null, string? passphrase = null)
+    public static string CreateBackup(string? targetFolder = null, string? passphrase = null, bool isAutomatic = false)
     {
         var dbPath = DatabaseManager.GetDatabasePath();
 
@@ -46,14 +49,15 @@ public static class BackupService
         var backupFileName = $"pantrydesk_backup_{timestamp}.zip";
         var backupPath = Path.Combine(backupFolder, backupFileName);
 
-        // Create temporary directory for backup contents
-        var tempDir = Path.Combine(Path.GetTempPath(), $"pantrydesk_backup_{Guid.NewGuid()}");
+        // Temporary directory for backup contents.
+        var tempDir = Path.Combine(Path.GetTempPath(), $"pantrydesk_backup_{Guid.NewGuid():N}");
         Directory.CreateDirectory(tempDir);
 
         try
         {
-            // Use SQLite backup API for atomic, consistent snapshot
+            // Use SQLite backup API for atomic snapshot; avoids copying the open DB file (works with Backup to USB while DB is in use).
             var tempDbPath = Path.Combine(tempDir, "pantrydesk.db");
+            MemoryStream dbStreamCopy;
             using (var sourceConnection = DatabaseManager.GetConnection())
             {
                 sourceConnection.Open();
@@ -61,7 +65,22 @@ public static class BackupService
                 {
                     backupConnection.Open();
                     sourceConnection.BackupDatabase(backupConnection);
+                    // Read the temp DB into memory while the connection still holds it (shared read). This avoids "file in use" when zipping later.
+                    dbStreamCopy = new MemoryStream();
+                    using (var fileStream = new FileStream(tempDbPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        fileStream.CopyTo(dbStreamCopy);
+                    }
                 }
+            }
+            dbStreamCopy.Position = 0;
+            try
+            {
+                File.Delete(tempDbPath);
+            }
+            catch
+            {
+                // Ignore if delete fails (e.g. still held briefly).
             }
 
             // Generate encryption key and parameters
@@ -107,15 +126,53 @@ public static class BackupService
             var metadataPath = Path.Combine(tempDir, BackupMetadataFileName);
             File.WriteAllText(metadataPath, metadataJson, Encoding.UTF8);
 
-            // Create encrypted zip file
-            CreateEncryptedZip(tempDir, backupPath, encryptionKey);
+            // Create encrypted zip file (db from in-memory copy to avoid post-close file lock)
+            using (dbStreamCopy)
+            {
+                CreateEncryptedZip(tempDir, backupPath, encryptionKey, dbStreamCopy);
+            }
 
             // Write metadata file next to zip (unencrypted, for easy access during restore)
             var metadataFileNextToZip = backupPath + BackupMetadataFileExtension;
             File.WriteAllText(metadataFileNextToZip, metadataJson, Encoding.UTF8);
 
-            // Update last backup date
-            UpdateLastBackupDate(DateTime.Today);
+            // Update last backup date (auto vs manual tracked separately)
+            if (isAutomatic)
+            {
+                UpdateLastAutoBackupDate(DateTime.Today);
+            }
+            else
+            {
+                UpdateLastManualBackupDate(DateTime.Today);
+            }
+
+            // When backing up to a target folder (e.g. USB), keep max 8 backups; delete oldest when creating 9th.
+            if (targetFolder != null)
+            {
+                try
+                {
+                    var zips = Directory.GetFiles(targetFolder, "pantrydesk_backup_*.zip")
+                        .OrderBy(f => new FileInfo(f).LastWriteTimeUtc)
+                        .ToList();
+                    var toRemove = zips.Count - 8;
+                    for (var i = 0; i < toRemove && i < zips.Count; i++)
+                    {
+                        if (zips[i] != backupPath)
+                        {
+                            File.Delete(zips[i]);
+                            var metaPath = zips[i] + BackupMetadataFileExtension;
+                            if (File.Exists(metaPath))
+                            {
+                                try { File.Delete(metaPath); } catch { /* ignore */ }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore rotation errors (e.g. file in use)
+                }
+            }
 
             return backupPath;
         }
@@ -280,13 +337,14 @@ public static class BackupService
     }
 
     /// <summary>
-    /// Gets the last backup date from the config table.
+    /// Gets the last automatic backup date from the config table.
     /// </summary>
-    /// <returns>The last backup date, or null if never backed up.</returns>
-    public static DateTime? GetLastBackupDate()
+    /// <returns>The last auto backup date, or null if never run. Falls back to legacy last_backup_date if new key missing.</returns>
+    public static DateTime? GetLastAutoBackupDate()
     {
         using var connection = DatabaseManager.GetConnection();
-        var dateStr = ConfigRepository.GetValue(connection, ConfigKeyLastBackupDate);
+        var dateStr = ConfigRepository.GetValue(connection, ConfigKeyLastAutoBackupDate)
+            ?? ConfigRepository.GetValue(connection, ConfigKeyLastBackupDate);
         if (dateStr != null && DateTime.TryParse(dateStr, out var date))
         {
             return date.Date;
@@ -295,13 +353,37 @@ public static class BackupService
     }
 
     /// <summary>
-    /// Sets the last backup date in the config table.
+    /// Gets the last manual backup date from the config table.
     /// </summary>
-    /// <param name="date">The backup date to set.</param>
-    private static void UpdateLastBackupDate(DateTime date)
+    /// <returns>The last manual backup date, or null if never run. Falls back to legacy last_backup_date if new key missing.</returns>
+    public static DateTime? GetLastManualBackupDate()
     {
         using var connection = DatabaseManager.GetConnection();
-        ConfigRepository.SetValue(connection, ConfigKeyLastBackupDate, date.ToString("yyyy-MM-dd"));
+        var dateStr = ConfigRepository.GetValue(connection, ConfigKeyLastManualBackupDate)
+            ?? ConfigRepository.GetValue(connection, ConfigKeyLastBackupDate);
+        if (dateStr != null && DateTime.TryParse(dateStr, out var date))
+        {
+            return date.Date;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Sets the last automatic backup date in the config table.
+    /// </summary>
+    private static void UpdateLastAutoBackupDate(DateTime date)
+    {
+        using var connection = DatabaseManager.GetConnection();
+        ConfigRepository.SetValue(connection, ConfigKeyLastAutoBackupDate, date.ToString("yyyy-MM-dd"));
+    }
+
+    /// <summary>
+    /// Sets the last manual backup date in the config table.
+    /// </summary>
+    private static void UpdateLastManualBackupDate(DateTime date)
+    {
+        using var connection = DatabaseManager.GetConnection();
+        ConfigRepository.SetValue(connection, ConfigKeyLastManualBackupDate, date.ToString("yyyy-MM-dd"));
     }
 
     private static int GetSchemaVersion()
@@ -316,9 +398,8 @@ public static class BackupService
         return ConfigRepository.GetAppVersion(connection);
     }
 
-    private static void CreateEncryptedZip(string sourceDirectory, string zipPath, byte[] encryptionKey)
+    private static void CreateEncryptedZip(string sourceDirectory, string zipPath, byte[] encryptionKey, Stream? dbContentStream = null)
     {
-        // Create zip file
         if (File.Exists(zipPath))
         {
             File.Delete(zipPath);
@@ -327,16 +408,26 @@ public static class BackupService
         using var zipStream = new FileStream(zipPath, FileMode.Create);
         using var archive = new ZipArchive(zipStream, ZipArchiveMode.Create);
 
-        // Add all files from source directory
+        // Add pantrydesk.db from the in-memory stream (avoids file lock after SQLite connection close).
+        if (dbContentStream != null)
+        {
+            var entry = archive.CreateEntry("pantrydesk.db");
+            using var entryStream = entry.Open();
+            dbContentStream.Position = 0;
+            EncryptStreamGcm(dbContentStream, entryStream, encryptionKey);
+        }
+
+        // Add remaining files from source directory (e.g. backup_metadata.json).
         foreach (var file in Directory.GetFiles(sourceDirectory))
         {
             var entryName = Path.GetFileName(file);
+            if (entryName.Equals("pantrydesk.db", StringComparison.OrdinalIgnoreCase) && dbContentStream != null)
+            {
+                continue;
+            }
             var entry = archive.CreateEntry(entryName);
-
             using var entryStream = entry.Open();
             using var fileStream = File.OpenRead(file);
-
-            // Encrypt the file content using AES-GCM
             EncryptStreamGcm(fileStream, entryStream, encryptionKey);
         }
     }
