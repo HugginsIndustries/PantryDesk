@@ -12,19 +12,36 @@ namespace PantryDeskApp.Forms;
 public partial class CheckInForm : Form
 {
     private Household? _selectedHousehold;
+    private System.Windows.Forms.Timer? _searchDebounceTimer;
 
     public CheckInForm()
     {
         InitializeComponent();
         UpdateMenuVisibility();
         SetupDataGridView();
-        
+
+        _searchDebounceTimer = new System.Windows.Forms.Timer();
+        _searchDebounceTimer.Interval = 250;
+        _searchDebounceTimer.Tick += SearchDebounceTimer_Tick;
+        Disposed += (_, _) =>
+        {
+            _searchDebounceTimer?.Stop();
+            _searchDebounceTimer?.Dispose();
+            _searchDebounceTimer = null;
+        };
+
         // Set form icon if available
         var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
         if (File.Exists(iconPath))
         {
             this.Icon = new Icon(iconPath);
         }
+    }
+
+    private void SearchDebounceTimer_Tick(object? sender, EventArgs e)
+    {
+        _searchDebounceTimer?.Stop();
+        SearchHouseholds(txtSearch.Text);
     }
 
     private void CheckInForm_Load(object? sender, EventArgs e)
@@ -59,7 +76,7 @@ public partial class CheckInForm : Form
 
         dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
         // Fixed column widths (always respected; Members uses Fill; horizontal scrollbar if window too small)
-        dgvResults.Columns[0].Width = 230;   // Name (Primary)
+        dgvResults.Columns[0].Width = 210;   // Name (Primary)
         dgvResults.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
         dgvResults.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;  // Members
         dgvResults.Columns[1].MinimumWidth = 200;
@@ -69,11 +86,11 @@ public partial class CheckInForm : Form
         dgvResults.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
         dgvResults.Columns[4].Width = 320;   // Last Service
         dgvResults.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-        dgvResults.Columns[5].Width = 225;   // Eligibility ("Already served this month")
+        dgvResults.Columns[5].Width = 150;   // Eligibility
         dgvResults.Columns[5].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
         dgvResults.Columns[6].Width = 75;    // Status
         dgvResults.Columns[6].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-        dgvResults.Columns[7].Width = 200;   // City/Zip
+        dgvResults.Columns[7].Width = 180;   // City/Zip
         dgvResults.Columns[7].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
 
         dgvResults.CellToolTipTextNeeded += DgvResults_CellToolTipTextNeeded;
@@ -93,15 +110,15 @@ public partial class CheckInForm : Form
 
     private void TxtSearch_TextChanged(object? sender, EventArgs e)
     {
-        // Debounce: search after user stops typing
-        // For now, search immediately (can add timer-based debounce if needed)
-        SearchHouseholds(txtSearch.Text);
+        _searchDebounceTimer?.Stop();
+        _searchDebounceTimer?.Start();
     }
 
     private void TxtSearch_KeyDown(object? sender, KeyEventArgs e)
     {
         if (e.KeyCode == Keys.Enter)
         {
+            _searchDebounceTimer?.Stop();
             SearchHouseholds(txtSearch.Text);
             e.Handled = true;
             e.SuppressKeyPress = true;
@@ -137,7 +154,7 @@ public partial class CheckInForm : Form
 
                 // Check eligibility
                 var isEligible = EligibilityService.IsEligibleThisMonth(connection, household.Id, DateTime.Today);
-                string eligibilityText = isEligible ? "Eligible" : "Already served this month";
+                string eligibilityText = isEligible ? "✅ Eligible" : "❌ Already Served";
                 var eligibilityColor = isEligible ? Color.Green : Color.OrangeRed;
 
                 // Format city/zip

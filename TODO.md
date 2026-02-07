@@ -232,6 +232,33 @@ Implementation checklist based on phased plan.
     - `EligibilityService` or equivalent
   - Rationale: Different visit types have different eligibility implications for reporting
 
+### Phase 10 — UX Improvements & Workflow Enhancements (Complete)
+
+#### Search & Check-In Improvements
+
+- [x] Add eligibility status icons with text badges
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Eligibility column shows "✅ Eligible" for eligible households
+    - Eligibility column shows "❌ Already Served" for ineligible households
+    - Color coding remains but is supplemented by icons/text
+  - Likely files:
+    - `src/PantryDeskApp/Forms/CheckInForm.cs`
+    - `src/PantryDeskApp/Forms/CheckInForm.Designer.cs`
+  - Rationale: Improves accessibility for colorblind users and provides clearer visual cues
+
+- [x] Add search debounce (250ms fixed delay)
+  - Impact: Low
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Search triggers 250ms after user stops typing (debounced)
+    - Enter key still triggers immediate search
+    - Search remains responsive but reduces unnecessary queries during typing
+  - Likely files:
+    - `src/PantryDeskApp/Forms/CheckInForm.cs`
+  - Rationale: Reduces database load during rapid typing while maintaining responsiveness (low priority - user prefers immediate search but acknowledges benefit)
+
 ---
 
 ## Open
@@ -298,31 +325,6 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskApp/Forms/StatsForm.cs` (custom tooltip implementation)
     - May require custom WinForms ToolTip control or custom rendering
   - Rationale: Current OxyPlot tooltips show raw data with timestamps and multiple values, making them hard to read. Custom implementation would provide cleaner, more user-friendly tooltips with better hover behavior.
-
-#### Search & Check-In Improvements
-
-- [ ] Add eligibility status icons with text badges
-  - Impact: Medium
-  - Complexity: Small
-  - Acceptance Criteria:
-    - Eligibility column shows "✅ Eligible" for eligible households
-    - Eligibility column shows "❌ Already Served" for ineligible households
-    - Color coding remains but is supplemented by icons/text
-  - Likely files:
-    - `src/PantryDeskApp/Forms/CheckInForm.cs`
-    - `src/PantryDeskApp/Forms/CheckInForm.Designer.cs`
-  - Rationale: Improves accessibility for colorblind users and provides clearer visual cues
-
-- [ ] Add search debounce (250ms fixed delay)
-  - Impact: Low
-  - Complexity: Small
-  - Acceptance Criteria:
-    - Search triggers 250ms after user stops typing (debounced)
-    - Enter key still triggers immediate search
-    - Search remains responsive but reduces unnecessary queries during typing
-  - Likely files:
-    - `src/PantryDeskApp/Forms/CheckInForm.cs`
-  - Rationale: Reduces database load during rapid typing while maintaining responsiveness (low priority - user prefers immediate search but acknowledges benefit)
 
 #### Role Management & Navigation
 

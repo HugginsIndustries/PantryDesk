@@ -5,6 +5,7 @@
 ## Features
 
 - **Household Management**: Search, create, and manage household profiles with per-member tracking and age groups (Infant, Child, Adult, Senior). Active status is system-managed from last qualifying service date (annual reset, default Jan 1; Admin can change reset date)
+- **Check-in**: Search by name (250ms debounce; Enter for immediate search). Eligibility column shows ✅ Eligible / ❌ Already Served with color coding for accessibility
 - **Pantry Days & Appointments**: Calendar-based pantry day scheduling with appointment support
 - **Monthly Eligibility**: Visit types (Shop with TEFAP, Shop, TEFAP Only, Deck Only); only Shop/Shop with TEFAP count toward 1 visit/month limit. Override support (requires reason)
 - **Statistics Dashboard**: Unified dashboard with date range selection (This Month, Last Month, Past 3/6/12 Months, This/Last Year, Custom Range) showing:
