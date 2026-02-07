@@ -2,11 +2,20 @@
 
 Implementation checklist based on phased plan.
 
+## Formatting Rules
+
+- **Completed vs Open:** Move completed items (checked `[x]`) into the **Completed** section at the top. Keep only open items (unchecked `[ ]`) in the **Open** section.
+- **Duplicate headings:** Append ` (Complete)` to section titles in the Completed section when the same title exists in Open (e.g., `### Client Requirements (Complete)`). This satisfies markdownlint MD024 no-duplicate-heading.
+- **Retain structure and details:** When moving an item to Completed, keep the full formatting:
+  - Section headers: use `####` for item titles (e.g., `#### Main Check-In Layout Tweak`), `###` for group titles (e.g., `### Client Requirements`).
+  - Full details: Impact, Complexity, Acceptance Criteria, Likely files, Rationale — retain all of these.
+- **Organization:** Use `#`, `##`, `###`, `####` for clear hierarchy. Match the structure of Open items so Completed mirrors the same organization.
+
 ---
 
 ## Completed
 
-### Phase 0 — Repo setup and guardrails
+### Phase 0 — Repo setup and guardrails (Complete)
 
 - [x] Update project naming (FoodBank\* -> PantryDesk\*)
 - [x] Create repo scaffolding files (.gitignore, README, LICENSE, etc.)
@@ -17,7 +26,7 @@ Implementation checklist based on phased plan.
 - [x] `PantryDeskApp` opens a blank window
 - [x] `PantryDeskSeeder` runs and prints message
 
-### Phase 1 — Database schema + data access layer
+### Phase 1 — Database schema + data access layer (Complete)
 
 - [x] SQLite schema creation + migrations (schema version tracking)
 - [x] Data access layer: Create/open DB
@@ -28,7 +37,7 @@ Implementation checklist based on phased plan.
 - [x] Central config table: schema version, app version
 - [x] Verify: App can create DB and insert/read 1 household, 1 pantry day, 1 service event
 
-### Phase 2 — Authentication (Entry/Admin)
+### Phase 2 — Authentication (Entry/Admin) (Complete)
 
 - [x] Login form: role selection (Entry/Admin) + password
 - [x] Role passwords stored salted+hashed
@@ -36,7 +45,7 @@ Implementation checklist based on phased plan.
 - [x] Enforce Admin-only features (exports/restore/calendar edits blocked for Entry)
 - [x] Verify: Can log in as Entry/Admin; Admin-only actions blocked for Entry
 
-### Phase 3 — Core workflow: Search + Check-in + Create Household
+### Phase 3 — Core workflow: Search + Check-in + Create Household (Complete)
 
 - [x] Main Check-In screen: big search box (PrimaryName)
 - [x] Results list with: PrimaryName, City/Zip, HouseholdSize + breakdown, Last service date + type, Eligibility badge, Inactive badge
@@ -47,7 +56,7 @@ Implementation checklist based on phased plan.
 - [x] Household creation: PrimaryName + composition (required), address fields, optional email
 - [x] Verify: Search → create household → check in → see last-served update in <30 seconds; override prompt triggers
 
-### Phase 4 — Household Profile + Service History + Appointments
+### Phase 4 — Household Profile + Service History + Appointments (Complete)
 
 - [x] Household Profile form: all fields + Active toggle
 - [x] Service History view: list of events with filters
@@ -55,7 +64,7 @@ Implementation checklist based on phased plan.
 - [x] Actions: mark Scheduled appointment as Completed / Cancelled / NoShow
 - [x] Verify: Schedule appointment → mark completed; NoShow/Cancelled doesn't affect eligibility
 
-### Phase 5 — Pantry day calendar generator + editor
+### Phase 5 — Pantry day calendar generator + editor (Complete)
 
 - [x] Admin-only "Pantry Days" screen
 - [x] "Generate for Year" button with rule logic (Jan–Oct: 2nd/3rd/4th Wed; Nov–Dec: 1st/2nd/3rd Wed)
@@ -63,14 +72,14 @@ Implementation checklist based on phased plan.
 - [x] Main check-in uses PantryDay match by date
 - [x] Verify: Generate 2026 pantry days; edit one day and see check-in behavior reflect it
 
-### Phase 6 — Stats dashboard + Monthly Summary Report (PDF + Print)
+### Phase 6 — Stats dashboard + Monthly Summary Report (PDF + Print) (Complete)
 
 - [x] Stats screen: totals, completed services, unique households served, PantryDay vs Appointment, overrides breakdown, by city
 - [x] Monthly Summary view: month picker, Export PDF, Print
 - [x] PDF contents: totals, pantry day breakdown, household composition served, area breakdown
 - [x] Verify: Export PDF for any month with seeded data looks clean; Print opens Windows print dialog
 
-### Phase 7 — Backup / Export / Restore
+### Phase 7 — Backup / Export / Restore (Complete)
 
 - [x] Automatic daily backup: encrypted zip on first app run each day
 - [x] Manual backup now
@@ -79,7 +88,7 @@ Implementation checklist based on phased plan.
 - [x] Export (Admin-only): CSV (households, service_events, pantry_days), JSON structured export
 - [x] Verify: Restore from backup confirms data reverts; Exports open fine in Excel (CSV)
 
-### Phase 8 — Seeder tool
+### Phase 8 — Seeder tool (Complete)
 
 - [x] `PantryDeskSeeder` generates `demo_pantrydesk.db` + config metadata
 - [x] Configurable: households count, monthsBack, city weights, age weights, household size distribution, events per pantry day range, appointments per week range, RNG seed
@@ -88,7 +97,7 @@ Implementation checklist based on phased plan.
 - [x] Inject "demo moments": ineligible households, overrides with reasons, scheduled appointments upcoming
 - [x] Verify: Running seeder produces DB that makes eligibility warnings visible, stats non-zero, monthly PDF interesting
 
-### Phase 9 — Demo polish + hardening
+### Phase 9 — Demo polish + hardening (Complete)
 
 - [x] UI polish: tab order, keyboard shortcuts (Enter to search), clear labels and error messages
 - [x] Edge-case handling: duplicates warning, inactive household warning, prevent empty names / negative counts
@@ -97,7 +106,7 @@ Implementation checklist based on phased plan.
 - [x] Publishing script: `publish.ps1` for creating standalone executables with demo files
 - [x] Verify: Run scripted demo in 5–7 minutes without surprises
 
-### Phase 10 — Statistics Dashboard Redesign
+### Phase 10 — Statistics Dashboard Redesign (Complete)
 
 - [x] Redesign unified Statistics Dashboard with date range selector and charts
   - Impact: High
@@ -123,6 +132,31 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskCore/Services/ReportService.cs` (update PDF generation to include charts)
     - `src/PantryDeskApp/PantryDeskApp.csproj` (add OxyPlot.WindowsForms and OxyPlot.ImageSharp NuGet packages)
   - Rationale: Current dashboard is text/grids only, harder to scan quickly; unified view with charts improves readability and decision-making
+
+### Client Requirements (Complete)
+
+#### Main Check-In Layout Tweak
+
+- [x] Move City/Zip field to far-right column on main check-in page
+  - Impact: Low
+  - Complexity: Small
+  - Acceptance Criteria:
+    - City/Zip column moved to far-right
+    - Other columns remain in same order
+  - Likely files:
+    - `CheckInForm.cs`, `CheckInForm.Designer.cs`
+  - Rationale: Client layout preference for readability
+
+#### Main Page Font Size
+
+- [x] Increase font size on main check-in page (household table/list view)
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Larger font on household table/list for improved readability
+  - Likely files:
+    - `CheckInForm.Designer.cs`
+  - Rationale: Client feedback on readability
 
 ---
 
@@ -385,18 +419,6 @@ Implementation checklist based on phased plan.
     - Reporting queries, deck-only form
   - Rationale: Replaces manual Children/Adults/Seniors with grant-aligned age bands
 
-#### Main Check-In Layout Tweak
-
-- [ ] Move City/Zip field to far-right column on main check-in page
-  - Impact: Low
-  - Complexity: Small
-  - Acceptance Criteria:
-    - City/Zip column moved to far-right
-    - Other columns remain in same order
-  - Likely files:
-    - `CheckInForm.cs`, `CheckInForm.Designer.cs`
-  - Rationale: Client layout preference for readability
-
 #### Deck-Only Monthly Bulk Entry
 
 - [ ] Add deck-only monthly bulk entry with averaged totals
@@ -450,17 +472,6 @@ Implementation checklist based on phased plan.
     - Service event schema (visit type field)
     - `EligibilityService` or equivalent
   - Rationale: Different visit types have different eligibility implications for reporting
-
-#### Main Page Font Size
-
-- [ ] Increase font size on main check-in page (household table/list view)
-  - Impact: Medium
-  - Complexity: Small
-  - Acceptance Criteria:
-    - Larger font on household table/list for improved readability
-  - Likely files:
-    - `CheckInForm.Designer.cs`
-  - Rationale: Client feedback on readability
 
 #### Monthly Activity Report (Letter-Size Landscape)
 

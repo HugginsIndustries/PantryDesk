@@ -82,6 +82,7 @@ partial class CheckInForm
         dgvResults.AllowUserToDeleteRows = false;
         dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         dgvResults.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        dgvResults.Font = new Font("Segoe UI", 12F);
         dgvResults.Location = new Point(12, 88);
         dgvResults.MultiSelect = false;
         dgvResults.Name = "dgvResults";

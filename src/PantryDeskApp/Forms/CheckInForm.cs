@@ -40,12 +40,13 @@ public partial class CheckInForm : Form
     private void SetupDataGridView()
     {
         dgvResults.Columns.Clear();
+        // City/Zip in far-right column per client requirement
         dgvResults.Columns.Add("Name", "Name");
-        dgvResults.Columns.Add("CityZip", "City/Zip");
         dgvResults.Columns.Add("Size", "Size");
         dgvResults.Columns.Add("LastService", "Last Service");
         dgvResults.Columns.Add("Eligibility", "Eligibility");
         dgvResults.Columns.Add("Status", "Status");
+        dgvResults.Columns.Add("CityZip", "City/Zip");
         dgvResults.Columns.Add("HouseholdId", "HouseholdId");
         var householdIdColumn = dgvResults.Columns["HouseholdId"];
         if (householdIdColumn != null)
@@ -55,18 +56,18 @@ public partial class CheckInForm : Form
 
         // Set column widths
         var nameColumn = dgvResults.Columns["Name"];
-        var cityZipColumn = dgvResults.Columns["CityZip"];
         var sizeColumn = dgvResults.Columns["Size"];
         var lastServiceColumn = dgvResults.Columns["LastService"];
         var eligibilityColumn = dgvResults.Columns["Eligibility"];
         var statusColumn = dgvResults.Columns["Status"];
+        var cityZipColumn = dgvResults.Columns["CityZip"];
 
         if (nameColumn != null) nameColumn.Width = 200;
-        if (cityZipColumn != null) cityZipColumn.Width = 150;
         if (sizeColumn != null) sizeColumn.Width = 100;
         if (lastServiceColumn != null) lastServiceColumn.Width = 150;
         if (eligibilityColumn != null) eligibilityColumn.Width = 150;
         if (statusColumn != null) statusColumn.Width = 100;
+        if (cityZipColumn != null) cityZipColumn.Width = 150;
     }
 
     private void TxtSearch_TextChanged(object? sender, EventArgs e)
@@ -142,14 +143,14 @@ public partial class CheckInForm : Form
                 string statusText = household.IsActive ? "Active" : "Inactive";
                 var statusColor = household.IsActive ? Color.Black : Color.Gray;
 
-                // Add row
+                // Add row (column order: Name, Size, LastService, Eligibility, Status, CityZip, HouseholdId)
                 var row = dgvResults.Rows.Add(
                     household.PrimaryName,
-                    cityZip,
                     sizeText,
                     lastServiceText,
                     eligibilityText,
                     statusText,
+                    cityZip,
                     household.Id
                 );
 
