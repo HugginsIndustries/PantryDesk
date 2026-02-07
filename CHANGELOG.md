@@ -249,6 +249,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Seeder override logic improved: pantry days never have overrides, appointments have 1-2% override rate
 - Seeder now only generates pantry days within the requested date range (not full years)
 - Check-in UX: eligibility column shows icon badges (✅ Eligible / ❌ Already Served) with color coding; search by name debounced 250ms with Enter for immediate search; reduced column widths (Eligibility, Name Primary, City/Zip) (COMPLETED: 2025-02-07, TODO: Phase 10 — UX Improvements & Workflow Enhancements/Search & Check-In Improvements)
+- Seeder CLI: validate unknown command-line arguments (clear error and non-zero exit); print effective configuration summary before seeding (households, months back, output path, seed); distinguish "Missing value for --option" from "Unknown argument" for options that require a value (COMPLETED: 2025-02-07, TODO: Seeder CLI Improvements)
 
 ### Removed
 

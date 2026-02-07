@@ -15,7 +15,7 @@
   - Export to PDF or print with embedded charts
 - **Backup & Restore**: Automatic daily encrypted backup on first launch each day (AES-GCM with DPAPI or passphrase). Admin-only "Backup to USB…" for manual backup to a chosen folder (max 8 backups per folder; rotation removes oldest zip and its `.meta.json`). Separate tracking for last auto vs last manual backup; status bar and Restore form show both. Weekly reminder if no manual backup in 7+ days (Snooze or Backup Now). Restore form displays database path and last backup dates. One-click restore with safety copy (Admin-only). Backups respect demo mode configuration.
 - **Data Export**: CSV (Excel-compatible) and JSON exports for external analysis (Admin-only)
-- **Demo Data Seeder**: Separate console tool (`PantryDeskSeeder`) to generate realistic demo databases with configurable parameters (household count, date range, RNG seed for deterministic generation). Enforces all data constraints (service area addresses, phone format, no PO boxes, no child-only households) and includes demo moments (ineligible households, overrides, scheduled appointments)
+- **Demo Data Seeder**: Separate console tool (`PantryDeskSeeder`) to generate realistic demo databases with configurable parameters (household count, date range, RNG seed for deterministic generation). Enforces all data constraints (service area addresses, phone format, no PO boxes, no child-only households) and includes demo moments (ineligible households, overrides, scheduled appointments). Unknown or invalid arguments produce clear errors; a one-line effective configuration summary is printed before generation.
 
 ## Privacy & Security
 

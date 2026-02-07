@@ -1,9 +1,12 @@
-﻿using PantryDeskSeeder;
+using PantryDeskSeeder;
 
 try
 {
     // Parse command-line arguments
     var config = SeederConfig.LoadFromArgs(args);
+
+    var seedText = config.RngSeed.HasValue ? config.RngSeed.Value.ToString() : "random";
+    Console.WriteLine($"Generating database with {config.HouseholdsCount} households, {config.MonthsBack} months back, output: {config.OutputPath}, seed: {seedText}");
 
     // Seed the database
     DatabaseSeeder.SeedDatabase(config.OutputPath, config);

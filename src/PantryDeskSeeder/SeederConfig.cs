@@ -19,6 +19,13 @@ public class SeederConfig
     public int? RngSeed { get; set; }
     public string OutputPath { get; set; } = "demo_pantrydesk.db";
 
+    private static readonly HashSet<string> OptionsRequiringValue = new(StringComparer.Ordinal)
+    {
+        "--households", "--months-back", "--seed", "--output",
+        "--city-weights", "--age-weights", "--household-size-dist",
+        "--events-per-pantry-day", "--appointments-per-week"
+    };
+
     /// <summary>
     /// Gets default configuration with sensible defaults.
     /// </summary>
@@ -157,6 +164,17 @@ public class SeederConfig
                 case "--help":
                     PrintUsage();
                     Environment.Exit(0);
+                    break;
+
+                default:
+                    if (arg.StartsWith("--"))
+                    {
+                        if (OptionsRequiringValue.Contains(arg))
+                        {
+                            throw new ArgumentException($"Missing value for {arg}. Use --help for usage information.");
+                        }
+                        throw new ArgumentException($"Unknown argument: {arg}. Use --help for usage information.");
+                    }
                     break;
             }
         }

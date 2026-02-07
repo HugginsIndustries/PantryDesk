@@ -333,6 +333,32 @@ Implementation checklist based on phased plan.
     - Config/metadata for last manual backup date
   - Rationale: Backup to USB fails with locked DB; separate tracking and weekly reminder encourage regular manual backups; rotation prevents folder clutter
 
+#### Seeder CLI Improvements (Complete)
+
+- [x] Add validation for unknown command-line arguments
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Unknown flags produce clear error message: "Unknown argument: --flag. Use --help for usage information."
+    - Error message includes hint to use --help
+    - Seeder exits with non-zero code on unknown argument
+  - Likely files:
+    - `src/PantryDeskSeeder/SeederConfig.cs`
+    - `src/PantryDeskSeeder/Program.cs`
+  - Rationale: Current CLI silently ignores unknown args, which can cause confusion
+
+- [x] Print effective configuration summary before seeding begins
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Before database generation starts, print one-line summary: "Generating database with X households, Y months back, output: [path], seed: Z"
+    - Summary reflects all effective settings (defaults + overrides)
+    - Helps users confirm their inputs before generation
+  - Likely files:
+    - `src/PantryDeskSeeder/Program.cs`
+    - `src/PantryDeskSeeder/SeederConfig.cs`
+  - Rationale: Provides confirmation of effective configuration before potentially long-running operation
+
 ---
 
 ## Open
@@ -430,32 +456,6 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskApp/Forms/PantryDaysForm.cs`
     - `src/PantryDeskApp/Forms/PantryDaysForm.Designer.cs`
   - Rationale: Reduces scrolling when managing large numbers of pantry days
-
-#### Seeder CLI Improvements
-
-- [ ] Add validation for unknown command-line arguments
-  - Impact: Medium
-  - Complexity: Small
-  - Acceptance Criteria:
-    - Unknown flags produce clear error message: "Unknown argument: --flag. Use --help for usage information."
-    - Error message includes hint to use --help
-    - Seeder exits with non-zero code on unknown argument
-  - Likely files:
-    - `src/PantryDeskSeeder/SeederConfig.cs`
-    - `src/PantryDeskSeeder/Program.cs`
-  - Rationale: Current CLI silently ignores unknown args, which can cause confusion
-
-- [ ] Print effective configuration summary before seeding begins
-  - Impact: Medium
-  - Complexity: Small
-  - Acceptance Criteria:
-    - Before database generation starts, print one-line summary: "Generating database with X households, Y months back, output: [path], seed: Z"
-    - Summary reflects all effective settings (defaults + overrides)
-    - Helps users confirm their inputs before generation
-  - Likely files:
-    - `src/PantryDeskSeeder/Program.cs`
-    - `src/PantryDeskSeeder/SeederConfig.cs`
-  - Rationale: Provides confirmation of effective configuration before potentially long-running operation
 
 ---
 
