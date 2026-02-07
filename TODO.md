@@ -308,7 +308,6 @@ Implementation checklist based on phased plan.
     - Eligibility column shows "✅ Eligible" for eligible households
     - Eligibility column shows "❌ Already Served" for ineligible households
     - Color coding remains but is supplemented by icons/text
-    - Add legend near results grid explaining eligibility indicators
   - Likely files:
     - `src/PantryDeskApp/Forms/CheckInForm.cs`
     - `src/PantryDeskApp/Forms/CheckInForm.Designer.cs`
