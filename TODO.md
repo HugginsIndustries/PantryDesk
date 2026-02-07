@@ -5,7 +5,7 @@ Implementation checklist based on phased plan.
 ## Formatting Rules
 
 - **Completed vs Open:** Move completed items (checked `[x]`) into the **Completed** section at the top. Keep only open items (unchecked `[ ]`) in the **Open** section.
-- **Duplicate headings:** Append ` (Complete)` to section titles in the Completed section when the same title exists in Open (e.g., `### Client Requirements (Complete)`). This satisfies markdownlint MD024 no-duplicate-heading.
+- **Duplicate headings:** Append a space and `(Complete)` to section titles in the Completed section when the same title exists in Open (e.g., `### Client Requirements (Complete)`). This satisfies markdownlint MD024 no-duplicate-heading.
 - **Retain structure and details:** When moving an item to Completed, keep the full formatting:
   - Section headers: use `####` for item titles (e.g., `#### Main Check-In Layout Tweak`), `###` for group titles (e.g., `### Client Requirements`).
   - Full details: Impact, Complexity, Acceptance Criteria, Likely files, Rationale — retain all of these.

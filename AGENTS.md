@@ -120,6 +120,16 @@ Never commit real addresses, names, or phone numbers from actual clients.
 
 ---
 
+## Documentation & markdown
+
+When editing `.md` files (AGENTS.md, TODO.md, README.md, etc.):
+
+- Follow markdownlint rules (e.g., no spaces inside code spans, no duplicate headings).
+- Use proper hierarchy (`#`, `##`, `###`, `####`).
+- Prefer clear structure over brevity.
+
+---
+
 ## Change discipline (how agents should work)
 
 When implementing a feature:
@@ -131,6 +141,19 @@ When implementing a feature:
 5. Update docs if behavior changes.
 
 Avoid “drive-by” formatting or refactoring across unrelated files.
+
+---
+
+## TODO.md maintenance
+
+When marking items complete or updating the TODO list:
+
+- **Move completed items:** When an item is done (checked `[x]`), move it into the **Completed** section at the top. Remove it from the **Open** section.
+- **Retain structure and details:** Keep the full formatting when moving to Completed:
+  - Section headers: `####` for item titles, `###` for group titles.
+  - Full details: Impact, Complexity, Acceptance Criteria, Likely files, Rationale.
+- **Avoid duplicate headings:** Append a space and `(Complete)` to section titles in Completed when the same title exists in Open (e.g., `### Client Requirements (Complete)`). Satisfies markdownlint MD024.
+- **Organization:** Use `#`, `##`, `###`, `####` for clear hierarchy. Match the structure of Open items so Completed mirrors the same organization.
 
 ---
 
