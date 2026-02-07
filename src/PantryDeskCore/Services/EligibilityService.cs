@@ -22,8 +22,9 @@ public static class EligibilityService
         var monthStart = new DateTime(referenceDate.Year, referenceDate.Month, 1);
         var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
-        // Use optimized query that filters by household, status, and date range in SQL
-        var hasCompleted = ServiceEventRepository.HasCompletedInDateRange(connection, householdId, monthStart, monthEnd);
+        // Use optimized query that filters by household, status, date range, and qualifying visit type in SQL
+        // Only Shop with TEFAP and Shop count toward the monthly limit; TEFAP Only and Deck Only do not
+        var hasCompleted = ServiceEventRepository.HasCompletedQualifyingVisitInDateRange(connection, householdId, monthStart, monthEnd);
 
         // Eligible if no completed services this month
         return !hasCompleted;

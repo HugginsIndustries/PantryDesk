@@ -212,6 +212,26 @@ Implementation checklist based on phased plan.
     - Reporting queries, deck-only form
   - Rationale: Client needs individual member tracking for grants; demo data should reflect Lewis County; age groups and birthdays must align; staff find households when any member shops
 
+#### Complete Service Dialog Enhancements
+
+- [x] Enhance Complete Service dialog with Visit Type and eligibility rules
+  - Impact: High
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - When clicking Complete Service, prompt for:
+      - Visit Type (required): Shop with TEFAP, Shop, TEFAP Only, Deck Only
+      - Notes (optional)
+    - Monthly visit limit rule:
+      - ONLY "Shop with TEFAP" and "Shop" count toward 1 visit/month limit
+      - "TEFAP Only" and "Deck Only" do NOT count; can occur multiple times as needed
+    - Staff chooses visit type; typically "Shop with TEFAP"
+    - TEFAP eligibility tracked only via visit type (no separate TEFAP eligibility fields)
+  - Likely files:
+    - `CheckInForm.cs` (Complete Service flow)
+    - Service event schema (visit type field)
+    - `EligibilityService` or equivalent
+  - Rationale: Different visit types have different eligibility implications for reporting
+
 ---
 
 ## Open
@@ -453,26 +473,6 @@ Implementation checklist based on phased plan.
     - `StatisticsService`, Monthly Activity Report logic
     - Config/metadata for storing deck-only monthly data
   - Rationale: Deck-only visitors fill paper form; staff need to incorporate averaged totals into reports
-
-#### Complete Service Dialog Enhancements
-
-- [ ] Enhance Complete Service dialog with Visit Type and eligibility rules
-  - Impact: High
-  - Complexity: Medium
-  - Acceptance Criteria:
-    - When clicking Complete Service, prompt for:
-      - Visit Type (required): Shop with TEFAP, Shop, TEFAP Only, Deck Only
-      - Notes (optional)
-    - Monthly visit limit rule:
-      - ONLY "Shop with TEFAP" and "Shop" count toward 1 visit/month limit
-      - "TEFAP Only" and "Deck Only" do NOT count; can occur multiple times as needed
-    - Staff chooses visit type; typically "Shop with TEFAP"
-    - TEFAP eligibility tracked only via visit type (no separate TEFAP eligibility fields)
-  - Likely files:
-    - `CheckInForm.cs` (Complete Service flow)
-    - Service event schema (visit type field)
-    - `EligibilityService` or equivalent
-  - Rationale: Different visit types have different eligibility implications for reporting
 
 #### Monthly Activity Report (Letter-Size Landscape)
 

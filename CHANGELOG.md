@@ -211,6 +211,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Statistics: composition from members' age groups (4 groups); StatsForm and ReportService updated
   - Export: household_members CSV and JSON
   - Seeder: generates members with birthdays from age-group distribution; Lewis County demographic weights (Race, Veteran, Disabled)
+- **Complete Service Dialog Enhancements** (COMPLETED: 2025-02-07, TODO: Client Requirements/Complete Service Dialog Enhancements)
+  - New CompleteServiceDialog: Visit Type (required) and Notes (optional)
+  - Visit types: Shop with TEFAP, Shop, TEFAP Only, Deck Only
+  - `visit_type` column added to `service_events` table (schema migration v2→v3)
+  - Monthly eligibility rule: only "Shop with TEFAP" and "Shop" count toward 1 visit/month limit; "TEFAP Only" and "Deck Only" do not
+  - CheckInForm Complete Service flow: dialog shown first, eligibility checked only for Shop/Shop with TEFAP
+  - HouseholdProfileForm Mark Completed: same CompleteServiceDialog and eligibility rules when marking appointments
+  - Seeder generates VisitType for completed events; scheduled events leave VisitType null
+  - Export CSV and JSON include VisitType
+  - Type and Last Service columns display EventType - VisitType format (e.g. "PantryDay - Shop with TEFAP"); fallback to EventType when VisitType is null
+  - Column widths: Last Service 320px, Service History Type 190px/Date 80px/Status 80px (more room for Notes)
 
 ### Changed
 

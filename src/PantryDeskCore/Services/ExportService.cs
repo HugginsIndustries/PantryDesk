@@ -124,7 +124,7 @@ public static class ExportService
         using var writer = new StreamWriter(filePath, false, new UTF8Encoding(true)); // UTF-8 with BOM
 
         // Write header
-        writer.WriteLine("Id,HouseholdId,EventType,EventStatus,EventDate,ScheduledText,OverrideReason,Notes,CreatedAt");
+        writer.WriteLine("Id,HouseholdId,EventType,EventStatus,EventDate,ScheduledText,OverrideReason,Notes,VisitType,CreatedAt");
 
         // Write data rows
         foreach (var evt in serviceEvents)
@@ -139,6 +139,7 @@ public static class ExportService
                 EscapeCsvField(evt.ScheduledText),
                 EscapeCsvField(evt.OverrideReason),
                 EscapeCsvField(evt.Notes),
+                EscapeCsvField(evt.VisitType),
                 EscapeCsvField(evt.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"))
             };
             writer.WriteLine(string.Join(",", row));

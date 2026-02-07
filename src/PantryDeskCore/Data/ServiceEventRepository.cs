@@ -31,6 +31,7 @@ public static class ServiceEventRepository
             cmd.Parameters.AddWithValue("@scheduled_text", (object?)serviceEvent.ScheduledText ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@override_reason", (object?)serviceEvent.OverrideReason ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@notes", (object?)serviceEvent.Notes ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@visit_type", (object?)serviceEvent.VisitType ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@created_at", createdAt);
 
             cmd.ExecuteNonQuery();
@@ -250,8 +251,35 @@ public static class ServiceEventRepository
             cmd.Parameters.AddWithValue("@scheduled_text", (object?)serviceEvent.ScheduledText ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@override_reason", (object?)serviceEvent.OverrideReason ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@notes", (object?)serviceEvent.Notes ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@visit_type", (object?)serviceEvent.VisitType ?? DBNull.Value);
 
             cmd.ExecuteNonQuery();
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
+    /// <summary>
+    /// Checks if a household has any completed qualifying visits (Shop with TEFAP or Shop) within a date range.
+    /// TEFAP Only and Deck Only do not count toward the monthly limit.
+    /// </summary>
+    public static bool HasCompletedQualifyingVisitInDateRange(SqliteConnection connection, int householdId, DateTime startDate, DateTime endDate)
+    {
+        var startDateStr = startDate.ToString("yyyy-MM-dd");
+        var endDateStr = endDate.ToString("yyyy-MM-dd");
+
+        DatabaseManager.OpenWithForeignKeys(connection);
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.ServiceEventSelectCompletedQualifyingByHouseholdAndDateRange, connection);
+            cmd.Parameters.AddWithValue("@household_id", householdId);
+            cmd.Parameters.AddWithValue("@start_date", startDateStr);
+            cmd.Parameters.AddWithValue("@end_date", endDateStr);
+
+            using var reader = cmd.ExecuteReader();
+            return reader.Read();
         }
         finally
         {
@@ -271,7 +299,8 @@ public static class ServiceEventRepository
             ScheduledText = reader.IsDBNull(5) ? null : reader.GetString(5),
             OverrideReason = reader.IsDBNull(6) ? null : reader.GetString(6),
             Notes = reader.IsDBNull(7) ? null : reader.GetString(7),
-            CreatedAt = DateTime.Parse(reader.GetString(8))
+            VisitType = reader.IsDBNull(8) ? null : reader.GetString(8),
+            CreatedAt = DateTime.Parse(reader.GetString(9))
         };
     }
 }

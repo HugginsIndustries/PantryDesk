@@ -59,9 +59,9 @@ public partial class HouseholdProfileForm : Form
         var scheduledTextColumn = dgvServiceHistory.Columns["ScheduledText"];
         var notesColumn = dgvServiceHistory.Columns["Notes"];
 
-        if (dateColumn != null) dateColumn.Width = 100;
-        if (typeColumn != null) typeColumn.Width = 100;
-        if (statusColumn != null) statusColumn.Width = 100;
+        if (dateColumn != null) dateColumn.Width = 80;
+        if (typeColumn != null) typeColumn.Width = 190;
+        if (statusColumn != null) statusColumn.Width = 80;
         if (scheduledTextColumn != null) scheduledTextColumn.Width = 200;
         if (notesColumn != null) notesColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
     }
@@ -352,10 +352,13 @@ public partial class HouseholdProfileForm : Form
         {
             var scheduledText = evt.EventStatus == "Scheduled" ? evt.ScheduledText ?? string.Empty : string.Empty;
             var notes = evt.Notes ?? string.Empty;
+            var typeDisplay = string.IsNullOrWhiteSpace(evt.VisitType)
+                ? evt.EventType
+                : $"{evt.EventType} - {evt.VisitType}";
 
             var row = dgvServiceHistory.Rows.Add(
                 evt.EventDate.ToString("yyyy-MM-dd"),
-                evt.EventType,
+                typeDisplay,
                 evt.EventStatus,
                 scheduledText,
                 notes,
@@ -469,6 +472,23 @@ public partial class HouseholdProfileForm : Form
 
     private void MarkAppointmentStatus(ServiceEvent serviceEvent, string newStatus)
     {
+        string? visitType = null;
+        string? dialogNotes = null;
+
+        // When marking as Completed, show CompleteServiceDialog first (Visit Type + Notes)
+        if (newStatus == "Completed")
+        {
+            using (var completeServiceDialog = new CompleteServiceDialog())
+            {
+                if (completeServiceDialog.ShowDialog() != DialogResult.OK)
+                {
+                    return; // User cancelled
+                }
+                visitType = completeServiceDialog.VisitType;
+                dialogNotes = completeServiceDialog.Notes;
+            }
+        }
+
         try
         {
             using var connection = DatabaseManager.GetConnection();
@@ -476,45 +496,52 @@ public partial class HouseholdProfileForm : Form
             string? overrideReason = null;
             string? overrideNotes = null;
 
-            // If marking as Completed, check eligibility and handle override if needed
+            // If marking as Completed, check eligibility and handle override for Shop/Shop with TEFAP
             if (newStatus == "Completed")
             {
-                var isEligible = EligibilityService.IsEligibleThisMonth(connection, _householdId, DateTime.Today);
-
-                if (!isEligible)
+                var countsTowardLimit = visitType == "Shop with TEFAP" || visitType == "Shop";
+                if (countsTowardLimit)
                 {
-                    using var overrideForm = new OverrideReasonForm();
-                    if (overrideForm.ShowDialog() != DialogResult.OK)
-                    {
-                        return; // User cancelled
-                    }
+                    var isEligible = EligibilityService.IsEligibleThisMonth(connection, _householdId, DateTime.Today);
 
-                    overrideReason = overrideForm.OverrideReason;
-                    overrideNotes = overrideForm.Notes;
+                    if (!isEligible)
+                    {
+                        using var overrideForm = new OverrideReasonForm();
+                        if (overrideForm.ShowDialog() != DialogResult.OK)
+                        {
+                            return; // User cancelled
+                        }
+
+                        overrideReason = overrideForm.OverrideReason;
+                        overrideNotes = overrideForm.Notes;
+                    }
                 }
 
-                // Set EventDate to today (completion date)
+                // Merge notes: existing + dialog notes + override notes when applicable
+                string? notes = dialogNotes;
+                if (!string.IsNullOrWhiteSpace(overrideNotes))
+                {
+                    notes = string.IsNullOrWhiteSpace(dialogNotes)
+                        ? overrideNotes
+                        : $"{dialogNotes}\n\nOverride: {overrideNotes}";
+                }
+                if (!string.IsNullOrWhiteSpace(serviceEvent.Notes) && !string.IsNullOrWhiteSpace(notes))
+                {
+                    notes = $"{serviceEvent.Notes}\n\n{notes}";
+                }
+                else if (!string.IsNullOrWhiteSpace(serviceEvent.Notes))
+                {
+                    notes = serviceEvent.Notes;
+                }
+
+                serviceEvent.VisitType = visitType;
+                serviceEvent.Notes = notes;
                 serviceEvent.EventDate = DateTime.Today;
             }
 
             // Update the event
             serviceEvent.EventStatus = newStatus;
             serviceEvent.OverrideReason = overrideReason;
-            
-            // Preserve existing notes and append override notes if provided
-            if (!string.IsNullOrWhiteSpace(overrideNotes))
-            {
-                if (!string.IsNullOrWhiteSpace(serviceEvent.Notes))
-                {
-                    // Append override notes to existing notes
-                    serviceEvent.Notes = $"{serviceEvent.Notes}\n\nOverride: {overrideNotes}";
-                }
-                else
-                {
-                    // No existing notes, use override notes
-                    serviceEvent.Notes = overrideNotes;
-                }
-            }
 
             ServiceEventRepository.Update(connection, serviceEvent);
 

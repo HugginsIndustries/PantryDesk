@@ -67,7 +67,7 @@ public partial class CheckInForm : Form
         dgvResults.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
         dgvResults.Columns[3].Width = 110;   // Age(s)
         dgvResults.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-        dgvResults.Columns[4].Width = 200;   // Last Service
+        dgvResults.Columns[4].Width = 320;   // Last Service
         dgvResults.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
         dgvResults.Columns[5].Width = 225;   // Eligibility ("Already served this month")
         dgvResults.Columns[5].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
@@ -83,7 +83,7 @@ public partial class CheckInForm : Form
     {
         if (e.ColumnIndex < 0 || e.RowIndex < 0) return;
         var colName = dgvResults.Columns[e.ColumnIndex].Name;
-        if (colName == "Members" || colName == "Eligibility" || colName == "Status" || colName == "CityZip")
+        if (colName == "Members" || colName == "LastService" || colName == "Eligibility" || colName == "Status" || colName == "CityZip")
         {
             var value = dgvResults.Rows[e.RowIndex].Cells[colName].Value?.ToString();
             if (!string.IsNullOrEmpty(value))
@@ -129,7 +129,10 @@ public partial class CheckInForm : Form
                 string lastServiceText = "Never";
                 if (lastService != null)
                 {
-                    lastServiceText = $"{lastService.EventDate:yyyy-MM-dd} {lastService.EventType}";
+                    var typePart = string.IsNullOrWhiteSpace(lastService.VisitType)
+                        ? lastService.EventType
+                        : $"{lastService.EventType} - {lastService.VisitType}";
+                    lastServiceText = $"{lastService.EventDate:yyyy-MM-dd} {typePart}";
                 }
 
                 // Check eligibility
@@ -245,6 +248,19 @@ public partial class CheckInForm : Form
             return;
         }
 
+        // Show Complete Service dialog first (Visit Type + Notes)
+        string visitType;
+        string? dialogNotes;
+        using (var completeServiceDialog = new CompleteServiceDialog())
+        {
+            if (completeServiceDialog.ShowDialog() != DialogResult.OK)
+            {
+                return; // User cancelled
+            }
+            visitType = completeServiceDialog.VisitType;
+            dialogNotes = completeServiceDialog.Notes;
+        }
+
         try
         {
             using var connection = DatabaseManager.GetConnection();
@@ -264,23 +280,35 @@ public partial class CheckInForm : Form
                 }
             }
 
-            // Check eligibility
-            var isEligible = EligibilityService.IsEligibleThisMonth(connection, _selectedHousehold.Id, DateTime.Today);
-
             string? overrideReason = null;
             string? overrideNotes = null;
 
-            // If not eligible, show override modal
-            if (!isEligible)
+            // Only Shop with TEFAP and Shop count toward monthly limit; check eligibility for those
+            var countsTowardLimit = visitType == "Shop with TEFAP" || visitType == "Shop";
+            if (countsTowardLimit)
             {
-                using var overrideForm = new OverrideReasonForm();
-                if (overrideForm.ShowDialog() != DialogResult.OK)
-                {
-                    return; // User cancelled
-                }
+                var isEligible = EligibilityService.IsEligibleThisMonth(connection, _selectedHousehold.Id, DateTime.Today);
 
-                overrideReason = overrideForm.OverrideReason;
-                overrideNotes = overrideForm.Notes;
+                if (!isEligible)
+                {
+                    using var overrideForm = new OverrideReasonForm();
+                    if (overrideForm.ShowDialog() != DialogResult.OK)
+                    {
+                        return; // User cancelled
+                    }
+
+                    overrideReason = overrideForm.OverrideReason;
+                    overrideNotes = overrideForm.Notes;
+                }
+            }
+
+            // Merge notes: dialog notes + override notes when applicable
+            string? notes = dialogNotes;
+            if (!string.IsNullOrWhiteSpace(overrideNotes))
+            {
+                notes = string.IsNullOrWhiteSpace(dialogNotes)
+                    ? overrideNotes
+                    : $"{dialogNotes}\n\nOverride: {overrideNotes}";
             }
 
             // Determine event type: check if today is a pantry day
@@ -298,8 +326,9 @@ public partial class CheckInForm : Form
                 EventType = eventType,
                 EventStatus = "Completed",
                 EventDate = DateTime.Today,
+                VisitType = visitType,
                 OverrideReason = overrideReason,
-                Notes = overrideNotes
+                Notes = notes
             };
 
             ServiceEventRepository.Create(connection, serviceEvent);

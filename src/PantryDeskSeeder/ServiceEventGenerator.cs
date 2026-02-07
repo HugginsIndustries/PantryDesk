@@ -15,6 +15,9 @@ public static class ServiceEventGenerator
         "Other"
     };
 
+    // Visit types for completed events; mostly Shop with TEFAP, some Shop, occasional TEFAP Only/Deck Only
+    private static readonly string[] VisitTypes = new[] { "Shop with TEFAP", "Shop", "TEFAP Only", "Deck Only" };
+
     private static readonly string[] ScheduledTexts = new[]
     {
         "10:00 AM - 11:00 AM",
@@ -82,6 +85,7 @@ public static class ServiceEventGenerator
                     EventType = "PantryDay",
                     EventStatus = "Completed",
                     EventDate = pantryDay.PantryDate,
+                    VisitType = PickVisitType(rng),
                     OverrideReason = null,
                     Notes = null,
                     CreatedAt = pantryDay.PantryDate.AddHours(10 + rng.Next(8)) // Random time during pantry hours
@@ -165,6 +169,7 @@ public static class ServiceEventGenerator
                 EventType = "Appointment",
                 EventStatus = "Completed",
                 EventDate = appointmentDate,
+                VisitType = PickVisitType(rng),
                 ScheduledText = ScheduledTexts[rng.Next(ScheduledTexts.Length)],
                 OverrideReason = overrideReason,
                 Notes = notes,
@@ -203,6 +208,7 @@ public static class ServiceEventGenerator
                 EventType = "Appointment",
                 EventStatus = "Scheduled",
                 EventDate = scheduledDate,
+                VisitType = null, // Scheduled events have no visit type until completed
                 ScheduledText = scheduledText,
                 Notes = rng.NextDouble() < 0.3 ? GenerateScheduledNotes(rng) : null,
                 CreatedAt = baseDate.AddHours(-rng.Next(168)) // Created within last week
@@ -252,6 +258,16 @@ public static class ServiceEventGenerator
         }
 
         return dates;
+    }
+
+    private static string PickVisitType(Random rng)
+    {
+        // Mostly Shop with TEFAP, some Shop, occasional TEFAP Only or Deck Only
+        var roll = rng.NextDouble();
+        if (roll < 0.70) return "Shop with TEFAP";
+        if (roll < 0.95) return "Shop";
+        if (roll < 0.98) return "TEFAP Only";
+        return "Deck Only";
     }
 
     private static string GenerateOverrideNotes(Random rng)

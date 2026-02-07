@@ -42,8 +42,16 @@ public static class Sql
             scheduled_text TEXT,
             override_reason TEXT,
             notes TEXT,
+            visit_type TEXT,
             created_at TEXT NOT NULL
         )";
+
+    public const string ServiceEventAlterAddVisitType = @"
+        ALTER TABLE service_events ADD COLUMN visit_type TEXT";
+
+    public const string ServiceEventBackfillVisitType = @"
+        UPDATE service_events SET visit_type = 'Shop with TEFAP'
+        WHERE event_status = 'Completed' AND (visit_type IS NULL OR visit_type = '')";
 
     public const string CreatePantryDaysTable = @"
         CREATE TABLE IF NOT EXISTS pantry_days (
@@ -244,42 +252,42 @@ public static class Sql
     public const string ServiceEventInsert = @"
         INSERT INTO service_events (
             household_id, event_type, event_status, event_date,
-            scheduled_text, override_reason, notes, created_at
+            scheduled_text, override_reason, notes, visit_type, created_at
         )
         VALUES (
             @household_id, @event_type, @event_status, @event_date,
-            @scheduled_text, @override_reason, @notes, @created_at
+            @scheduled_text, @override_reason, @notes, @visit_type, @created_at
         )";
 
     public const string ServiceEventSelectById = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, created_at
+               scheduled_text, override_reason, notes, visit_type, created_at
         FROM service_events
         WHERE id = @id";
 
     public const string ServiceEventSelectByHouseholdId = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, created_at
+               scheduled_text, override_reason, notes, visit_type, created_at
         FROM service_events
         WHERE household_id = @household_id
         ORDER BY event_date DESC, created_at DESC";
 
     public const string ServiceEventSelectByDateRange = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, created_at
+               scheduled_text, override_reason, notes, visit_type, created_at
         FROM service_events
         WHERE event_date >= @start_date AND event_date <= @end_date
         ORDER BY event_date DESC, created_at DESC";
 
     public const string ServiceEventSelectAll = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, created_at
+               scheduled_text, override_reason, notes, visit_type, created_at
         FROM service_events
         ORDER BY event_date DESC, created_at DESC";
 
     public const string ServiceEventSelectLastCompletedByHouseholdId = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, created_at
+               scheduled_text, override_reason, notes, visit_type, created_at
         FROM service_events
         WHERE household_id = @household_id AND event_status = 'Completed'
         ORDER BY event_date DESC, created_at DESC
@@ -287,12 +295,22 @@ public static class Sql
 
     public const string ServiceEventSelectCompletedByHouseholdAndDateRange = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, created_at
+               scheduled_text, override_reason, notes, visit_type, created_at
         FROM service_events
         WHERE household_id = @household_id 
           AND event_status = 'Completed'
           AND event_date >= @start_date 
           AND event_date <= @end_date
+        LIMIT 1";
+
+    public const string ServiceEventSelectCompletedQualifyingByHouseholdAndDateRange = @"
+        SELECT 1
+        FROM service_events
+        WHERE household_id = @household_id 
+          AND event_status = 'Completed'
+          AND event_date >= @start_date 
+          AND event_date <= @end_date
+          AND (visit_type IN ('Shop with TEFAP', 'Shop') OR visit_type IS NULL)
         LIMIT 1";
 
     public const string ServiceEventUpdate = @"
@@ -302,7 +320,8 @@ public static class Sql
             event_date = @event_date,
             scheduled_text = @scheduled_text,
             override_reason = @override_reason,
-            notes = @notes
+            notes = @notes,
+            visit_type = @visit_type
         WHERE id = @id";
 
     // PantryDay queries
