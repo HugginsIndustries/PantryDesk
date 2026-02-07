@@ -319,4 +319,166 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskSeeder/Program.cs`
     - `src/PantryDeskSeeder/SeederConfig.cs`
   - Rationale: Provides confirmation of effective configuration before potentially long-running operation
+
+---
+
+## Client Requirements
+
+### Per-Household Member Tracking
+
+- [ ] Add per-household member tracking (replace single household name with individual members)
+  - Impact: High
+  - Complexity: High
+  - Acceptance Criteria:
+    - Each household has one or more members; each member requires:
+      - First name (required)
+      - Last name (required)
+      - Birthday (required)
+    - Optional member fields:
+      - Race: White, Black, Hispanic, Native American, Not Specified (used when client refuses/declines; preferred to collect when possible for grants)
+      - Veteran status: None, Active Duty, Reserve, Veteran, Unknown, Prefer Not To Answer (default: Prefer Not To Answer; self-reported)
+      - Disabled status: Not Disabled, Disabled, Unknown, Prefer Not To Answer (default: Prefer Not To Answer; self-reported)
+    - No edit history required for member changes
+    - "Disabled Veteran" derived field (Veteran + Disabled) optionally included as reportable
+  - Likely files:
+    - Schema migration (household_members table or equivalent)
+    - `PantryDeskCore` models, repositories
+    - `NewHouseholdForm`, `HouseholdProfileForm`, composition UI
+  - Rationale: Client needs individual member tracking for grants and demographics
+
+### Member Demographics Aggregate Reporting
+
+- [ ] Add aggregate reporting for member demographics
+  - Impact: Medium
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - Report totals for: Race, Veteran status, Disabled status (across served households/members)
+    - Optionally include derived "Disabled Veteran" totals (Veteran + Disabled)
+    - Report accessible from Reports menu or Statistics Dashboard
+  - Likely files:
+    - `StatisticsService`, `ReportService`
+    - New or extended report form
+  - Rationale: Grant reporting requires demographic breakdowns
+
+### Age-Group Calculation from Birthdays
+
+- [ ] Add automatic age-group calculation from member birthdays
+  - Impact: High
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - Age groups: 0–2 (new), 2–18, 18–55, 55+
+    - Age group derived from birthday; no "unknown" age group (birthdays required)
+    - Age group updates automatically on birthdays (e.g., 18th birthday moves member into 18–55)
+    - Used for reporting and deck-only form
+  - Likely files:
+    - `PantryDeskCore` age-group helper
+    - Reporting queries, deck-only form
+  - Rationale: Replaces manual Children/Adults/Seniors with grant-aligned age bands
+
+### Main Check-In Layout Tweak
+
+- [ ] Move City/Zip field to far-right column on main check-in page
+  - Impact: Low
+  - Complexity: Small
+  - Acceptance Criteria:
+    - City/Zip column moved to far-right
+    - Other columns remain in same order
+  - Likely files:
+    - `CheckInForm.cs`, `CheckInForm.Designer.cs`
+  - Rationale: Client layout preference for readability
+
+### Deck-Only Monthly Bulk Entry
+
+- [ ] Add deck-only monthly bulk entry with averaged totals
+  - Impact: High
+  - Complexity: High
+  - Acceptance Criteria:
+    - Form for deck-only shopping: Name, Household total, counts per age group (0–2, 2–18, 18–55, 55+)
+    - Staff totals all pages over a month (Household total + each age-group total)
+    - Divide totals by number of pages (averaging for repeated samples as form is swapped out)
+    - Averaged totals added in bulk to monthly statistics for reporting
+    - Add deck-only averaged totals ONLY to duplicated individual counts (overall + by age group) for Monthly Activity Report
+    - Do not derive unduplicated deck-only counts
+  - Likely files:
+    - New deck-only entry form
+    - `StatisticsService`, Monthly Activity Report logic
+    - Config/metadata for storing deck-only monthly data
+  - Rationale: Deck-only visitors fill paper form; staff need to incorporate averaged totals into reports
+
+### Annual Active-Status Reset
+
+- [ ] Add configurable annual active-status reset
+  - Impact: High
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - On first app launch on/after configured reset date, set all households to Inactive
+    - Default reset date: Jan 1 each year
+    - Admin setting to change reset date (for reporting year changes)
+    - Households reactivated on first qualifying visit in the new reporting year
+  - Likely files:
+    - Config table or settings for reset date
+    - Startup logic in `Program.cs` or main form
+    - Admin settings form
+  - Rationale: Annual reporting cycle requires clean slate; some years use different start dates
+
+### Complete Service Dialog Enhancements
+
+- [ ] Enhance Complete Service dialog with Visit Type and eligibility rules
+  - Impact: High
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - When clicking Complete Service, prompt for:
+      - Visit Type (required): Shop with TEFAP, Shop, TEFAP Only, Deck Only
+      - Notes (optional)
+    - Monthly visit limit rule:
+      - ONLY "Shop with TEFAP" and "Shop" count toward 1 visit/month limit
+      - "TEFAP Only" and "Deck Only" do NOT count; can occur multiple times as needed
+    - Staff chooses visit type; typically "Shop with TEFAP"
+    - TEFAP eligibility tracked only via visit type (no separate TEFAP eligibility fields)
+  - Likely files:
+    - `CheckInForm.cs` (Complete Service flow)
+    - Service event schema (visit type field)
+    - `EligibilityService` or equivalent
+  - Rationale: Different visit types have different eligibility implications for reporting
+
+### Main Page Font Size
+
+- [ ] Increase font size on main check-in page (household table/list view)
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Larger font on household table/list for improved readability
+  - Likely files:
+    - `CheckInForm.Designer.cs`
+  - Rationale: Client feedback on readability
+
+### Monthly Activity Report (Letter-Size Landscape)
+
+- [ ] Add formatted "Monthly Activity Report" (one Letter-size page, landscape)
+  - Impact: High
+  - Complexity: High
+  - Acceptance Criteria:
+    - Accessible from Reports menu; opens dialog
+    - Default month: last month; allow selecting month
+    - Required header fields: Food bank name, county, prepared by, month/year, phone number
+    - Total days open for food distribution: pantry days only (usually 3 unless schedule changes)
+    - Household counting: count each household at most once per month; include if at least one Completed qualifying service in selected month
+    - Qualifying service types: "Shop with TEFAP", "TEFAP Only", "Shop" only (excludes "Deck Only")
+    - Total pounds distributed: (Households Served Total * 65 lbs/household) from all sources
+    - Households served:
+      - Total = unique households with at least one qualifying service in month
+      - Unduplicated = first qualifying service this reporting year occurs in selected month
+      - Duplicated = Total - Unduplicated
+    - Individuals served:
+      - Based on served households; count each household's members once
+      - Breakdown by age group (0–2, 2–18, 18–55, 55+) with totals and grand total
+      - Duplicated/unduplicated splits match household classification
+      - Add deck-only averaged monthly totals to duplicated individual counts (overall + by age group)
+    - Fit on one Letter-size sheet, landscape orientation
+    - Export PDF and Print options (same as statistics dashboard)
+  - Likely files:
+    - New `MonthlyActivityReportForm.cs`
+    - `ReportService` (PDF generation)
+    - `StatisticsService` (report queries)
+  - Rationale: Grant reporting requires specific format and metrics
   
