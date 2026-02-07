@@ -433,19 +433,23 @@ Implementation checklist based on phased plan.
 
 #### Annual Active-Status Reset
 
-- [ ] Add configurable annual active-status reset
+- [ ] Derive and sync active status from last qualifying service date
   - Impact: High
   - Complexity: Medium
   - Acceptance Criteria:
-    - On first app launch on/after configured reset date, set all households to Inactive
-    - Default reset date: Jan 1 each year
-    - Admin setting to change reset date (for reporting year changes)
-    - Households reactivated on first qualifying visit in the new reporting year
+    - Keep `IsActive` column; it is stored and displayed in the household profile and main check-in table
+    - **Not manually editable** — remove the Active toggle from the household profile; status is system-managed only
+    - On every app launch, sync `IsActive` for all households: set false where last qualifying service date is before the reset date (or never served)
+    - When completing a qualifying service, set `IsActive` = true for that household (first service in the reporting year reactivates them)
+    - Default reset date: Jan 1 each year (reporting year Jan–Dec); Admin setting to change reset date
+    - Seeder-generated demo data produces inactive households naturally via service event dates
   - Likely files:
-    - Config table or settings for reset date
-    - Startup logic in `Program.cs` or main form
-    - Admin settings form
-  - Rationale: Annual reporting cycle requires clean slate; some years use different start dates
+    - Household schema (keep `IsActive`)
+    - `HouseholdProfileForm` (remove Active toggle, keep read-only display)
+    - Startup logic (sync on every app launch)
+    - Complete Service flow (set `IsActive` = true on service completion)
+    - Config/settings for reset date
+  - Rationale: Annual reporting cycle; automatic status from service history simplifies workflow; demo data stays realistic without manual seeding
 
 #### Complete Service Dialog Enhancements
 
