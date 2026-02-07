@@ -151,6 +151,31 @@ public static class HouseholdRepository
     }
 
     /// <summary>
+    /// Sets IsActive and UpdatedAt for a household by ID. Use for lightweight updates when only status changes.
+    /// </summary>
+    /// <param name="connection">The database connection.</param>
+    /// <param name="householdId">The household ID.</param>
+    /// <param name="isActive">The new IsActive value.</param>
+    public static void SetIsActive(SqliteConnection connection, int householdId, bool isActive)
+    {
+        var updatedAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+
+        connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.HouseholdUpdateIsActive, connection);
+            cmd.Parameters.AddWithValue("@id", householdId);
+            cmd.Parameters.AddWithValue("@is_active", isActive ? 1 : 0);
+            cmd.Parameters.AddWithValue("@updated_at", updatedAt);
+            cmd.ExecuteNonQuery();
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
+    /// <summary>
     /// Soft deletes a household by setting IsActive to false.
     /// </summary>
     /// <param name="connection">The database connection.</param>

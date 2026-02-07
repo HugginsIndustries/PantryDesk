@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using PantryDeskCore.Data;
 using PantryDeskCore.Models;
+using PantryDeskCore.Services;
 
 namespace PantryDeskSeeder;
 
@@ -85,6 +86,14 @@ public static class DatabaseSeeder
             ServiceEventRepository.Create(connection, serviceEvent);
         }
         Console.WriteLine($"  Created {serviceEvents.Count} service events");
+
+        // Ensure default active-status reset config before sync
+        ConfigRepository.SetValue(connection, "active_status_reset_month", "1");
+        ConfigRepository.SetValue(connection, "active_status_reset_day", "1");
+
+        // Sync IsActive from last qualifying service date (produces inactive households naturally)
+        Console.WriteLine("Syncing household active status...");
+        ActiveStatusSyncService.SyncAllHouseholds(connection);
 
         // Seed auth roles
         Console.WriteLine("Seeding auth roles...");

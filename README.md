@@ -4,7 +4,7 @@
 
 ## Features
 
-- **Household Management**: Search, create, and manage household profiles with composition tracking (Children/Adults/Seniors)
+- **Household Management**: Search, create, and manage household profiles with composition tracking (Children/Adults/Seniors). Active status is system-managed from last qualifying service date (annual reset, default Jan 1; Admin can change reset date)
 - **Pantry Days & Appointments**: Calendar-based pantry day scheduling with appointment support
 - **Monthly Eligibility**: Automatic eligibility tracking with override support (requires reason)
 - **Statistics Dashboard**: Unified dashboard with date range selection (This Month, Last Month, Past 3/6/12 Months, This/Last Year, Custom Range) showing:
@@ -21,7 +21,7 @@
 - **Offline-first**: No internet required at runtime. No web calls or SaaS dependencies.
 - **PII Protection**: All client data is treated as sensitive PII. No PII is logged or exposed in diagnostics.
 - **Role-based Access**: Two shared role logins (Entry/Admin) with salted password hashing.
-- **Least Privilege**: Admin-only features (backups, exports, calendar edits) are enforced.
+- **Least Privilege**: Admin-only features (backups, exports, calendar edits, active status reset date) are enforced.
 
 ## Quick Start
 

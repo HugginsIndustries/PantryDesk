@@ -21,6 +21,8 @@ static class Program
         {
             // Initialize app version if not already set
             ConfigRepository.InitializeAppVersion(connection);
+            // Sync household active status from last qualifying service date
+            ActiveStatusSyncService.SyncAllHouseholds(connection);
         }
 
         // Check if automatic backup is needed for today

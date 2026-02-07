@@ -54,7 +54,8 @@ partial class HouseholdProfileForm
         lblTotalSizeValue = new Label();
         lblNotes = new Label();
         txtNotes = new TextBox();
-        chkIsActive = new CheckBox();
+        lblStatus = new Label();
+        lblStatusValue = new Label();
         tabServiceHistory = new TabPage();
         lblFilterStatus = new Label();
         cmbFilterStatus = new ComboBox();
@@ -122,7 +123,8 @@ partial class HouseholdProfileForm
         tabProfile.Controls.Add(lblTotalSizeValue);
         tabProfile.Controls.Add(lblNotes);
         tabProfile.Controls.Add(txtNotes);
-        tabProfile.Controls.Add(chkIsActive);
+        tabProfile.Controls.Add(lblStatus);
+        tabProfile.Controls.Add(lblStatusValue);
         tabProfile.Location = new Point(4, 24);
         tabProfile.Name = "tabProfile";
         tabProfile.Padding = new Padding(3);
@@ -337,17 +339,24 @@ partial class HouseholdProfileForm
         txtNotes.Size = new Size(400, 80);
         txtNotes.TabIndex = 11;
         // 
-        // chkIsActive
+        // lblStatus
         // 
-        chkIsActive.AutoSize = true;
-        chkIsActive.Checked = true;
-        chkIsActive.CheckState = CheckState.Checked;
-        chkIsActive.Location = new Point(12, 400);
-        chkIsActive.Name = "chkIsActive";
-        chkIsActive.Size = new Size(70, 19);
-        chkIsActive.TabIndex = 12;
-        chkIsActive.Text = "Active";
-        chkIsActive.UseVisualStyleBackColor = true;
+        lblStatus.AutoSize = true;
+        lblStatus.Location = new Point(12, 400);
+        lblStatus.Name = "lblStatus";
+        lblStatus.Size = new Size(42, 15);
+        lblStatus.TabIndex = 12;
+        lblStatus.Text = "Status:";
+        // 
+        // lblStatusValue
+        // 
+        lblStatusValue.AutoSize = true;
+        lblStatusValue.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+        lblStatusValue.Location = new Point(60, 400);
+        lblStatusValue.Name = "lblStatusValue";
+        lblStatusValue.Size = new Size(40, 15);
+        lblStatusValue.TabIndex = 13;
+        lblStatusValue.Text = "Active";
         // 
         // tabServiceHistory
         // 
@@ -601,7 +610,8 @@ partial class HouseholdProfileForm
     private Label lblTotalSizeValue;
     private Label lblNotes;
     private TextBox txtNotes;
-    private CheckBox chkIsActive;
+    private Label lblStatus;
+    private Label lblStatusValue;
     private Label lblFilterStatus;
     private ComboBox cmbFilterStatus;
     private Label lblFilterType;

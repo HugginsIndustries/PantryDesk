@@ -114,8 +114,8 @@ public static class HouseholdGenerator
         var createdAt = startDate.AddDays(randomDays);
         var updatedAt = createdAt.AddDays(rng.Next(0, (baseDate - createdAt).Days + 1));
 
-        // Some households are inactive (5-10%)
-        var isActive = rng.NextDouble() > 0.075; // 7.5% inactive
+        // IsActive is system-managed; sync will derive from last service date
+        var isActive = true;
 
         return new Household
         {

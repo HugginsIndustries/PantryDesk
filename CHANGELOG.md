@@ -189,6 +189,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Extended `StatisticsService` with date range methods: `GetStatsForDateRange()`, `GetMonthlyVisitsTrend()`, `GetPantryDayVolumeByEvent()`
   - Updated `ReportService.GenerateStatisticsPdf()` to accept and embed chart images
   - New SQL queries in `Sql.cs` for monthly visits trend and pantry day volume by event
+- **Annual Active-Status Reset** (COMPLETED: 2025-02-06, TODO: Client Requirements/Annual Active-Status Reset)
+  - `ActiveStatusSyncService` derives household `IsActive` from last qualifying service date vs configurable reset date
+  - Sync runs on every app launch; bulk UPDATE for efficient status reconciliation
+  - Default reset date: Jan 1 each year; Admin-only "Active Status Reset Date..." settings form (month/day)
+  - Household profile: Active status displayed read-only (toggle removed); status is system-managed only
+  - Complete Service (CheckInForm and HouseholdProfileForm) sets `IsActive` = true when recording a qualifying service
+  - `HouseholdRepository.SetIsActive()` for lightweight updates; config keys `active_status_reset_month` / `active_status_reset_day`
+  - Seeder: households and events generated for all households; sync produces inactive households naturally from service dates
 
 ### Changed
 

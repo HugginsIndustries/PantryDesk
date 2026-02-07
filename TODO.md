@@ -158,6 +158,26 @@ Implementation checklist based on phased plan.
     - `CheckInForm.Designer.cs`
   - Rationale: Client feedback on readability
 
+#### Annual Active-Status Reset
+
+- [x] Derive and sync active status from last qualifying service date
+  - Impact: High
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - Keep `IsActive` column; it is stored and displayed in the household profile and main check-in table
+    - **Not manually editable** — remove the Active toggle from the household profile; status is system-managed only
+    - On every app launch, sync `IsActive` for all households: set false where last qualifying service date is before the reset date (or never served)
+    - When completing a qualifying service, set `IsActive` = true for that household (first service in the reporting year reactivates them)
+    - Default reset date: Jan 1 each year (reporting year Jan–Dec); Admin setting to change reset date
+    - Seeder-generated demo data produces inactive households naturally via service event dates
+  - Likely files:
+    - Household schema (keep `IsActive`)
+    - `HouseholdProfileForm` (remove Active toggle, keep read-only display)
+    - Startup logic (sync on every app launch)
+    - Complete Service flow (set `IsActive` = true on service completion)
+    - Config/settings for reset date
+  - Rationale: Annual reporting cycle; automatic status from service history simplifies workflow; demo data stays realistic without manual seeding
+
 ---
 
 ## Open
@@ -430,26 +450,6 @@ Implementation checklist based on phased plan.
     - `StatisticsService`, Monthly Activity Report logic
     - Config/metadata for storing deck-only monthly data
   - Rationale: Deck-only visitors fill paper form; staff need to incorporate averaged totals into reports
-
-#### Annual Active-Status Reset
-
-- [ ] Derive and sync active status from last qualifying service date
-  - Impact: High
-  - Complexity: Medium
-  - Acceptance Criteria:
-    - Keep `IsActive` column; it is stored and displayed in the household profile and main check-in table
-    - **Not manually editable** — remove the Active toggle from the household profile; status is system-managed only
-    - On every app launch, sync `IsActive` for all households: set false where last qualifying service date is before the reset date (or never served)
-    - When completing a qualifying service, set `IsActive` = true for that household (first service in the reporting year reactivates them)
-    - Default reset date: Jan 1 each year (reporting year Jan–Dec); Admin setting to change reset date
-    - Seeder-generated demo data produces inactive households naturally via service event dates
-  - Likely files:
-    - Household schema (keep `IsActive`)
-    - `HouseholdProfileForm` (remove Active toggle, keep read-only display)
-    - Startup logic (sync on every app launch)
-    - Complete Service flow (set `IsActive` = true on service completion)
-    - Config/settings for reset date
-  - Rationale: Annual reporting cycle; automatic status from service history simplifies workflow; demo data stays realistic without manual seeding
 
 #### Complete Service Dialog Enhancements
 

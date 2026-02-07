@@ -127,6 +127,7 @@ When editing `.md` files (AGENTS.md, TODO.md, README.md, etc.):
 - Follow markdownlint rules (e.g., no spaces inside code spans, no duplicate headings).
 - Use proper hierarchy (`#`, `##`, `###`, `####`).
 - Prefer clear structure over brevity.
+- **CHANGELOG.md:** Keep the **Added** section in top-to-bottom chronological order (oldest entries first, newest last). Add completed date and TODO reference as `(COMPLETED: YYYY-MM-DD, TODO: Category/Item Name)` for new entries when known (e.g., `TODO: Client Requirements/Annual Active-Status Reset`).
 
 ---
 

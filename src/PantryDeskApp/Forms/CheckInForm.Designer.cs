@@ -49,6 +49,7 @@ partial class CheckInForm
         menuSeparator3 = new ToolStripSeparator();
         menuItemChangePasswords = new ToolStripMenuItem();
         menuItemPantryDays = new ToolStripMenuItem();
+        menuItemActiveStatusSettings = new ToolStripMenuItem();
         menuItemLogout = new ToolStripMenuItem();
         ((System.ComponentModel.ISupportInitialize)dgvResults).BeginInit();
         menuStrip.SuspendLayout();
@@ -153,7 +154,7 @@ partial class CheckInForm
         // 
         // menuAdmin
         // 
-        menuAdmin.DropDownItems.AddRange(new ToolStripItem[] { menuSeparator1, menuItemBackupNow, menuItemBackupToUsb, menuSeparator2, menuItemRestore, menuSeparator3, menuItemExport, menuItemChangePasswords, menuItemPantryDays });
+        menuAdmin.DropDownItems.AddRange(new ToolStripItem[] { menuSeparator1, menuItemBackupNow, menuItemBackupToUsb, menuSeparator2, menuItemRestore, menuSeparator3, menuItemExport, menuItemChangePasswords, menuItemPantryDays, menuItemActiveStatusSettings });
         menuAdmin.Name = "menuAdmin";
         menuAdmin.Size = new Size(55, 20);
         menuAdmin.Text = "Admin";
@@ -215,6 +216,13 @@ partial class CheckInForm
         menuItemPantryDays.Text = "Pantry Days";
         menuItemPantryDays.Click += MenuItemPantryDays_Click;
         // 
+        // menuItemActiveStatusSettings
+        // 
+        menuItemActiveStatusSettings.Name = "menuItemActiveStatusSettings";
+        menuItemActiveStatusSettings.Size = new Size(195, 22);
+        menuItemActiveStatusSettings.Text = "Active Status Reset Date...";
+        menuItemActiveStatusSettings.Click += MenuItemActiveStatusSettings_Click;
+        // 
         // menuItemLogout
         // 
         menuItemLogout.Name = "menuItemLogout";
@@ -268,5 +276,6 @@ partial class CheckInForm
     private ToolStripSeparator menuSeparator3;
     private ToolStripMenuItem menuItemChangePasswords;
     private ToolStripMenuItem menuItemPantryDays;
+    private ToolStripMenuItem menuItemActiveStatusSettings;
     private ToolStripMenuItem menuItemLogout;
 }

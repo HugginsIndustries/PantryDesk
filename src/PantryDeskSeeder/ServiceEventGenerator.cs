@@ -38,9 +38,9 @@ public static class ServiceEventGenerator
     {
         var events = new List<ServiceEvent>();
         var startDate = baseDate.AddMonths(-config.MonthsBack);
-        var activeHouseholds = households.Where(h => h.IsActive).ToList();
+        var allHouseholds = households;
 
-        if (activeHouseholds.Count == 0)
+        if (allHouseholds.Count == 0)
         {
             return events;
         }
@@ -56,7 +56,7 @@ public static class ServiceEventGenerator
         foreach (var pantryDay in pantryDaysInRange)
         {
             var eventCount = rng.Next(config.EventsPerPantryDayRange.Min, config.EventsPerPantryDayRange.Max + 1);
-            eventCount = Math.Min(eventCount, activeHouseholds.Count);
+            eventCount = Math.Min(eventCount, allHouseholds.Count);
 
             var monthKey = (pantryDay.PantryDate.Year, pantryDay.PantryDate.Month);
             if (!householdsServedPerMonth.ContainsKey(monthKey))
@@ -67,7 +67,7 @@ public static class ServiceEventGenerator
 
             // NEVER allow a household to visit more than one pantry day per month
             // Only select from households not yet served this month
-            var availableHouseholds = activeHouseholds
+            var availableHouseholds = allHouseholds
                 .Where(h => !householdsServedThisMonth.Contains(h.Id))
                 .OrderBy(_ => rng.Next())
                 .Take(eventCount)
@@ -119,7 +119,7 @@ public static class ServiceEventGenerator
                 rng.NextDouble() < (overrideAppointmentCount / (double)Math.Max(1, totalAppointmentSlots - overrideAppointmentsCreated)))
             {
                 // Create an override appointment (household already served this month)
-                var duplicateHouseholds = activeHouseholds
+                var duplicateHouseholds = allHouseholds
                     .Where(h => householdsServedThisMonth.Contains(h.Id))
                     .ToList();
                 if (duplicateHouseholds.Count > 0)
@@ -131,23 +131,23 @@ public static class ServiceEventGenerator
                 else
                 {
                     // Fallback if no duplicates available
-                    var availableHouseholds = activeHouseholds
+                    var availableHouseholds = allHouseholds
                         .Where(h => !householdsServedThisMonth.Contains(h.Id))
                         .ToList();
                     household = availableHouseholds.Count > 0 
                         ? availableHouseholds[rng.Next(availableHouseholds.Count)]
-                        : activeHouseholds[rng.Next(activeHouseholds.Count)];
+                        : allHouseholds[rng.Next(allHouseholds.Count)];
                 }
             }
             else
             {
                 // Normal appointment (household not yet served this month)
-                var availableHouseholds = activeHouseholds
+                var availableHouseholds = allHouseholds
                     .Where(h => !householdsServedThisMonth.Contains(h.Id))
                     .ToList();
                 household = availableHouseholds.Count > 0
                     ? availableHouseholds[rng.Next(availableHouseholds.Count)]
-                    : activeHouseholds[rng.Next(activeHouseholds.Count)];
+                    : allHouseholds[rng.Next(allHouseholds.Count)];
             }
 
             // Only add override if this is a duplicate (household already served this month)
@@ -194,7 +194,7 @@ public static class ServiceEventGenerator
                 continue;
             }
 
-            var household = activeHouseholds[rng.Next(activeHouseholds.Count)];
+            var household = allHouseholds[rng.Next(allHouseholds.Count)];
             var scheduledText = ScheduledTexts[rng.Next(ScheduledTexts.Length)];
 
             events.Add(new ServiceEvent

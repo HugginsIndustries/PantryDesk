@@ -119,7 +119,7 @@ public partial class HouseholdProfileForm : Form
             numAdults.Value = _household.AdultsCount;
             numSeniors.Value = _household.SeniorsCount;
             txtNotes.Text = _household.Notes ?? string.Empty;
-            chkIsActive.Checked = _household.IsActive;
+            lblStatusValue.Text = _household.IsActive ? "Active" : "Inactive";
 
             UpdateTotalSize();
         }
@@ -191,7 +191,7 @@ public partial class HouseholdProfileForm : Form
             _household.AdultsCount = adultsCount;
             _household.SeniorsCount = seniorsCount;
             _household.Notes = string.IsNullOrWhiteSpace(txtNotes.Text) ? null : txtNotes.Text.Trim();
-            _household.IsActive = chkIsActive.Checked;
+            // IsActive is system-managed; do not persist from form
 
             using var connection = DatabaseManager.GetConnection();
             HouseholdRepository.Update(connection, _household);
@@ -419,6 +419,13 @@ public partial class HouseholdProfileForm : Form
             }
 
             ServiceEventRepository.Update(connection, serviceEvent);
+
+            if (newStatus == "Completed")
+            {
+                HouseholdRepository.SetIsActive(connection, _householdId, true);
+                _household!.IsActive = true;
+                lblStatusValue.Text = "Active";
+            }
 
             // Refresh service history
             LoadServiceHistory();

@@ -264,6 +264,7 @@ public partial class CheckInForm : Form
             };
 
             ServiceEventRepository.Create(connection, serviceEvent);
+            HouseholdRepository.SetIsActive(connection, _selectedHousehold.Id, true);
 
             // Refresh search results
             SearchHouseholds(txtSearch.Text);
@@ -311,6 +312,24 @@ public partial class CheckInForm : Form
     {
         using var pantryDaysForm = new PantryDaysForm();
         pantryDaysForm.ShowDialog();
+    }
+
+    private void MenuItemActiveStatusSettings_Click(object? sender, EventArgs e)
+    {
+        try
+        {
+            PermissionChecker.RequireAdmin();
+            using var form = new ActiveStatusSettingsForm();
+            form.ShowDialog();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            MessageBox.Show(
+                "This action requires Admin privileges.",
+                "Access Denied",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
     }
 
     private void MenuItemStatisticsDashboard_Click(object? sender, EventArgs e)

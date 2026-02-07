@@ -120,6 +120,23 @@ public static class Sql
         SET is_active = 0, updated_at = @updated_at
         WHERE id = @id";
 
+    public const string HouseholdBulkSyncIsActive = @"
+        UPDATE households
+        SET is_active = CASE
+            WHEN COALESCE(
+                (SELECT MAX(event_date) FROM service_events
+                 WHERE household_id = households.id AND event_status = 'Completed'),
+                '0001-01-01') >= @reset_date
+            THEN 1
+            ELSE 0
+        END,
+        updated_at = @updated_at";
+
+    public const string HouseholdUpdateIsActive = @"
+        UPDATE households
+        SET is_active = @is_active, updated_at = @updated_at
+        WHERE id = @id";
+
     public const string HouseholdSearchByName = @"
         SELECT id, primary_name, address1, city, state, zip, phone, email,
                children_count, adults_count, seniors_count, notes,
