@@ -368,9 +368,9 @@ Implementation checklist based on phased plan.
 
 ### Client Requirements
 
-#### Per-Household Member Tracking
+#### Per-Household Member Tracking (with Age-Group Calculation)
 
-- [ ] Add per-household member tracking (replace single household name with individual members)
+- [ ] Add per-household member tracking and age-group calculation (replace single household name with individual members; birthdays drive age groups)
   - Impact: High
   - Complexity: High
   - Acceptance Criteria:
@@ -384,11 +384,20 @@ Implementation checklist based on phased plan.
       - Disabled status: Not Disabled, Disabled, Unknown, Prefer Not To Answer (default: Prefer Not To Answer; self-reported)
     - No edit history required for member changes
     - "Disabled Veteran" derived field (Veteran + Disabled) optionally included as reportable
+    - **Age groups:** Infant (0–2), Child (2–18), Adult (18–55), Senior (55+). Derived from birthday; no unknown age group. Age group updates automatically on birthdays (e.g., 18th birthday moves member into Adult). Used for reporting and deck-only form.
+  - Update **PantryDeskSeeder** to generate member data (Lewis County, WA defaults; configurable weights; RNG seed for reproducibility):
+    - **Birthdays:** Generated from age-group distribution. Household composition defines counts per age band (Infant, Child, Adult, Senior); for each member, assign an age band, then generate a random birthday within that band so age group and birthday align.
+    - **Age groups** Infant (0–2) 2%, Child (2–18) 19%, Adult (18–55) 45%, Senior (55+) 34%
+    - **Race:** White 81%, Hispanic 12%, Native American 2%, Black 1%, Not Specified 4%
+    - **Veteran status:** None 85.8%, Veteran 11%, Active Duty 0.4%, Reserve 0.3%, Unknown 1.5%, Prefer Not To Answer 1%
+    - **Disabled status:** Not Disabled 82%, Disabled 14%, Unknown 2%, Prefer Not To Answer 2%
   - Likely files:
     - Schema migration (household_members table or equivalent)
-    - `PantryDeskCore` models, repositories
+    - `PantryDeskCore` models, repositories, age-group helper
     - `NewHouseholdForm`, `HouseholdProfileForm`, composition UI
-  - Rationale: Client needs individual member tracking for grants and demographics
+    - `PantryDeskSeeder` (member generation, birthday-from-age-group, demographic weights)
+    - Reporting queries, deck-only form
+  - Rationale: Client needs individual member tracking for grants; demo data should reflect Lewis County; age groups and birthdays must align
 
 #### Member Demographics Aggregate Reporting
 
@@ -403,21 +412,6 @@ Implementation checklist based on phased plan.
     - `StatisticsService`, `ReportService`
     - New or extended report form
   - Rationale: Grant reporting requires demographic breakdowns
-
-#### Age-Group Calculation from Birthdays
-
-- [ ] Add automatic age-group calculation from member birthdays
-  - Impact: High
-  - Complexity: Medium
-  - Acceptance Criteria:
-    - Age groups: 0–2 (new), 2–18, 18–55, 55+
-    - Age group derived from birthday; no "unknown" age group (birthdays required)
-    - Age group updates automatically on birthdays (e.g., 18th birthday moves member into 18–55)
-    - Used for reporting and deck-only form
-  - Likely files:
-    - `PantryDeskCore` age-group helper
-    - Reporting queries, deck-only form
-  - Rationale: Replaces manual Children/Adults/Seniors with grant-aligned age bands
 
 #### Deck-Only Monthly Bulk Entry
 
