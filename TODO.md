@@ -363,7 +363,7 @@ Implementation checklist based on phased plan.
 
 ## Open
 
-### Phase 10 — UX Improvements & Workflow Enhancements
+### Client Requirements
 
 #### Appointment Visibility & Management
 
@@ -456,10 +456,6 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskApp/Forms/PantryDaysForm.cs`
     - `src/PantryDeskApp/Forms/PantryDaysForm.Designer.cs`
   - Rationale: Reduces scrolling when managing large numbers of pantry days
-
----
-
-### Client Requirements
 
 #### Member Demographics Aggregate Reporting
 
