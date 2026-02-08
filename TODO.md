@@ -410,21 +410,21 @@ Implementation checklist based on phased plan.
 
 #### Statistics Dashboard Redesign
 
-- [ ] Improve chart tooltip formatting and behavior
-  - Impact: Medium
-  - Complexity: Medium
+- [ ] Two-page Statistics Dashboard (Demographics + Services) with date-range summary cards
+  - Impact: High
+  - Complexity: High
   - Acceptance Criteria:
-    - Custom tooltip implementation with improved formatting:
-      - Date formatting: "Pantry Day: 2025-02-25" instead of including time ("2025-02-25 18:00:00 2025-02-26 06:00:00")
-      - Count formatting: "Count: 39" instead of "Count: 0 39" (remove zero values)
-      - Better overall formatting and readability
-    - Improved hover behavior (smoother, less flicker)
-    - Disable built-in OxyPlot tooltips in favor of custom implementation
-    - Tooltips appear consistently on hover across all chart types
+    - **Layout & navigation:** Two pages — Demographics (default) and Services. Summary cards at top always visible; page buttons to the right of date range dropdown (e.g. "Demographics" | "Services"). Default page on open: Demographics.
+    - **Summary cards (date-range aware):** "Total Active Households" and "Total People" must reflect the selected date range: Households = unique households with ≥1 completed service in range; Individuals = total individuals served in range (e.g. sum of composition for served households). Completed Services and Unique Households Served remain date-range based.
+    - **Demographics page (lower section):** Five pie charts in 2+3 zigzag layout — top row: City Distribution, Age Group Distribution; bottom row: Race, Veteran Status, Disability Status (centered under top row so middle chart sits in gap; equally spaced to avoid overlap). Pie labels outside (or outside for small slices only) for visibility. No line/bar charts on this page. Demographics are for served households/members in selected date range.
+    - **Services page (lower section):** Same overall layout as current dashboard. Two pie charts: (1) Visit Type — Shop with TEFAP, Shop, TEFAP Only, Deck Only; (2) Event Type — Pantry Day, Appointment. Keep Monthly Visits Trend (line) and Pantry Day Volume by Event (bar). Pie labels outside for visibility.
+    - **Tooltips:** Monthly Visits Trend — tooltips only on data points (not line segments); format "Month: YYYY-MM" and "Count: N" (integer). Other charts (e.g. Pantry Day): consistent format (e.g. "Pantry Day: YYYY-MM-DD", "Count: N"), no raw timestamps/decimals.
+  - Merges former "Member Demographics Aggregate Reporting" (Race, Veteran, Disability on Demographics page).
   - Likely files:
-    - `src/PantryDeskApp/Forms/StatsForm.cs` (custom tooltip implementation)
-    - May require custom WinForms ToolTip control or custom rendering
-  - Rationale: Current OxyPlot tooltips show raw data with timestamps and multiple values, making them hard to read. Custom implementation would provide cleaner, more user-friendly tooltips with better hover behavior.
+    - `src/PantryDeskApp/Forms/StatsForm.cs`, `StatsForm.Designer.cs`
+    - `src/PantryDeskCore/Services/StatisticsService.cs` (date-range household/people, Visit Type/Event Type breakdowns, demographics by Race/Veteran/Disability)
+    - `src/PantryDeskCore/Data/Sql.cs` (new queries)
+  - Rationale: Clear separation of demographics vs services; compact demographics view; date-range consistency.
 
 #### Household Form Improvements
 
@@ -456,20 +456,6 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskApp/Forms/PantryDaysForm.cs`
     - `src/PantryDeskApp/Forms/PantryDaysForm.Designer.cs`
   - Rationale: Reduces scrolling when managing large numbers of pantry days
-
-#### Member Demographics Aggregate Reporting
-
-- [ ] Add aggregate reporting for member demographics
-  - Impact: Medium
-  - Complexity: Medium
-  - Acceptance Criteria:
-    - Report totals for: Race, Veteran status, Disabled status (across served households/members)
-    - Optionally include derived "Disabled Veteran" totals (Veteran + Disabled)
-    - Report accessible from Reports menu or Statistics Dashboard
-  - Likely files:
-    - `StatisticsService`, `ReportService`
-    - New or extended report form
-  - Rationale: Grant reporting requires demographic breakdowns
 
 #### Deck-Only Monthly Bulk Entry
 
