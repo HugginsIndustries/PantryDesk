@@ -38,26 +38,22 @@ dotnet publish $seederProject `
     -p:IncludeNativeLibrariesForSelfExtract=true `
     -o (Join-Path $distFolder "PantryDeskSeeder")
 
-# Copy demo database
-Write-Host "Copying demo database..." -ForegroundColor Yellow
+# Copy demo database and config into PantryDeskApp folder (portable demo)
+Write-Host "Copying demo database and config..." -ForegroundColor Yellow
+$appFolder = Join-Path $distFolder "PantryDeskApp"
 $demoDb = Join-Path $repoRoot "demo_pantrydesk.db"
 if (Test-Path $demoDb) {
-    Copy-Item -Path $demoDb -Destination $distFolder -Force
-    Write-Host "  Copied demo_pantrydesk.db" -ForegroundColor Gray
+    Copy-Item -Path $demoDb -Destination $appFolder -Force
+    Write-Host "  Copied demo_pantrydesk.db to PantryDeskApp" -ForegroundColor Gray
 } else {
     Write-Host "  Warning: demo_pantrydesk.db not found in repo root" -ForegroundColor Yellow
 }
 
-# Create demo config file
-Write-Host "Creating demo config..." -ForegroundColor Yellow
-$demoConfigPath = Join-Path $distFolder "PantryDesk.demo.config"
-$demoDbPath = Join-Path $distFolder "demo_pantrydesk.db"
-$demoConfigContent = "DemoDatabasePath = $demoDbPath"
+# Create demo config (relative path for portability)
+$demoConfigPath = Join-Path $appFolder "PantryDesk.demo.config"
+$demoConfigContent = "DemoDatabasePath = demo_pantrydesk.db"
 Set-Content -Path $demoConfigPath -Value $demoConfigContent -Force
-Write-Host "  Created PantryDesk.demo.config" -ForegroundColor Gray
-
-# Copy config to app folder (so it's next to the exe)
-Copy-Item -Path $demoConfigPath -Destination (Join-Path $distFolder "PantryDeskApp\PantryDesk.demo.config") -Force
+Write-Host "  Created PantryDesk.demo.config (relative path)" -ForegroundColor Gray
 
 Write-Host ""
 Write-Host "Publish complete!" -ForegroundColor Green
@@ -65,7 +61,6 @@ Write-Host "Output location: $distFolder" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Files created:" -ForegroundColor Cyan
 Write-Host "  PantryDeskApp\PantryDeskApp.exe" -ForegroundColor Gray
-Write-Host "  PantryDeskSeeder\PantryDeskSeeder.exe" -ForegroundColor Gray
-Write-Host "  demo_pantrydesk.db" -ForegroundColor Gray
-Write-Host "  PantryDesk.demo.config" -ForegroundColor Gray
 Write-Host "  PantryDeskApp\PantryDesk.demo.config" -ForegroundColor Gray
+Write-Host "  PantryDeskApp\demo_pantrydesk.db" -ForegroundColor Gray
+Write-Host "  PantryDeskSeeder\PantryDeskSeeder.exe" -ForegroundColor Gray

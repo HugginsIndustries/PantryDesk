@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Publish script**: Demo DB and config now placed only in `PantryDeskApp/` folder; use relative path (`demo_pantrydesk.db`) for portable demos. Copy the `PantryDeskApp/` folder to USB for demos without path changes.
+- **AppConfig**: Demo DB path supports relative paths, resolved from the config file location.
+
 ### Added
 
 - Initial repository scaffolding

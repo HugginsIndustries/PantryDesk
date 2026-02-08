@@ -72,16 +72,17 @@ This script:
 
 - Creates single-file, self-contained executables for both `PantryDeskApp` and `PantryDeskSeeder`
 - Outputs everything to the `dist/` folder at the repo root
-- Includes `demo_pantrydesk.db` and `PantryDesk.demo.config` for easy demo setup
+- Copies `demo_pantrydesk.db` and creates `PantryDesk.demo.config` (relative path) in `PantryDeskApp/` for portable demo
 - Automatically overwrites existing `dist/` contents
 
 The `dist/` folder will contain:
 
 - `PantryDeskApp/PantryDeskApp.exe` - Standalone desktop application
+- `PantryDeskApp/PantryDesk.demo.config` - Demo mode config (relative path)
+- `PantryDeskApp/demo_pantrydesk.db` - Demo database
 - `PantryDeskSeeder/PantryDeskSeeder.exe` - Standalone seeder tool
-- `demo_pantrydesk.db` - Demo database
-- `PantryDesk.demo.config` - Demo mode configuration
-- `PantryDeskApp/PantryDesk.demo.config` - Demo config next to the app executable
+
+For portable demos, copy only the `PantryDeskApp/` folder (exe, config, and demo DB together).
 
 ### Configuration
 
@@ -103,12 +104,14 @@ The application will create the directory if it doesn't exist.
 
 For demo scenarios, you can point the app at a pre-generated `demo_pantrydesk.db` without changing the normal data location:
 
-1. Place `demo_pantrydesk.db` anywhere on disk (for example, in the repo root).
+1. Place `demo_pantrydesk.db` in the same folder as `PantryDeskApp.exe`, or anywhere on disk.
 2. In the folder where `PantryDeskApp.exe` runs, create a text file named `PantryDesk.demo.config` with a single line:
 
    ```text
-   DemoDatabasePath = C:\dev\PantryDesk\demo_pantrydesk.db
+   DemoDatabasePath = demo_pantrydesk.db
    ```
+
+   Use a relative path (e.g., `demo_pantrydesk.db`) for portable demos — the path is resolved from the config file location. Absolute paths are also supported.
 
 3. Start the app normally. When this config file is present and the path exists, PantryDesk uses that database instead of the default `C:\ProgramData\PantryDesk\pantrydesk.db`.
 4. Delete or rename `PantryDesk.demo.config` to return to normal behavior.

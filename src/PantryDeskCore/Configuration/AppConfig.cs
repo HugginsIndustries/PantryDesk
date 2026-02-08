@@ -96,13 +96,18 @@ public static class AppConfig
                 // Expand environment variables if present
                 var expanded = Environment.ExpandEnvironmentVariables(value);
 
-                if (!File.Exists(expanded))
+                // Resolve relative paths (for portable demo folder)
+                var fullPath = Path.IsPathRooted(expanded)
+                    ? expanded
+                    : Path.GetFullPath(Path.Combine(baseDirectory, expanded));
+
+                if (!File.Exists(fullPath))
                 {
                     // If the configured file does not exist, treat as not configured
                     return null;
                 }
 
-                _demoDatabasePath = expanded;
+                _demoDatabasePath = fullPath;
                 return _demoDatabasePath;
             }
         }
