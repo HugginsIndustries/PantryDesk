@@ -87,8 +87,8 @@ public static class HouseholdGenerator
             var birthday = DataGenerators.GenerateBirthdayFromAgeGroup(ageGroup, baseDate, rng);
 
             var race = SelectOptional(config.RaceWeights, rng, "White", "Black", "Hispanic", "Native American", "Not Specified");
-            var veteranStatus = SelectOptional(config.VeteranWeights, rng, "None", "Active Duty", "Reserve", "Veteran", "Unknown", "Prefer Not To Answer");
-            var disabledStatus = SelectOptional(config.DisabledWeights, rng, "Not Disabled", "Disabled", "Unknown", "Prefer Not To Answer");
+            var veteranStatus = SelectOptional(config.VeteranWeights, rng, "Veteran", "Not Veteran", "Not Specified");
+            var disabledStatus = SelectOptional(config.DisabledWeights, rng, "Not Disabled", "Disabled", "Not Specified");
 
             var member = new HouseholdMember
             {

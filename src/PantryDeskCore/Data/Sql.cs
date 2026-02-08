@@ -53,6 +53,18 @@ public static class Sql
         UPDATE service_events SET visit_type = 'Shop with TEFAP'
         WHERE event_status = 'Completed' AND (visit_type IS NULL OR visit_type = '')";
 
+    public const string HouseholdMembersMigrateVeteranStatus = @"
+        UPDATE household_members SET veteran_status = 'Not Specified'
+        WHERE veteran_status IN ('Unknown', 'Prefer Not To Answer')";
+
+    public const string HouseholdMembersMigrateDisabledStatus = @"
+        UPDATE household_members SET disabled_status = 'Not Specified'
+        WHERE disabled_status IN ('Unknown', 'Prefer Not To Answer')";
+
+    public const string HouseholdMembersMigrateVeteranStatusToThreeOptions = @"
+        UPDATE household_members SET veteran_status = 'Not Veteran'
+        WHERE veteran_status IN ('None', 'Active Duty', 'Reserve')";
+
     public const string CreatePantryDaysTable = @"
         CREATE TABLE IF NOT EXISTS pantry_days (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -453,4 +465,73 @@ public static class Sql
         AND event_date >= @start_date AND event_date <= @end_date
         GROUP BY strftime('%Y-%m', event_date)
         ORDER BY month";
+
+    /// <summary>
+    /// Total individuals (member count) in households with at least one completed service in range.
+    /// Each member counted once; households with multiple services counted once per member.
+    /// </summary>
+    public const string StatisticsTotalPeopleServedInRange = @"
+        SELECT COALESCE(SUM(member_count), 0) FROM (
+            SELECT COUNT(m.id) as member_count
+            FROM household_members m
+            INNER JOIN (
+                SELECT DISTINCT household_id
+                FROM service_events
+                WHERE event_status = 'Completed'
+                AND event_date >= @start_date AND event_date <= @end_date
+            ) served ON served.household_id = m.household_id
+            GROUP BY m.household_id
+        ) counts";
+
+    public const string StatisticsBreakdownByVisitTypeInRange = @"
+        SELECT 
+            COALESCE(NULLIF(TRIM(visit_type), ''), 'Not Specified') as label,
+            COUNT(*) as count
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND event_date >= @start_date AND event_date <= @end_date
+        GROUP BY COALESCE(NULLIF(TRIM(visit_type), ''), 'Not Specified')
+        ORDER BY count DESC";
+
+    public const string StatisticsDemographicsByRaceInRange = @"
+        SELECT 
+            COALESCE(NULLIF(TRIM(m.race), ''), 'Not Specified') as label,
+            COUNT(*) as count
+        FROM household_members m
+        INNER JOIN (
+            SELECT DISTINCT household_id
+            FROM service_events
+            WHERE event_status = 'Completed'
+            AND event_date >= @start_date AND event_date <= @end_date
+        ) served ON served.household_id = m.household_id
+        GROUP BY COALESCE(NULLIF(TRIM(m.race), ''), 'Not Specified')
+        ORDER BY count DESC";
+
+    public const string StatisticsDemographicsByVeteranStatusInRange = @"
+        SELECT 
+            COALESCE(NULLIF(TRIM(m.veteran_status), ''), 'Not Specified') as label,
+            COUNT(*) as count
+        FROM household_members m
+        INNER JOIN (
+            SELECT DISTINCT household_id
+            FROM service_events
+            WHERE event_status = 'Completed'
+            AND event_date >= @start_date AND event_date <= @end_date
+        ) served ON served.household_id = m.household_id
+        GROUP BY COALESCE(NULLIF(TRIM(m.veteran_status), ''), 'Not Specified')
+        ORDER BY count DESC";
+
+    public const string StatisticsDemographicsByDisabledStatusInRange = @"
+        SELECT 
+            COALESCE(NULLIF(TRIM(m.disabled_status), ''), 'Not Specified') as label,
+            COUNT(*) as count
+        FROM household_members m
+        INNER JOIN (
+            SELECT DISTINCT household_id
+            FROM service_events
+            WHERE event_status = 'Completed'
+            AND event_date >= @start_date AND event_date <= @end_date
+        ) served ON served.household_id = m.household_id
+        GROUP BY COALESCE(NULLIF(TRIM(m.disabled_status), ''), 'Not Specified')
+        ORDER BY count DESC";
 }

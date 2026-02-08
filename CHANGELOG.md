@@ -189,6 +189,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Extended `StatisticsService` with date range methods: `GetStatsForDateRange()`, `GetMonthlyVisitsTrend()`, `GetPantryDayVolumeByEvent()`
   - Updated `ReportService.GenerateStatisticsPdf()` to accept and embed chart images
   - New SQL queries in `Sql.cs` for monthly visits trend and pantry day volume by event
+- **Statistics Dashboard two-page layout and chart refinements** (COMPLETED: 2025-02-07, TODO: Statistics Dashboard Redesign)
+  - Two-page layout: Demographics (default) and Services with page toggle
+  - Demographics page: five pie charts (City, Age Group, Race, Veteran Status, Disability Status) in 2+3 zigzag layout
+  - Services page: Visit Type and Event Type pie charts (no horizontal tick for labels), Monthly Visits Trend, Pantry Day Volume (fills remaining space)
+  - Age Group pie omits zero-count slices
+- **Veteran and Disabled status consolidation** (COMPLETED: 2025-02-07, TODO: Statistics Dashboard Redesign)
+  - Veteran status simplified to Veteran, Not Veteran, Not Specified (migration v5)
+  - Disabled status consolidated: Unknown/Prefer Not To Answer → Not Specified (migration v4)
+  - Seeder and MemberEditForm updated; database migrations migrate existing data
 - **Annual Active-Status Reset** (COMPLETED: 2025-02-06, TODO: Client Requirements/Annual Active-Status Reset)
   - `ActiveStatusSyncService` derives household `IsActive` from last qualifying service date vs configurable reset date
   - Sync runs on every app launch; bulk UPDATE for efficient status reconciliation
@@ -234,6 +243,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Statistics Dashboard: two-page Demographics + Services layout; Visit Type/Event Type pie labels use radial-only connectors; Age Group pie hides zero slices; Pantry Day Volume chart fills remaining space
+- Member demographics: Veteran status options reduced to Veteran, Not Veteran, Not Specified; Disabled status uses Not Specified (replacing Unknown, Prefer Not To Answer)
 - Statistics Dashboard now supports flexible date ranges instead of fixed monthly view
 - Monthly Summary functionality merged into unified Statistics Dashboard
 - PDF reports now include actual chart images instead of simple bar representations
@@ -260,6 +271,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- MemberEditForm: correct default SelectedIndex for Veteran and Disabled combo boxes (3-item lists) to prevent ArgumentOutOfRangeException when editing members
 - Solution verified to build and run from clean clone
 - PantryDeskApp opens blank window as expected
 - Fixed transaction handling in `DatabaseMigrator.TableExists` method

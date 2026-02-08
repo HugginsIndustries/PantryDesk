@@ -126,12 +126,12 @@ partial class MemberEditForm
         //
         cmbVeteran.DropDownStyle = ComboBoxStyle.DropDownList;
         cmbVeteran.FormattingEnabled = true;
-        cmbVeteran.Items.AddRange(new object[] { "None", "Active Duty", "Reserve", "Veteran", "Unknown", "Prefer Not To Answer" });
+        cmbVeteran.Items.AddRange(new object[] { "Veteran", "Not Veteran", "Not Specified" });
         cmbVeteran.Location = new Point(12, 263);
         cmbVeteran.Name = "cmbVeteran";
         cmbVeteran.Size = new Size(150, 23);
         cmbVeteran.TabIndex = 6;
-        cmbVeteran.SelectedIndex = 5;
+        cmbVeteran.SelectedIndex = 2;  // Default: Not Specified
         //
         // lblDisabled
         //
@@ -146,12 +146,12 @@ partial class MemberEditForm
         //
         cmbDisabled.DropDownStyle = ComboBoxStyle.DropDownList;
         cmbDisabled.FormattingEnabled = true;
-        cmbDisabled.Items.AddRange(new object[] { "Not Disabled", "Disabled", "Unknown", "Prefer Not To Answer" });
+        cmbDisabled.Items.AddRange(new object[] { "Not Disabled", "Disabled", "Not Specified" });
         cmbDisabled.Location = new Point(12, 313);
         cmbDisabled.Name = "cmbDisabled";
         cmbDisabled.Size = new Size(150, 23);
         cmbDisabled.TabIndex = 7;
-        cmbDisabled.SelectedIndex = 3;
+        cmbDisabled.SelectedIndex = 2;  // Default: Not Specified
         //
         // btnSave
         //

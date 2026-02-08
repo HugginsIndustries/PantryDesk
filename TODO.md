@@ -133,6 +133,17 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskApp/PantryDeskApp.csproj` (add OxyPlot.WindowsForms and OxyPlot.ImageSharp NuGet packages)
   - Rationale: Current dashboard is text/grids only, harder to scan quickly; unified view with charts improves readability and decision-making
 
+- [x] Two-page Statistics Dashboard (Demographics + Services) with date-range summary cards
+  - Impact: High
+  - Complexity: High
+  - Acceptance Criteria:
+    - **Layout & navigation:** Two pages — Demographics (default) and Services. Summary cards at top always visible; page buttons to the right of date range dropdown (e.g. "Demographics" | "Services"). Default page on open: Demographics.
+    - **Summary cards (date-range aware):** "Total Active Households" and "Total People" reflect selected date range: Households = unique households with ≥1 completed service in range; Individuals = total individuals served in range.
+    - **Demographics page:** Five pie charts in 2+3 zigzag layout — top row: City, Age Group; bottom row: Race, Veteran Status, Disability Status. Age Group omits zero-count slices.
+    - **Services page:** Visit Type and Event Type pie charts (TickHorizontalLength=0 to avoid label cutoff), Monthly Visits Trend (line), Pantry Day Volume (bar); Pantry Day fills remaining space below top row.
+  - Likely files: StatsForm.cs, StatsForm.Designer.cs, StatisticsService.cs, Sql.cs
+  - Rationale: Clear separation of demographics vs services; compact view; date-range consistency.
+
 ### Client Requirements (Complete)
 
 #### Main Check-In Layout Tweak
@@ -190,8 +201,8 @@ Implementation checklist based on phased plan.
       - Birthday (required)
     - Optional member fields:
       - Race: White, Black, Hispanic, Native American, Not Specified (used when client refuses/declines; preferred to collect when possible for grants)
-      - Veteran status: None, Active Duty, Reserve, Veteran, Unknown, Prefer Not To Answer (default: Prefer Not To Answer; self-reported)
-      - Disabled status: Not Disabled, Disabled, Unknown, Prefer Not To Answer (default: Prefer Not To Answer; self-reported)
+      - Veteran status: Veteran, Not Veteran, Not Specified (default: Not Specified; self-reported)
+      - Disabled status: Not Disabled, Disabled, Not Specified (default: Not Specified; self-reported)
     - No edit history required for member changes
     - "Disabled Veteran" derived field (Veteran + Disabled) optionally included as reportable
     - **Age groups:** Infant (0–2), Child (2–18), Adult (18–55), Senior (55+). Derived from birthday; no unknown age group. Age group updates automatically on birthdays (e.g., 18th birthday moves member into Adult). Used for reporting and deck-only form.
@@ -201,8 +212,8 @@ Implementation checklist based on phased plan.
     - **Birthdays:** Generated from age-group distribution. Household composition defines counts per age band (Infant, Child, Adult, Senior); for each member, assign an age band, then generate a random birthday within that band so age group and birthday align.
     - **Age groups:** Infant (0–2) 2%, Child (2–18) 19%, Adult (18–55) 45%, Senior (55+) 34%
     - **Race:** White 81%, Hispanic 12%, Native American 2%, Black 1%, Not Specified 4%
-    - **Veteran status:** None 85.8%, Veteran 11%, Active Duty 0.4%, Reserve 0.3%, Unknown 1.5%, Prefer Not To Answer 1%
-    - **Disabled status:** Not Disabled 82%, Disabled 14%, Unknown 2%, Prefer Not To Answer 2%
+    - **Veteran status:** Not Veteran 86.5%, Veteran 11%, Not Specified 2.5%
+    - **Disabled status:** Not Disabled 82%, Disabled 14%, Not Specified 4%
   - Likely files:
     - Schema migration (household_members table or equivalent)
     - `PantryDeskCore` models, repositories, age-group helper
@@ -407,24 +418,6 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskApp/Forms/HouseholdProfileForm.cs`
     - `src/PantryDeskApp/Forms/HouseholdProfileForm.Designer.cs`
   - Rationale: Context menu actions are not discoverable; explicit buttons improve usability
-
-#### Statistics Dashboard Redesign
-
-- [ ] Two-page Statistics Dashboard (Demographics + Services) with date-range summary cards
-  - Impact: High
-  - Complexity: High
-  - Acceptance Criteria:
-    - **Layout & navigation:** Two pages — Demographics (default) and Services. Summary cards at top always visible; page buttons to the right of date range dropdown (e.g. "Demographics" | "Services"). Default page on open: Demographics.
-    - **Summary cards (date-range aware):** "Total Active Households" and "Total People" must reflect the selected date range: Households = unique households with ≥1 completed service in range; Individuals = total individuals served in range (e.g. sum of composition for served households). Completed Services and Unique Households Served remain date-range based.
-    - **Demographics page (lower section):** Five pie charts in 2+3 zigzag layout — top row: City Distribution, Age Group Distribution; bottom row: Race, Veteran Status, Disability Status (centered under top row so middle chart sits in gap; equally spaced to avoid overlap). Pie labels outside (or outside for small slices only) for visibility. No line/bar charts on this page. Demographics are for served households/members in selected date range.
-    - **Services page (lower section):** Same overall layout as current dashboard. Two pie charts: (1) Visit Type — Shop with TEFAP, Shop, TEFAP Only, Deck Only; (2) Event Type — Pantry Day, Appointment. Keep Monthly Visits Trend (line) and Pantry Day Volume by Event (bar). Pie labels outside for visibility.
-    - **Tooltips:** Monthly Visits Trend — tooltips only on data points (not line segments); format "Month: YYYY-MM" and "Count: N" (integer). Other charts (e.g. Pantry Day): consistent format (e.g. "Pantry Day: YYYY-MM-DD", "Count: N"), no raw timestamps/decimals.
-  - Merges former "Member Demographics Aggregate Reporting" (Race, Veteran, Disability on Demographics page).
-  - Likely files:
-    - `src/PantryDeskApp/Forms/StatsForm.cs`, `StatsForm.Designer.cs`
-    - `src/PantryDeskCore/Services/StatisticsService.cs` (date-range household/people, Visit Type/Event Type breakdowns, demographics by Race/Veteran/Disability)
-    - `src/PantryDeskCore/Data/Sql.cs` (new queries)
-  - Rationale: Clear separation of demographics vs services; compact demographics view; date-range consistency.
 
 #### Household Form Improvements
 

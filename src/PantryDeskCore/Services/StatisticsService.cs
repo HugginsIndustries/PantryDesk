@@ -273,16 +273,20 @@ public static class StatisticsService
         connection.Open();
         try
         {
-            // Total active households (not date-dependent, but included for consistency)
-            using (var cmd = new SqliteCommand(Sql.StatisticsCountActiveHouseholds, connection))
+            // Total active households = unique households with >=1 completed service in range
+            using (var cmd = new SqliteCommand(Sql.StatisticsCountUniqueHouseholdsServedInRange, connection))
             {
+                cmd.Parameters.AddWithValue("@start_date", startDateStr);
+                cmd.Parameters.AddWithValue("@end_date", endDateStr);
                 var result = cmd.ExecuteScalar();
                 stats.TotalActiveHouseholds = result != null ? Convert.ToInt32(result) : 0;
             }
 
-            // Total people (not date-dependent, but included for consistency)
-            using (var cmd = new SqliteCommand(Sql.StatisticsSumTotalPeople, connection))
+            // Total people = sum of individuals in served households in range
+            using (var cmd = new SqliteCommand(Sql.StatisticsTotalPeopleServedInRange, connection))
             {
+                cmd.Parameters.AddWithValue("@start_date", startDateStr);
+                cmd.Parameters.AddWithValue("@end_date", endDateStr);
                 var result = cmd.ExecuteScalar();
                 stats.TotalPeople = result != null ? Convert.ToInt32(result) : 0;
             }
@@ -400,6 +404,69 @@ public static class StatisticsService
                 {
                     PantryDate = DateTime.Parse(reader.GetString(0)),
                     CompletedServices = reader.GetInt32(1)
+                });
+            }
+        }
+        finally
+        {
+            connection.Close();
+        }
+
+        return breakdowns;
+    }
+
+    /// <summary>
+    /// Gets breakdown of completed services by visit type for a date range.
+    /// </summary>
+    public static List<DemographicsBreakdown> GetVisitTypeBreakdown(SqliteConnection connection, DateTime startDate, DateTime endDate)
+    {
+        return GetDemographicsBreakdown(connection, startDate, endDate, Sql.StatisticsBreakdownByVisitTypeInRange);
+    }
+
+    /// <summary>
+    /// Gets demographics by race for members of households served in a date range.
+    /// </summary>
+    public static List<DemographicsBreakdown> GetDemographicsByRace(SqliteConnection connection, DateTime startDate, DateTime endDate)
+    {
+        return GetDemographicsBreakdown(connection, startDate, endDate, Sql.StatisticsDemographicsByRaceInRange);
+    }
+
+    /// <summary>
+    /// Gets demographics by veteran status for members of households served in a date range.
+    /// </summary>
+    public static List<DemographicsBreakdown> GetDemographicsByVeteranStatus(SqliteConnection connection, DateTime startDate, DateTime endDate)
+    {
+        return GetDemographicsBreakdown(connection, startDate, endDate, Sql.StatisticsDemographicsByVeteranStatusInRange);
+    }
+
+    /// <summary>
+    /// Gets demographics by disabled status for members of households served in a date range.
+    /// </summary>
+    public static List<DemographicsBreakdown> GetDemographicsByDisabledStatus(SqliteConnection connection, DateTime startDate, DateTime endDate)
+    {
+        return GetDemographicsBreakdown(connection, startDate, endDate, Sql.StatisticsDemographicsByDisabledStatusInRange);
+    }
+
+    private static List<DemographicsBreakdown> GetDemographicsBreakdown(SqliteConnection connection, DateTime startDate, DateTime endDate, string query)
+    {
+        var breakdowns = new List<DemographicsBreakdown>();
+        var startDateStr = startDate.ToString("yyyy-MM-dd");
+        var endDateStr = endDate.ToString("yyyy-MM-dd");
+
+        connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand(query, connection);
+            cmd.Parameters.AddWithValue("@start_date", startDateStr);
+            cmd.Parameters.AddWithValue("@end_date", endDateStr);
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                breakdowns.Add(new DemographicsBreakdown
+                {
+                    Label = reader.GetString(0),
+                    Count = reader.GetInt32(1)
                 });
             }
         }

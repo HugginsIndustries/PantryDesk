@@ -38,3 +38,12 @@ public class MonthlyVisitsTrend
     public string Month { get; set; } = string.Empty; // Format: "YYYY-MM"
     public int Count { get; set; }
 }
+
+/// <summary>
+/// Label and count for visit type or demographics breakdowns.
+/// </summary>
+public class DemographicsBreakdown
+{
+    public string Label { get; set; } = string.Empty;
+    public int Count { get; set; }
+}

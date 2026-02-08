@@ -64,19 +64,15 @@ public class SeederConfig
             },
             VeteranWeights = new Dictionary<string, int>
             {
-                { "None", 858 },
+                { "Not Veteran", 865 },
                 { "Veteran", 110 },
-                { "Active Duty", 4 },
-                { "Reserve", 3 },
-                { "Unknown", 15 },
-                { "Prefer Not To Answer", 10 }
+                { "Not Specified", 25 }
             },
             DisabledWeights = new Dictionary<string, int>
             {
                 { "Not Disabled", 82 },
                 { "Disabled", 14 },
-                { "Unknown", 2 },
-                { "Prefer Not To Answer", 2 }
+                { "Not Specified", 4 }
             },
             HouseholdSizeDistribution = new Dictionary<int, int>
             {

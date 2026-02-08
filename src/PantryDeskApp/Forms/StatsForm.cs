@@ -47,6 +47,43 @@ public partial class StatsForm : Form
         OxyColor.FromRgb(179, 179, 179)  // Gray
     };
 
+    /// <summary>
+    /// Creates a PieSeries configured for outside labels with extended connector lines.
+    /// Labels use format "{label} {n}%".
+    /// </summary>
+    private static PieSeries CreatePieSeriesWithOutsideLabels()
+    {
+        return new PieSeries
+        {
+            AngleSpan = 360,
+            StartAngle = 0,
+            OutsideLabelFormat = "{1} {2:0}%",
+            InsideLabelFormat = null,
+            InsideLabelColor = OxyColors.Undefined,
+            TickRadialLength = 20,
+            TickHorizontalLength = 25,
+            TickLabelDistance = 8
+        };
+    }
+
+    /// <summary>
+    /// Creates a PieSeries with outside labels but no horizontal connector (avoids label cutoff in tight layouts).
+    /// </summary>
+    private static PieSeries CreatePieSeriesWithOutsideLabelsNoHorizontalTick()
+    {
+        return new PieSeries
+        {
+            AngleSpan = 360,
+            StartAngle = 0,
+            OutsideLabelFormat = "{1} {2:0}%",
+            InsideLabelFormat = null,
+            InsideLabelColor = OxyColors.Undefined,
+            TickRadialLength = 20,
+            TickHorizontalLength = 0,
+            TickLabelDistance = 8
+        };
+    }
+
     public StatsForm()
     {
         InitializeComponent();
@@ -63,10 +100,13 @@ public partial class StatsForm : Form
 
     private void InitializeChartTooltips()
     {
-        // Enable hover tooltips by configuring the controller to track on mouse move
-        // Unbind left click (which shows tooltip on click) and enable mouse move tracking
         ConfigureHoverTooltips(plotViewCityDistribution);
         ConfigureHoverTooltips(plotViewAgeGroupDistribution);
+        ConfigureHoverTooltips(plotViewRaceDistribution);
+        ConfigureHoverTooltips(plotViewVeteranDistribution);
+        ConfigureHoverTooltips(plotViewDisabilityDistribution);
+        ConfigureHoverTooltips(plotViewVisitType);
+        ConfigureHoverTooltips(plotViewEventType);
         ConfigureHoverTooltips(plotViewMonthlyVisitsTrend);
         ConfigureHoverTooltips(plotViewPantryDayVolume);
     }
@@ -155,7 +195,30 @@ public partial class StatsForm : Form
 
     private void StatsForm_Load(object? sender, EventArgs e)
     {
+        ShowDemographicsPage();
         LoadStats();
+    }
+
+    private void BtnPageDemographics_Click(object? sender, EventArgs e)
+    {
+        ShowDemographicsPage();
+    }
+
+    private void BtnPageServices_Click(object? sender, EventArgs e)
+    {
+        ShowServicesPage();
+    }
+
+    private void ShowDemographicsPage()
+    {
+        pnlDemographics.Visible = true;
+        pnlServices.Visible = false;
+    }
+
+    private void ShowServicesPage()
+    {
+        pnlDemographics.Visible = false;
+        pnlServices.Visible = true;
     }
 
     private (DateTime startDate, DateTime endDate) GetCurrentDateRange()
@@ -177,6 +240,10 @@ public partial class StatsForm : Form
             var stats = StatisticsService.GetStatsForDateRange(connection, startDate, endDate);
             var cityBreakdown = StatisticsService.GetStatsByCity(connection, startDate, endDate);
             var composition = StatisticsService.GetCompositionServed(connection, startDate, endDate);
+            var raceBreakdown = StatisticsService.GetDemographicsByRace(connection, startDate, endDate);
+            var veteranBreakdown = StatisticsService.GetDemographicsByVeteranStatus(connection, startDate, endDate);
+            var disabilityBreakdown = StatisticsService.GetDemographicsByDisabledStatus(connection, startDate, endDate);
+            var visitTypeBreakdown = StatisticsService.GetVisitTypeBreakdown(connection, startDate, endDate);
             var monthlyTrend = StatisticsService.GetMonthlyVisitsTrend(connection, startDate, endDate);
             var pantryDayVolume = StatisticsService.GetPantryDayVolumeByEvent(connection, startDate, endDate);
 
@@ -186,9 +253,16 @@ public partial class StatsForm : Form
             lblCardCompletedServicesValue.Text = stats.CompletedServices.ToString("N0");
             lblCardUniqueHouseholdsServedValue.Text = stats.UniqueHouseholdsServed.ToString("N0");
 
-            // Populate charts
+            // Demographics page charts
             PopulateCityDistributionChart(cityBreakdown);
             PopulateAgeGroupDistributionChart(composition);
+            PopulateDemographicsBreakdownChart(plotViewRaceDistribution, "Race Distribution", raceBreakdown);
+            PopulateDemographicsBreakdownChart(plotViewVeteranDistribution, "Veteran Status Distribution", veteranBreakdown);
+            PopulateDemographicsBreakdownChart(plotViewDisabilityDistribution, "Disability Status Distribution", disabilityBreakdown);
+
+            // Services page charts
+            PopulateVisitTypeChart(visitTypeBreakdown);
+            PopulateEventTypeChart(stats.PantryDayCompletions, stats.AppointmentCompletions);
             PopulateMonthlyVisitsTrendChart(monthlyTrend);
             PopulatePantryDayVolumeChart(pantryDayVolume);
         }
@@ -204,7 +278,7 @@ public partial class StatsForm : Form
         { 
             Title = "City Distribution",
             PlotAreaBorderThickness = new OxyThickness(0),
-            PlotMargins = new OxyThickness(60, 40, 60, 60) // Left, Top, Right, Bottom - extra space for labels
+            PlotMargins = new OxyThickness(120, 40, 120, 120)
         };
         
         if (cityBreakdown.Count == 0)
@@ -214,12 +288,7 @@ public partial class StatsForm : Form
             return;
         }
 
-        var pieSeries = new PieSeries
-        {
-            InsideLabelPosition = 0.5, // Smaller value = labels closer to center, more room at edges
-            AngleSpan = 360,
-            StartAngle = 0
-        };
+        var pieSeries = CreatePieSeriesWithOutsideLabels();
 
         int colorIndex = 0;
         foreach (var city in cityBreakdown)
@@ -242,7 +311,7 @@ public partial class StatsForm : Form
         { 
             Title = "Age Group Distribution",
             PlotAreaBorderThickness = new OxyThickness(0),
-            PlotMargins = new OxyThickness(60, 40, 60, 60)
+            PlotMargins = new OxyThickness(120, 40, 120, 120)
         };
         
         var total = composition.Infant + composition.Child + composition.Adult + composition.Senior;
@@ -253,20 +322,113 @@ public partial class StatsForm : Form
             return;
         }
 
-        var pieSeries = new PieSeries
-        {
-            InsideLabelPosition = 0.5,
-            AngleSpan = 360,
-            StartAngle = 0
-        };
+        var pieSeries = CreatePieSeriesWithOutsideLabels();
 
-        pieSeries.Slices.Add(new PieSlice("Infant (0-2)", composition.Infant) { Fill = ChartColors[0], IsExploded = false });
-        pieSeries.Slices.Add(new PieSlice("Child (2-18)", composition.Child) { Fill = ChartColors[1], IsExploded = false });
-        pieSeries.Slices.Add(new PieSlice("Adult (18-55)", composition.Adult) { Fill = ChartColors[2], IsExploded = false });
-        pieSeries.Slices.Add(new PieSlice("Senior (55+)", composition.Senior) { Fill = ChartColors[3], IsExploded = false });
+        var slices = new[] { ("Infant (0-2)", composition.Infant), ("Child (2-18)", composition.Child), ("Adult (18-55)", composition.Adult), ("Senior (55+)", composition.Senior) };
+        int colorIndex = 0;
+        foreach (var (label, count) in slices)
+        {
+            if (count > 0)
+            {
+                pieSeries.Slices.Add(new PieSlice(label, count) { Fill = ChartColors[colorIndex % ChartColors.Length], IsExploded = false });
+                colorIndex++;
+            }
+        }
 
         plotModel.Series.Add(pieSeries);
         plotViewAgeGroupDistribution.Model = plotModel;
+    }
+
+    private void PopulateDemographicsBreakdownChart(OxyPlot.WindowsForms.PlotView plotView, string title, List<DemographicsBreakdown> breakdown)
+    {
+        var plotModel = new PlotModel
+        {
+            Title = title,
+            PlotAreaBorderThickness = new OxyThickness(0),
+            PlotMargins = new OxyThickness(120, 40, 120, 120)
+        };
+
+        if (breakdown.Count == 0)
+        {
+            plotModel.Title = $"{title} (No Data)";
+            plotView.Model = plotModel;
+            return;
+        }
+
+        var pieSeries = CreatePieSeriesWithOutsideLabels();
+
+        int colorIndex = 0;
+        foreach (var item in breakdown)
+        {
+            pieSeries.Slices.Add(new PieSlice(item.Label, item.Count)
+            {
+                Fill = ChartColors[colorIndex % ChartColors.Length],
+                IsExploded = false
+            });
+            colorIndex++;
+        }
+
+        plotModel.Series.Add(pieSeries);
+        plotView.Model = plotModel;
+    }
+
+    private void PopulateVisitTypeChart(List<DemographicsBreakdown> visitTypeBreakdown)
+    {
+        var plotModel = new PlotModel
+        {
+            Title = "Visit Type",
+            PlotAreaBorderThickness = new OxyThickness(0),
+            PlotMargins = new OxyThickness(120, 40, 120, 120)
+        };
+
+        if (visitTypeBreakdown.Count == 0)
+        {
+            plotModel.Title = "Visit Type (No Data)";
+            plotViewVisitType.Model = plotModel;
+            return;
+        }
+
+        var pieSeries = CreatePieSeriesWithOutsideLabelsNoHorizontalTick();
+
+        int colorIndex = 0;
+        foreach (var item in visitTypeBreakdown)
+        {
+            pieSeries.Slices.Add(new PieSlice(item.Label, item.Count)
+            {
+                Fill = ChartColors[colorIndex % ChartColors.Length],
+                IsExploded = false
+            });
+            colorIndex++;
+        }
+
+        plotModel.Series.Add(pieSeries);
+        plotViewVisitType.Model = plotModel;
+    }
+
+    private void PopulateEventTypeChart(int pantryDayCount, int appointmentCount)
+    {
+        var plotModel = new PlotModel
+        {
+            Title = "Event Type",
+            PlotAreaBorderThickness = new OxyThickness(0),
+            PlotMargins = new OxyThickness(120, 40, 120, 120)
+        };
+
+        var total = pantryDayCount + appointmentCount;
+        if (total == 0)
+        {
+            plotModel.Title = "Event Type (No Data)";
+            plotViewEventType.Model = plotModel;
+            return;
+        }
+
+        var pieSeries = CreatePieSeriesWithOutsideLabelsNoHorizontalTick();
+
+        pieSeries.Slices.Add(new PieSlice("Pantry Day", pantryDayCount) { Fill = ChartColors[0], IsExploded = false });
+        pieSeries.Slices.Add(new PieSlice("Appointment", appointmentCount) { Fill = ChartColors[1], IsExploded = false });
+
+        plotModel.Series.Add(pieSeries);
+        plotViewEventType.Model = plotModel;
     }
 
     private void PopulateMonthlyVisitsTrendChart(List<MonthlyVisitsTrend> monthlyTrend)
@@ -288,7 +450,8 @@ public partial class StatsForm : Form
             MarkerStroke = ChartColors[0],
             MarkerFill = ChartColors[0],
             Color = ChartColors[0],
-            StrokeThickness = 2
+            StrokeThickness = 2,
+            TrackerFormatString = "Month: {2:yyyy-MM}\nCount: {4}"
         };
 
         foreach (var trend in monthlyTrend.OrderBy(t => t.Month))
@@ -335,7 +498,8 @@ public partial class StatsForm : Form
         var barSeries = new RectangleBarSeries
         {
             Title = "Completed Services",
-            FillColor = ChartColors[0]
+            FillColor = ChartColors[0],
+            TrackerFormatString = "Pantry Day: {2:yyyy-MM-dd}\nCount: {4:0}"
         };
 
         foreach (var volume in pantryDayVolume.OrderBy(v => v.PantryDate))

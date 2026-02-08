@@ -35,6 +35,8 @@ partial class StatsForm
         dtpStartDate = new DateTimePicker();
         lblEndDate = new Label();
         dtpEndDate = new DateTimePicker();
+        btnPageDemographics = new Button();
+        btnPageServices = new Button();
         pnlSummaryCards = new Panel();
         pnlCardTotalActiveHouseholds = new Panel();
         lblCardTotalActiveHouseholds = new Label();
@@ -48,15 +50,26 @@ partial class StatsForm
         pnlCardUniqueHouseholdsServed = new Panel();
         lblCardUniqueHouseholdsServed = new Label();
         lblCardUniqueHouseholdsServedValue = new Label();
-        grpChartsRow1 = new GroupBox();
-        tableLayoutChartsRow1 = new TableLayoutPanel();
+        pnlDemographics = new Panel();
+        tableLayoutDemographics = new TableLayoutPanel();
+        pnlChartRaceDistribution = new Panel();
+        pnlChartVeteranDistribution = new Panel();
+        pnlChartDisabilityDistribution = new Panel();
+        plotViewRaceDistribution = new OxyPlot.WindowsForms.PlotView();
+        plotViewVeteranDistribution = new OxyPlot.WindowsForms.PlotView();
+        plotViewDisabilityDistribution = new OxyPlot.WindowsForms.PlotView();
+        pnlServices = new Panel();
+        tableLayoutServicesRow1 = new TableLayoutPanel();
+        pnlChartVisitType = new Panel();
+        pnlChartEventType = new Panel();
+        plotViewVisitType = new OxyPlot.WindowsForms.PlotView();
+        plotViewEventType = new OxyPlot.WindowsForms.PlotView();
         pnlChartCityDistribution = new Panel();
         plotViewCityDistribution = new OxyPlot.WindowsForms.PlotView();
         pnlChartAgeGroupDistribution = new Panel();
         plotViewAgeGroupDistribution = new OxyPlot.WindowsForms.PlotView();
         pnlChartMonthlyVisitsTrend = new Panel();
         plotViewMonthlyVisitsTrend = new OxyPlot.WindowsForms.PlotView();
-        grpChartsRow2 = new GroupBox();
         pnlChartPantryDayVolume = new Panel();
         plotViewPantryDayVolume = new OxyPlot.WindowsForms.PlotView();
         btnExportPdf = new Button();
@@ -67,12 +80,18 @@ partial class StatsForm
         pnlCardTotalPeople.SuspendLayout();
         pnlCardCompletedServices.SuspendLayout();
         pnlCardUniqueHouseholdsServed.SuspendLayout();
-        grpChartsRow1.SuspendLayout();
-        tableLayoutChartsRow1.SuspendLayout();
+        pnlDemographics.SuspendLayout();
+        tableLayoutDemographics.SuspendLayout();
         pnlChartCityDistribution.SuspendLayout();
         pnlChartAgeGroupDistribution.SuspendLayout();
+        pnlChartRaceDistribution.SuspendLayout();
+        pnlChartVeteranDistribution.SuspendLayout();
+        pnlChartDisabilityDistribution.SuspendLayout();
+        pnlServices.SuspendLayout();
+        tableLayoutServicesRow1.SuspendLayout();
+        pnlChartVisitType.SuspendLayout();
+        pnlChartEventType.SuspendLayout();
         pnlChartMonthlyVisitsTrend.SuspendLayout();
-        grpChartsRow2.SuspendLayout();
         pnlChartPantryDayVolume.SuspendLayout();
         SuspendLayout();
         // 
@@ -80,6 +99,8 @@ partial class StatsForm
         // 
         grpDateRange.Controls.Add(btnPrint);
         grpDateRange.Controls.Add(btnExportPdf);
+        grpDateRange.Controls.Add(btnPageDemographics);
+        grpDateRange.Controls.Add(btnPageServices);
         grpDateRange.Controls.Add(lblDateRange);
         grpDateRange.Controls.Add(cmbDateRange);
         grpDateRange.Controls.Add(lblStartDate);
@@ -116,7 +137,7 @@ partial class StatsForm
         // lblStartDate
         // 
         lblStartDate.AutoSize = true;
-        lblStartDate.Location = new Point(300, 25);
+        lblStartDate.Location = new Point(500, 25);
         lblStartDate.Name = "lblStartDate";
         lblStartDate.Size = new Size(61, 15);
         lblStartDate.TabIndex = 2;
@@ -125,7 +146,7 @@ partial class StatsForm
         // 
         // dtpStartDate
         // 
-        dtpStartDate.Location = new Point(367, 22);
+        dtpStartDate.Location = new Point(567, 22);
         dtpStartDate.Name = "dtpStartDate";
         dtpStartDate.Size = new Size(200, 23);
         dtpStartDate.TabIndex = 3;
@@ -135,7 +156,7 @@ partial class StatsForm
         // lblEndDate
         // 
         lblEndDate.AutoSize = true;
-        lblEndDate.Location = new Point(580, 25);
+        lblEndDate.Location = new Point(780, 25);
         lblEndDate.Name = "lblEndDate";
         lblEndDate.Size = new Size(57, 15);
         lblEndDate.TabIndex = 4;
@@ -144,12 +165,34 @@ partial class StatsForm
         // 
         // dtpEndDate
         // 
-        dtpEndDate.Location = new Point(643, 22);
+        dtpEndDate.Location = new Point(843, 22);
         dtpEndDate.Name = "dtpEndDate";
         dtpEndDate.Size = new Size(200, 23);
         dtpEndDate.TabIndex = 5;
         dtpEndDate.Visible = false;
         dtpEndDate.ValueChanged += DtpEndDate_ValueChanged;
+        // 
+        // btnPageDemographics
+        // 
+        btnPageDemographics.Location = new Point(296, 22);
+        btnPageDemographics.Name = "btnPageDemographics";
+        btnPageDemographics.Size = new Size(100, 23);
+        btnPageDemographics.TabIndex = 8;
+        btnPageDemographics.Text = "Demographics";
+        btnPageDemographics.UseVisualStyleBackColor = true;
+        btnPageDemographics.Click += BtnPageDemographics_Click;
+        btnPageDemographics.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        // 
+        // btnPageServices
+        // 
+        btnPageServices.Location = new Point(402, 22);
+        btnPageServices.Name = "btnPageServices";
+        btnPageServices.Size = new Size(80, 23);
+        btnPageServices.TabIndex = 9;
+        btnPageServices.Text = "Services";
+        btnPageServices.UseVisualStyleBackColor = true;
+        btnPageServices.Click += BtnPageServices_Click;
+        btnPageServices.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         // 
         // pnlSummaryCards
         // 
@@ -288,33 +331,182 @@ partial class StatsForm
         lblCardUniqueHouseholdsServedValue.TabIndex = 1;
         lblCardUniqueHouseholdsServedValue.Text = "0";
         // 
-        // grpChartsRow1
+        // pnlDemographics
         // 
-        grpChartsRow1.Controls.Add(tableLayoutChartsRow1);
-        grpChartsRow1.Location = new Point(12, 184);
-        grpChartsRow1.Name = "grpChartsRow1";
-        grpChartsRow1.Size = new Size(1600, 450);
-        grpChartsRow1.TabIndex = 2;
-        grpChartsRow1.TabStop = false;
-        grpChartsRow1.Text = "Charts";
-        grpChartsRow1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        pnlDemographics.Controls.Add(tableLayoutDemographics);
+        pnlDemographics.Location = new Point(12, 184);
+        pnlDemographics.Name = "pnlDemographics";
+        pnlDemographics.Size = new Size(1600, 786);
+        pnlDemographics.TabIndex = 2;
+        pnlDemographics.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        pnlDemographics.Dock = DockStyle.None;
         // 
-        // tableLayoutChartsRow1
+        // tableLayoutDemographics
+        // Top row: 2 columns (50% each). Bottom row: 3 columns (33.33% each).
+        // 6-column grid: top row spans 3+3, bottom row spans 2+2+2.
         // 
-        tableLayoutChartsRow1.ColumnCount = 3;
-        tableLayoutChartsRow1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-        tableLayoutChartsRow1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-        tableLayoutChartsRow1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-        tableLayoutChartsRow1.Controls.Add(pnlChartCityDistribution, 0, 0);
-        tableLayoutChartsRow1.Controls.Add(pnlChartAgeGroupDistribution, 1, 0);
-        tableLayoutChartsRow1.Controls.Add(pnlChartMonthlyVisitsTrend, 2, 0);
-        tableLayoutChartsRow1.Dock = DockStyle.Fill;
-        tableLayoutChartsRow1.Location = new Point(3, 19);
-        tableLayoutChartsRow1.Name = "tableLayoutChartsRow1";
-        tableLayoutChartsRow1.RowCount = 1;
-        tableLayoutChartsRow1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        tableLayoutChartsRow1.Size = new Size(1594, 428);
-        tableLayoutChartsRow1.TabIndex = 0;
+        tableLayoutDemographics.ColumnCount = 6;
+        for (int i = 0; i < 6; i++)
+        {
+            tableLayoutDemographics.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / 6));
+        }
+        tableLayoutDemographics.Controls.Add(pnlChartCityDistribution, 0, 0);
+        tableLayoutDemographics.SetColumnSpan(pnlChartCityDistribution, 3);
+        tableLayoutDemographics.Controls.Add(pnlChartAgeGroupDistribution, 3, 0);
+        tableLayoutDemographics.SetColumnSpan(pnlChartAgeGroupDistribution, 3);
+        tableLayoutDemographics.Controls.Add(pnlChartRaceDistribution, 0, 1);
+        tableLayoutDemographics.SetColumnSpan(pnlChartRaceDistribution, 2);
+        tableLayoutDemographics.Controls.Add(pnlChartVeteranDistribution, 2, 1);
+        tableLayoutDemographics.SetColumnSpan(pnlChartVeteranDistribution, 2);
+        tableLayoutDemographics.Controls.Add(pnlChartDisabilityDistribution, 4, 1);
+        tableLayoutDemographics.SetColumnSpan(pnlChartDisabilityDistribution, 2);
+        tableLayoutDemographics.Dock = DockStyle.Fill;
+        tableLayoutDemographics.Location = new Point(0, 0);
+        tableLayoutDemographics.Name = "tableLayoutDemographics";
+        tableLayoutDemographics.RowCount = 2;
+        tableLayoutDemographics.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+        tableLayoutDemographics.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+        tableLayoutDemographics.Size = new Size(1600, 786);
+        tableLayoutDemographics.TabIndex = 0;
+        // 
+        // pnlChartRaceDistribution
+        // 
+        pnlChartRaceDistribution.Controls.Add(plotViewRaceDistribution);
+        pnlChartRaceDistribution.Dock = DockStyle.Fill;
+        pnlChartRaceDistribution.Location = new Point(3, 396);
+        pnlChartRaceDistribution.Name = "pnlChartRaceDistribution";
+        pnlChartRaceDistribution.Size = new Size(527, 387);
+        pnlChartRaceDistribution.TabIndex = 2;
+        // 
+        // plotViewRaceDistribution
+        // 
+        plotViewRaceDistribution.Dock = DockStyle.Fill;
+        plotViewRaceDistribution.Location = new Point(0, 0);
+        plotViewRaceDistribution.Name = "plotViewRaceDistribution";
+        plotViewRaceDistribution.PanCursor = Cursors.Hand;
+        plotViewRaceDistribution.Size = new Size(527, 387);
+        plotViewRaceDistribution.TabIndex = 0;
+        plotViewRaceDistribution.Text = "Race Distribution";
+        plotViewRaceDistribution.ZoomHorizontalCursor = Cursors.SizeWE;
+        plotViewRaceDistribution.ZoomRectangleCursor = Cursors.SizeNWSE;
+        plotViewRaceDistribution.ZoomVerticalCursor = Cursors.SizeNS;
+        // 
+        // pnlChartVeteranDistribution
+        // 
+        pnlChartVeteranDistribution.Controls.Add(plotViewVeteranDistribution);
+        pnlChartVeteranDistribution.Dock = DockStyle.Fill;
+        pnlChartVeteranDistribution.Location = new Point(536, 396);
+        pnlChartVeteranDistribution.Name = "pnlChartVeteranDistribution";
+        pnlChartVeteranDistribution.Size = new Size(527, 387);
+        pnlChartVeteranDistribution.TabIndex = 3;
+        // 
+        // plotViewVeteranDistribution
+        // 
+        plotViewVeteranDistribution.Dock = DockStyle.Fill;
+        plotViewVeteranDistribution.Location = new Point(0, 0);
+        plotViewVeteranDistribution.Name = "plotViewVeteranDistribution";
+        plotViewVeteranDistribution.PanCursor = Cursors.Hand;
+        plotViewVeteranDistribution.Size = new Size(527, 387);
+        plotViewVeteranDistribution.TabIndex = 0;
+        plotViewVeteranDistribution.Text = "Veteran Status Distribution";
+        plotViewVeteranDistribution.ZoomHorizontalCursor = Cursors.SizeWE;
+        plotViewVeteranDistribution.ZoomRectangleCursor = Cursors.SizeNWSE;
+        plotViewVeteranDistribution.ZoomVerticalCursor = Cursors.SizeNS;
+        // 
+        // pnlChartDisabilityDistribution
+        // 
+        pnlChartDisabilityDistribution.Controls.Add(plotViewDisabilityDistribution);
+        pnlChartDisabilityDistribution.Dock = DockStyle.Fill;
+        pnlChartDisabilityDistribution.Location = new Point(1069, 396);
+        pnlChartDisabilityDistribution.Name = "pnlChartDisabilityDistribution";
+        pnlChartDisabilityDistribution.Size = new Size(528, 387);
+        pnlChartDisabilityDistribution.TabIndex = 4;
+        // 
+        // plotViewDisabilityDistribution
+        // 
+        plotViewDisabilityDistribution.Dock = DockStyle.Fill;
+        plotViewDisabilityDistribution.Location = new Point(0, 0);
+        plotViewDisabilityDistribution.Name = "plotViewDisabilityDistribution";
+        plotViewDisabilityDistribution.PanCursor = Cursors.Hand;
+        plotViewDisabilityDistribution.Size = new Size(528, 387);
+        plotViewDisabilityDistribution.TabIndex = 0;
+        plotViewDisabilityDistribution.Text = "Disability Status Distribution";
+        plotViewDisabilityDistribution.ZoomHorizontalCursor = Cursors.SizeWE;
+        plotViewDisabilityDistribution.ZoomRectangleCursor = Cursors.SizeNWSE;
+        plotViewDisabilityDistribution.ZoomVerticalCursor = Cursors.SizeNS;
+        // 
+        // pnlServices
+        // 
+        pnlServices.Controls.Add(pnlChartPantryDayVolume);
+        pnlServices.Controls.Add(tableLayoutServicesRow1);
+        pnlServices.Location = new Point(12, 184);
+        pnlServices.Name = "pnlServices";
+        pnlServices.Size = new Size(1600, 786);
+        pnlServices.TabIndex = 4;
+        pnlServices.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        pnlServices.Visible = false;
+        pnlServices.Dock = DockStyle.None;
+        // 
+        // tableLayoutServicesRow1
+        // 
+        tableLayoutServicesRow1.ColumnCount = 3;
+        tableLayoutServicesRow1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        tableLayoutServicesRow1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        tableLayoutServicesRow1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        tableLayoutServicesRow1.Controls.Add(pnlChartVisitType, 0, 0);
+        tableLayoutServicesRow1.Controls.Add(pnlChartEventType, 1, 0);
+        tableLayoutServicesRow1.Controls.Add(pnlChartMonthlyVisitsTrend, 2, 0);
+        tableLayoutServicesRow1.Dock = DockStyle.Top;
+        tableLayoutServicesRow1.Location = new Point(0, 0);
+        tableLayoutServicesRow1.Name = "tableLayoutServicesRow1";
+        tableLayoutServicesRow1.RowCount = 1;
+        tableLayoutServicesRow1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        tableLayoutServicesRow1.Size = new Size(1600, 450);
+        tableLayoutServicesRow1.TabIndex = 0;
+        // 
+        // pnlChartVisitType
+        // 
+        pnlChartVisitType.Controls.Add(plotViewVisitType);
+        pnlChartVisitType.Dock = DockStyle.Fill;
+        pnlChartVisitType.Location = new Point(3, 3);
+        pnlChartVisitType.Name = "pnlChartVisitType";
+        pnlChartVisitType.Size = new Size(392, 444);
+        pnlChartVisitType.TabIndex = 0;
+        // 
+        // plotViewVisitType
+        // 
+        plotViewVisitType.Dock = DockStyle.Fill;
+        plotViewVisitType.Location = new Point(0, 0);
+        plotViewVisitType.Name = "plotViewVisitType";
+        plotViewVisitType.PanCursor = Cursors.Hand;
+        plotViewVisitType.Size = new Size(392, 444);
+        plotViewVisitType.TabIndex = 0;
+        plotViewVisitType.Text = "Visit Type";
+        plotViewVisitType.ZoomHorizontalCursor = Cursors.SizeWE;
+        plotViewVisitType.ZoomRectangleCursor = Cursors.SizeNWSE;
+        plotViewVisitType.ZoomVerticalCursor = Cursors.SizeNS;
+        // 
+        // pnlChartEventType
+        // 
+        pnlChartEventType.Controls.Add(plotViewEventType);
+        pnlChartEventType.Dock = DockStyle.Fill;
+        pnlChartEventType.Location = new Point(401, 3);
+        pnlChartEventType.Name = "pnlChartEventType";
+        pnlChartEventType.Size = new Size(392, 444);
+        pnlChartEventType.TabIndex = 1;
+        // 
+        // plotViewEventType
+        // 
+        plotViewEventType.Dock = DockStyle.Fill;
+        plotViewEventType.Location = new Point(0, 0);
+        plotViewEventType.Name = "plotViewEventType";
+        plotViewEventType.PanCursor = Cursors.Hand;
+        plotViewEventType.Size = new Size(392, 444);
+        plotViewEventType.TabIndex = 0;
+        plotViewEventType.Text = "Event Type";
+        plotViewEventType.ZoomHorizontalCursor = Cursors.SizeWE;
+        plotViewEventType.ZoomRectangleCursor = Cursors.SizeNWSE;
+        plotViewEventType.ZoomVerticalCursor = Cursors.SizeNS;
         // 
         // pnlChartCityDistribution
         // 
@@ -382,25 +574,14 @@ partial class StatsForm
         plotViewMonthlyVisitsTrend.ZoomRectangleCursor = Cursors.SizeNWSE;
         plotViewMonthlyVisitsTrend.ZoomVerticalCursor = Cursors.SizeNS;
         // 
-        // grpChartsRow2
+        // pnlChartPantryDayVolume (in pnlServices)
         // 
-        grpChartsRow2.Controls.Add(pnlChartPantryDayVolume);
-        grpChartsRow2.Location = new Point(12, 640);
-        grpChartsRow2.Name = "grpChartsRow2";
-        grpChartsRow2.Size = new Size(1600, 330);
-        grpChartsRow2.TabIndex = 3;
-        grpChartsRow2.TabStop = false;
-        grpChartsRow2.Text = "Pantry Day Volume";
-        grpChartsRow2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-        // 
-        // pnlChartPantryDayVolume
         // 
         pnlChartPantryDayVolume.Controls.Add(plotViewPantryDayVolume);
-        pnlChartPantryDayVolume.Location = new Point(6, 22);
+        pnlChartPantryDayVolume.Location = new Point(0, 450);
         pnlChartPantryDayVolume.Name = "pnlChartPantryDayVolume";
-        pnlChartPantryDayVolume.Size = new Size(1588, 300);
-        pnlChartPantryDayVolume.TabIndex = 0;
-        pnlChartPantryDayVolume.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        pnlChartPantryDayVolume.Size = new Size(1600, 336);
+        pnlChartPantryDayVolume.TabIndex = 1;
         pnlChartPantryDayVolume.Dock = DockStyle.Fill;
         // 
         // plotViewPantryDayVolume
@@ -444,8 +625,8 @@ partial class StatsForm
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(1624, 980);
         MinimumSize = new Size(1624, 980);
-        Controls.Add(grpChartsRow2);
-        Controls.Add(grpChartsRow1);
+        Controls.Add(pnlServices);
+        Controls.Add(pnlDemographics);
         Controls.Add(pnlSummaryCards);
         Controls.Add(grpDateRange);
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -466,12 +647,18 @@ partial class StatsForm
         pnlCardCompletedServices.PerformLayout();
         pnlCardUniqueHouseholdsServed.ResumeLayout(false);
         pnlCardUniqueHouseholdsServed.PerformLayout();
-        grpChartsRow1.ResumeLayout(false);
-        tableLayoutChartsRow1.ResumeLayout(false);
+        pnlDemographics.ResumeLayout(false);
+        tableLayoutDemographics.ResumeLayout(false);
         pnlChartCityDistribution.ResumeLayout(false);
         pnlChartAgeGroupDistribution.ResumeLayout(false);
+        pnlChartRaceDistribution.ResumeLayout(false);
+        pnlChartVeteranDistribution.ResumeLayout(false);
+        pnlChartDisabilityDistribution.ResumeLayout(false);
+        pnlServices.ResumeLayout(false);
+        tableLayoutServicesRow1.ResumeLayout(false);
+        pnlChartVisitType.ResumeLayout(false);
+        pnlChartEventType.ResumeLayout(false);
         pnlChartMonthlyVisitsTrend.ResumeLayout(false);
-        grpChartsRow2.ResumeLayout(false);
         pnlChartPantryDayVolume.ResumeLayout(false);
         ResumeLayout(false);
     }
@@ -498,17 +685,30 @@ partial class StatsForm
     private Panel pnlCardUniqueHouseholdsServed;
     private Label lblCardUniqueHouseholdsServed;
     private Label lblCardUniqueHouseholdsServedValue;
-    private GroupBox grpChartsRow1;
-    private TableLayoutPanel tableLayoutChartsRow1;
+    private Panel pnlDemographics;
+    private TableLayoutPanel tableLayoutDemographics;
     private Panel pnlChartCityDistribution;
     private OxyPlot.WindowsForms.PlotView plotViewCityDistribution;
     private Panel pnlChartAgeGroupDistribution;
     private OxyPlot.WindowsForms.PlotView plotViewAgeGroupDistribution;
+    private Panel pnlChartRaceDistribution;
+    private OxyPlot.WindowsForms.PlotView plotViewRaceDistribution;
+    private Panel pnlChartVeteranDistribution;
+    private OxyPlot.WindowsForms.PlotView plotViewVeteranDistribution;
+    private Panel pnlChartDisabilityDistribution;
+    private OxyPlot.WindowsForms.PlotView plotViewDisabilityDistribution;
+    private Panel pnlServices;
+    private TableLayoutPanel tableLayoutServicesRow1;
+    private Panel pnlChartVisitType;
+    private OxyPlot.WindowsForms.PlotView plotViewVisitType;
+    private Panel pnlChartEventType;
+    private OxyPlot.WindowsForms.PlotView plotViewEventType;
     private Panel pnlChartMonthlyVisitsTrend;
     private OxyPlot.WindowsForms.PlotView plotViewMonthlyVisitsTrend;
-    private GroupBox grpChartsRow2;
     private Panel pnlChartPantryDayVolume;
     private OxyPlot.WindowsForms.PlotView plotViewPantryDayVolume;
+    private Button btnPageDemographics;
+    private Button btnPageServices;
     private Button btnExportPdf;
     private Button btnPrint;
 }

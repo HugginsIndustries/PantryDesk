@@ -21,8 +21,8 @@ public partial class MemberEditForm : Form
             dtpBirthday.Value = existing.Birthday;
             chkPrimary.Checked = existing.IsPrimary;
             cmbRace.SelectedItem = existing.Race ?? "Not Specified";
-            cmbVeteran.SelectedItem = existing.VeteranStatus ?? "Prefer Not To Answer";
-            cmbDisabled.SelectedItem = existing.DisabledStatus ?? "Prefer Not To Answer";
+            cmbVeteran.SelectedItem = existing.VeteranStatus ?? "Not Specified";
+            cmbDisabled.SelectedItem = existing.DisabledStatus ?? "Not Specified";
         }
         else
         {

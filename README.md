@@ -8,9 +8,10 @@
 - **Check-in**: Search and action buttons on one row; search by name (250ms debounce; Enter for immediate search). Eligibility column shows ✅ Eligible / ❌ Already Served with color coding for accessibility. Status bar shows current role and last auto/manual backup dates. "Switch Role" (replaces Logout) returns to Login without exiting.
 - **Pantry Days & Appointments**: Calendar-based pantry day scheduling with appointment support
 - **Monthly Eligibility**: Visit types (Shop with TEFAP, Shop, TEFAP Only, Deck Only); only Shop/Shop with TEFAP count toward 1 visit/month limit. Override support (requires reason)
-- **Statistics Dashboard**: Unified dashboard with date range selection (This Month, Last Month, Past 3/6/12 Months, This/Last Year, Custom Range) showing:
-  - Summary cards: Total Active Households, Total People, Completed Services, Unique Households Served
-  - Interactive charts: City Distribution (pie), Age Group Distribution (pie), Monthly Visits Trend (line), Pantry Day Volume by Event (bar)
+- **Statistics Dashboard**: Unified dashboard with date range selection (This Month, Last Month, Past 3/6/12 Months, This/Last Year, Custom Range) and two-page layout:
+  - Summary cards: Total Active Households, Total People, Completed Services, Unique Households Served (date-range aware)
+  - **Demographics page:** Five pie charts — City, Age Group, Race, Veteran Status, Disability Status (Age Group omits zero-count slices)
+  - **Services page:** Visit Type and Event Type pie charts, Monthly Visits Trend (line), Pantry Day Volume by Event (bar); Pantry Day chart fills remaining space
   - Colorblind-friendly color palette (ColorBrewer Set2)
   - Export to PDF or print with embedded charts
 - **Backup & Restore**: Automatic daily encrypted backup on first launch each day (AES-GCM with DPAPI or passphrase). Admin-only "Backup to USB…" for manual backup to a chosen folder (max 8 backups per folder; rotation removes oldest zip and its `.meta.json`). Separate tracking for last auto vs last manual backup; status bar and Restore form show both. Weekly reminder if no manual backup in 7+ days (Snooze or Backup Now). Restore form displays database path and last backup dates. One-click restore with safety copy (Admin-only). Backups respect demo mode configuration.
