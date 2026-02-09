@@ -450,31 +450,31 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskApp/Forms/PantryDaysForm.Designer.cs`
   - Rationale: Reduces scrolling when managing large numbers of pantry days
 
-#### Deck-Only Monthly Bulk Entry
+#### Monthly Activity Report & Deck-Only Monthly Bulk Entry
+
+Implement deck entry and storage with or before the report so the report can read deck-only data for a month.
 
 - [ ] Add deck-only monthly bulk entry with averaged totals
   - Impact: High
   - Complexity: High
   - Acceptance Criteria:
-    - Form for deck-only shopping: Name, Household total, counts per age group (0–2, 2–18, 18–55, 55+)
-    - Staff totals all pages over a month (Household total + each age-group total)
-    - Divide totals by number of pages (averaging for repeated samples as form is swapped out)
-    - Averaged totals added in bulk to monthly statistics for reporting
-    - Add deck-only averaged totals ONLY to duplicated individual counts (overall + by age group) for Monthly Activity Report
-    - Do not derive unduplicated deck-only counts
+    - **Entry point:** Reports menu, new item "Enter Deck Stats" opens the deck-only entry flow.
+    - **One entry per month:** At most one deck-only record per (year, month). If user selects a month that already has deck stats, show a warning: "Deck stats already entered for [Month YYYY]. Do you want to edit them?" — Yes loads that month's data for editing; No cancels. On edit, replace existing data (no history).
+    - **Dialog:** Month/year selector (default: last month). Staff enter **totals** (summed across all pages) for: household size, and age groups labeled "Infant (0-2)", "Child (2-18)", "Adult (18-55)", "Senior (55+)". Staff enter **number of pages**. Averages calculated automatically (each total ÷ number of pages) and stored as that month's deck-only stats. Number of pages may be stored for audit but is not shown on the Monthly Activity Report.
+    - Staff sum paper forms across pages (same households repeat across pages), then divide by page count to get averages.
+    - Add deck-only averaged totals ONLY to duplicated individual counts for Monthly Activity Report: the **overall** duplicated individuals count uses the averaged **household total** from the deck form; the per-age duplicated counts use the averaged Infant, Child, Adult, Senior values.
+    - Do not derive unduplicated deck-only counts.
   - Likely files:
-    - New deck-only entry form
+    - New deck-only entry form/dialog
     - `StatisticsService`, Monthly Activity Report logic
-    - Config/metadata for storing deck-only monthly data
-  - Rationale: Deck-only visitors fill paper form; staff need to incorporate averaged totals into reports
-
-#### Monthly Activity Report (Letter-Size Landscape)
+    - Config/table for storing deck-only monthly data (year, month, averaged household, infant, child, adult, senior; optional page count)
+  - Rationale: Deck-only visitors fill paper form; staff incorporate averaged totals into reports; one entry per month with edit replaces to avoid duplicates
 
 - [ ] Add formatted "Monthly Activity Report" (one Letter-size page, landscape)
   - Impact: High
   - Complexity: High
   - Acceptance Criteria:
-    - Accessible from Reports menu; opens dialog
+    - **Entry point:** Reports menu, item "Monthly Activity Report"; opens dialog.
     - Default month: last month; allow selecting month
     - Required header fields: Food bank name, county, prepared by, month/year, phone number
     - Total days open for food distribution: pantry days only (usually 3 unless schedule changes)
@@ -483,13 +483,13 @@ Implementation checklist based on phased plan.
     - Total pounds distributed: (Households Served Total * 65 lbs/household) from all sources
     - Households served:
       - Total = unique households with at least one qualifying service in month
-      - Unduplicated = first qualifying service this reporting year occurs in selected month
+      - Unduplicated = first qualifying service this reporting year occurs in selected month. "Reporting year" uses the same configurable reset date as the app (default Jan 1).
       - Duplicated = Total - Unduplicated
     - Individuals served:
       - Based on served households; count each household's members once
-      - Breakdown by age group (0–2, 2–18, 18–55, 55+) with totals and grand total
+      - Breakdown by age group with labels "Infant (0-2)", "Child (2-18)", "Adult (18-55)", "Senior (55+)" with totals and grand total
       - Duplicated/unduplicated splits match household classification
-      - Add deck-only averaged monthly totals to duplicated individual counts (overall + by age group)
+      - Add deck-only averaged monthly totals to duplicated individual counts: overall from deck averaged household total; per-age from deck Infant, Child, Adult, Senior averages
     - Fit on one Letter-size sheet, landscape orientation
     - Export PDF and Print options (same as statistics dashboard)
   - Likely files:
