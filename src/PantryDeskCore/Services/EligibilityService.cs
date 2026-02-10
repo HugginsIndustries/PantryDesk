@@ -29,4 +29,19 @@ public static class EligibilityService
         // Eligible if no completed services this month
         return !hasCompleted;
     }
+
+    /// <summary>
+    /// Same as IsEligibleThisMonth but excludes a specific event (e.g. when editing an existing completed event).
+    /// </summary>
+    public static bool IsEligibleThisMonthExcludingEvent(
+        SqliteConnection connection, int householdId, DateTime referenceDate, int excludeEventId)
+    {
+        var monthStart = new DateTime(referenceDate.Year, referenceDate.Month, 1);
+        var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+
+        var hasCompleted = ServiceEventRepository.HasCompletedQualifyingVisitInDateRangeExcluding(
+            connection, householdId, monthStart, monthEnd, excludeEventId);
+
+        return !hasCompleted;
+    }
 }

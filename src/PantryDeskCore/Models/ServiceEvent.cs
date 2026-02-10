@@ -14,5 +14,6 @@ public class ServiceEvent
     public string? OverrideReason { get; set; }
     public string? Notes { get; set; }
     public string? VisitType { get; set; } // 'Shop with TEFAP', 'Shop', 'TEFAP Only', 'Deck Only'
+    public int? ScheduledForMemberId { get; set; }
     public DateTime CreatedAt { get; set; }
 }

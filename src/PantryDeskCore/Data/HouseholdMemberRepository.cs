@@ -183,6 +183,73 @@ public static class HouseholdMemberRepository
     }
 
     /// <summary>
+    /// Searches members by name (first, last, or full). Returns only members whose names match.
+    /// Each result includes the member and their household for display.
+    /// </summary>
+    public static List<MemberSearchResult> SearchMembersByName(SqliteConnection connection, string searchTerm)
+    {
+        var results = new List<MemberSearchResult>();
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return results;
+
+        var likePattern = $"%{searchTerm.Trim()}%";
+
+        connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.HouseholdMemberSearchByName, connection);
+            cmd.Parameters.AddWithValue("@search_term", likePattern);
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                var member = new HouseholdMember
+                {
+                    Id = reader.GetInt32(0),
+                    HouseholdId = reader.GetInt32(1),
+                    FirstName = reader.GetString(2),
+                    LastName = reader.GetString(3),
+                    Birthday = DateTime.Parse(reader.GetString(4)),
+                    IsPrimary = reader.GetInt32(5) != 0,
+                    Race = reader.IsDBNull(6) ? null : reader.GetString(6),
+                    VeteranStatus = reader.IsDBNull(7) ? null : reader.GetString(7),
+                    DisabledStatus = reader.IsDBNull(8) ? null : reader.GetString(8)
+                };
+                var household = new Household
+                {
+                    Id = reader.GetInt32(9),
+                    PrimaryName = reader.GetString(10),
+                    Address1 = reader.IsDBNull(11) ? null : reader.GetString(11),
+                    City = reader.IsDBNull(12) ? null : reader.GetString(12),
+                    State = reader.IsDBNull(13) ? null : reader.GetString(13),
+                    Zip = reader.IsDBNull(14) ? null : reader.GetString(14),
+                    Phone = reader.IsDBNull(15) ? null : reader.GetString(15),
+                    Email = reader.IsDBNull(16) ? null : reader.GetString(16),
+                    ChildrenCount = reader.GetInt32(17),
+                    AdultsCount = reader.GetInt32(18),
+                    SeniorsCount = reader.GetInt32(19),
+                    Notes = reader.IsDBNull(20) ? null : reader.GetString(20),
+                    IsActive = reader.GetInt32(21) != 0,
+                    CreatedAt = DateTime.Parse(reader.GetString(22)),
+                    UpdatedAt = DateTime.Parse(reader.GetString(23))
+                };
+                results.Add(new MemberSearchResult
+                {
+                    Member = member,
+                    Household = household,
+                    PrimaryName = household.PrimaryName
+                });
+            }
+        }
+        finally
+        {
+            connection.Close();
+        }
+
+        return results;
+    }
+
+    /// <summary>
     /// Gets the primary member for a household.
     /// </summary>
     public static HouseholdMember? GetPrimaryByHouseholdId(SqliteConnection connection, int householdId)

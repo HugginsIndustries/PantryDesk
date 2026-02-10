@@ -243,6 +243,27 @@ Implementation checklist based on phased plan.
     - `EligibilityService` or equivalent
   - Rationale: Different visit types have different eligibility implications for reporting
 
+#### Appointment Visibility & Management (Complete)
+
+- [x] Add dedicated "Appointments" form (button left of Complete Service on Check-In)
+  - Impact: High
+  - Complexity: Medium
+  - Entry point: New "Appointments" button on main Check-In screen, left of "Complete Service" (order: Appointments | Complete Service | New Household | Open Profile)
+  - Acceptance Criteria:
+    - **View layout** — Two sections:
+      - **Left (Past):** Latest dates at top. Includes past appointments plus future-dated appointments already marked Completed/Cancelled/NoShow (display Cancelled/NoShow in red, Completed in green). Filters: date range (default: past year to 3 months ahead), status (default: no filter). Sort by date descending.
+      - **Right (Future):** Soonest/earliest dates at top. Shows all scheduled appointments (not Completed/Cancelled/NoShow). Overdue appointments displayed in red. Mark Complete/Cancelled/NoShow via buttons (apply to selected Future appointment). Edit via right-click context menu.
+    - **Create appointments:** Top-right "Create New Appointment" button. Flow: search by any household member name (not just primary) → select member from results → set Scheduled Date, Scheduled Text, optional notes → save. Member-centric: appointments can be scheduled for primary or other household member.
+    - **Household profile:** Remove Appointments tab/creation UI. Appointments remain visible on Service History tab. Edit via right-click on Service History (all event types); status changes done in Edit dialog.
+    - **Edit:** EditServiceEventDialog for all service events (PantryDay and Appointment). Past and Future grids: right-click Edit. Service History: right-click Edit only. PantryDay: EventDate read-only; Appointment: full edit (date, status, scheduled text, member, visit type, notes, override reason).
+  - Likely files:
+    - `PantryDeskApp/Forms/AppointmentsForm.cs` (new)
+    - `PantryDeskApp/Forms/AppointmentsForm.Designer.cs` (new)
+    - `PantryDeskApp/Forms/EditServiceEventDialog.cs` (new)
+    - `PantryDeskApp/Forms/CheckInForm.cs` (add Appointments button)
+    - `PantryDeskApp/Forms/HouseholdProfileForm.cs` (remove Appointments tab/creation UI)
+  - Rationale: Appointments currently only visible within individual household profiles; central form provides oversight and creation by any member name. No Upcoming panel on Check-In; may add "Appointments Today" hint later.
+
 ### Phase 10 — UX Improvements & Workflow Enhancements (Complete)
 
 #### Search & Check-In Improvements
@@ -408,25 +429,6 @@ Implement deck entry and storage with or before the report so the report can rea
 ## Open
 
 ### Client Requirements
-
-#### Appointment Visibility & Management
-
-- [ ] Add dedicated "Appointments" form (button left of Complete Service on Check-In)
-  - Impact: High
-  - Complexity: Medium
-  - Entry point: New "Appointments" button on main Check-In screen, left of "Complete Service" (order: Appointments | Complete Service | New Household | Open Profile)
-  - Acceptance Criteria:
-    - **View layout** — Two sections:
-      - **Left (Past):** Latest dates at top. Includes past appointments plus future-dated appointments already marked Completed/Cancelled/NoShow (display Cancelled/NoShow in red, Completed in green). Filters: date range (default: past year), status (default: no filter). Sort by date descending.
-      - **Right (Future):** Soonest/earliest dates at top. Shows all scheduled appointments (not Completed/Cancelled/NoShow). Overdue appointments displayed in red. Mark Completed/Cancelled/NoShow from this section (and/or from Service History in profile).
-    - **Create appointments:** Top-right "Create New Appointment" button. Flow: search by any household member name (not just primary) → select household from results → set Scheduled Date, Scheduled Text, optional notes → save. This replaces all appointment creation in household profiles.
-    - **Household profile:** Remove Appointments tab/creation UI. Appointments remain visible on Service History tab. Marking (Completed/Cancelled/NoShow) via right-click on Service History; explicit buttons optionally later.
-  - Likely files:
-    - `PantryDeskApp/Forms/AppointmentsForm.cs` (new)
-    - `PantryDeskApp/Forms/AppointmentsForm.Designer.cs` (new)
-    - `PantryDeskApp/Forms/CheckInForm.cs` (add Appointments button)
-    - `PantryDeskApp/Forms/HouseholdProfileForm.cs` (remove Appointments tab/creation UI)
-  - Rationale: Appointments currently only visible within individual household profiles; central form provides oversight and creation by any member name. No Upcoming panel on Check-In; may add "Appointments Today" hint later.
 
 #### Household Form Improvements
 

@@ -43,8 +43,12 @@ public static class Sql
             override_reason TEXT,
             notes TEXT,
             visit_type TEXT,
+            scheduled_for_member_id INTEGER REFERENCES household_members(id),
             created_at TEXT NOT NULL
         )";
+
+    public const string ServiceEventAlterAddScheduledForMemberId = @"
+        ALTER TABLE service_events ADD COLUMN scheduled_for_member_id INTEGER REFERENCES household_members(id)";
 
     public const string ServiceEventAlterAddVisitType = @"
         ALTER TABLE service_events ADD COLUMN visit_type TEXT";
@@ -209,6 +213,22 @@ public static class Sql
            OR m.last_name LIKE @search_term COLLATE NOCASE
         ORDER BY h.primary_name";
 
+    /// <summary>
+    /// Returns matching members only (one row per member). Members whose names match the search term.
+    /// </summary>
+    public const string HouseholdMemberSearchByName = @"
+        SELECT m.id, m.household_id, m.first_name, m.last_name, m.birthday, m.is_primary,
+               m.race, m.veteran_status, m.disabled_status,
+               h.id, h.primary_name, h.address1, h.city, h.state, h.zip, h.phone, h.email,
+               h.children_count, h.adults_count, h.seniors_count, h.notes,
+               h.is_active, h.created_at, h.updated_at
+        FROM household_members m
+        INNER JOIN households h ON h.id = m.household_id
+        WHERE (m.first_name || ' ' || m.last_name) LIKE @search_term COLLATE NOCASE
+           OR m.first_name LIKE @search_term COLLATE NOCASE
+           OR m.last_name LIKE @search_term COLLATE NOCASE
+        ORDER BY m.last_name, m.first_name, h.primary_name";
+
     public const string HouseholdFindPotentialDuplicates = @"
         SELECT id, primary_name, address1, city, state, zip, phone, email,
                children_count, adults_count, seniors_count, notes,
@@ -278,42 +298,49 @@ public static class Sql
     public const string ServiceEventInsert = @"
         INSERT INTO service_events (
             household_id, event_type, event_status, event_date,
-            scheduled_text, override_reason, notes, visit_type, created_at
+            scheduled_text, override_reason, notes, visit_type,
+            scheduled_for_member_id, created_at
         )
         VALUES (
             @household_id, @event_type, @event_status, @event_date,
-            @scheduled_text, @override_reason, @notes, @visit_type, @created_at
+            @scheduled_text, @override_reason, @notes, @visit_type,
+            @scheduled_for_member_id, @created_at
         )";
 
     public const string ServiceEventSelectById = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, visit_type, created_at
+               scheduled_text, override_reason, notes, visit_type,
+               scheduled_for_member_id, created_at
         FROM service_events
         WHERE id = @id";
 
     public const string ServiceEventSelectByHouseholdId = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, visit_type, created_at
+               scheduled_text, override_reason, notes, visit_type,
+               scheduled_for_member_id, created_at
         FROM service_events
         WHERE household_id = @household_id
         ORDER BY event_date DESC, created_at DESC";
 
     public const string ServiceEventSelectByDateRange = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, visit_type, created_at
+               scheduled_text, override_reason, notes, visit_type,
+               scheduled_for_member_id, created_at
         FROM service_events
         WHERE event_date >= @start_date AND event_date <= @end_date
         ORDER BY event_date DESC, created_at DESC";
 
     public const string ServiceEventSelectAll = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, visit_type, created_at
+               scheduled_text, override_reason, notes, visit_type,
+               scheduled_for_member_id, created_at
         FROM service_events
         ORDER BY event_date DESC, created_at DESC";
 
     public const string ServiceEventSelectLastCompletedByHouseholdId = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, visit_type, created_at
+               scheduled_text, override_reason, notes, visit_type,
+               scheduled_for_member_id, created_at
         FROM service_events
         WHERE household_id = @household_id AND event_status = 'Completed'
         ORDER BY event_date DESC, created_at DESC
@@ -321,7 +348,8 @@ public static class Sql
 
     public const string ServiceEventSelectCompletedByHouseholdAndDateRange = @"
         SELECT id, household_id, event_type, event_status, event_date,
-               scheduled_text, override_reason, notes, visit_type, created_at
+               scheduled_text, override_reason, notes, visit_type,
+               scheduled_for_member_id, created_at
         FROM service_events
         WHERE household_id = @household_id 
           AND event_status = 'Completed'
@@ -339,6 +367,17 @@ public static class Sql
           AND (visit_type IN ('Shop with TEFAP', 'Shop') OR visit_type IS NULL)
         LIMIT 1";
 
+    public const string ServiceEventSelectCompletedQualifyingByHouseholdAndDateRangeExcludingEvent = @"
+        SELECT 1
+        FROM service_events
+        WHERE household_id = @household_id 
+          AND event_status = 'Completed'
+          AND event_date >= @start_date 
+          AND event_date <= @end_date
+          AND (visit_type IN ('Shop with TEFAP', 'Shop') OR visit_type IS NULL)
+          AND id != @exclude_event_id
+        LIMIT 1";
+
     public const string ServiceEventUpdate = @"
         UPDATE service_events
         SET event_type = @event_type,
@@ -347,8 +386,36 @@ public static class Sql
             scheduled_text = @scheduled_text,
             override_reason = @override_reason,
             notes = @notes,
-            visit_type = @visit_type
+            visit_type = @visit_type,
+            scheduled_for_member_id = @scheduled_for_member_id
         WHERE id = @id";
+
+    public const string ServiceEventSelectAppointmentsPast = @"
+        SELECT se.id, se.household_id, se.event_type, se.event_status, se.event_date,
+               se.scheduled_text, se.override_reason, se.notes, se.visit_type,
+               se.scheduled_for_member_id, se.created_at,
+               h.primary_name,
+               m.first_name, m.last_name, m.is_primary
+        FROM service_events se
+        LEFT JOIN households h ON h.id = se.household_id
+        LEFT JOIN household_members m ON m.id = se.scheduled_for_member_id
+        WHERE se.event_type = 'Appointment'
+          AND se.event_status IN ('Completed', 'Cancelled', 'NoShow')
+          AND se.event_date >= @start_date AND se.event_date <= @end_date
+          AND (@status_filter = 'All' OR se.event_status = @status_filter)
+        ORDER BY se.event_date DESC, se.created_at DESC";
+
+    public const string ServiceEventSelectAppointmentsScheduled = @"
+        SELECT se.id, se.household_id, se.event_type, se.event_status, se.event_date,
+               se.scheduled_text, se.override_reason, se.notes, se.visit_type,
+               se.scheduled_for_member_id, se.created_at,
+               h.primary_name,
+               m.first_name, m.last_name, m.is_primary
+        FROM service_events se
+        LEFT JOIN households h ON h.id = se.household_id
+        LEFT JOIN household_members m ON m.id = se.scheduled_for_member_id
+        WHERE se.event_type = 'Appointment' AND se.event_status = 'Scheduled'
+        ORDER BY se.event_date ASC, se.created_at ASC";
 
     // PantryDay queries
     public const string PantryDayInsert = @"

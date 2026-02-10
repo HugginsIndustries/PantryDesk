@@ -245,6 +245,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enter Deck Stats: Reports → Enter Deck Stats (or Check-in menu); one record per (year, month); enter totals across deck-only pages (household total, Infant/Child/Adult/Senior, number of pages); app stores per-page averages; when deck stats exist for a month, report adds those averages (rounded) to Duplicated individuals only
   - Unified statistics: all reporting (Statistics Dashboard PDF and Monthly Activity Report PDF) uses completed services only (cancelled/no-show excluded) and any completed event for households/individuals served; eligibility once-per-month rule (Shop/Shop with TEFAP) still uses qualifying visit types
   - Schema: `deck_stats_monthly` table (migration v6); `DeckStatsMonthly` model and `DeckStatsRepository`; `StatisticsFirstCompletedDateInReportingYearPerHousehold` and shared completed-service queries for activity report; veteran status demographics query with derived "Disabled Veteran" (SQL CASE); CSV/JSON export for deck stats (Admin-only)
+- **Appointment Visibility & Management** (COMPLETED: 2026-02-09, TODO: Client Requirements/Appointment Visibility & Management)
+  - Dedicated Appointments form (button left of Complete Service) with Past (Completed/Cancelled/NoShow) and Future (Scheduled) panels; date range default 1 year ago to 3 months ahead
+  - Create New Appointment: search by household member name, select member, set date/text/notes; member-centric appointments (`scheduled_for_member_id`, schema v7)
+  - Mark Complete, Mark Cancelled, Mark NoShow buttons on Appointments form (apply to selected Future appointment)
+  - EditServiceEventDialog: edit all service events (PantryDay and Appointment); right-click Edit on Past, Future, and Service History; PantryDay EventDate read-only; Appointment: full edit including status, member, date, scheduled text, visit type, notes, override reason
+  - Household profile: Appointments tab removed; Service History has Edit-only context menu (status changes via Edit dialog)
+  - Seeder: past appointments ~4% Cancelled, ~4% NoShow; 5% future appointments Cancelled; terminal output shows counts by status and primary vs non-primary
+  - Seeder defaults: 500 households, 24 months back
+  - AppointmentsForm: 1500×750 opening, 1100×500 min; CheckInForm: 1600×750 opening
 
 ### Changed
 
@@ -269,6 +278,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Seeder CLI: validate unknown command-line arguments (clear error and non-zero exit); print effective configuration summary before seeding (households, months back, output path, seed); distinguish "Missing value for --option" from "Unknown argument" for options that require a value (COMPLETED: 2025-02-07, TODO: Seeder CLI Improvements)
 - **Publish script**: Demo DB and config now placed only in `PantryDeskApp/` folder; use relative path (`demo_pantrydesk.db`) for portable demos. Copy the `PantryDeskApp/` folder to USB for demos without path changes.
 - **AppConfig**: Demo DB path supports relative paths, resolved from the config file location.
+- Seeder defaults: households 500 (was 300), months-back 24 (was 6)
 
 ### Removed
 

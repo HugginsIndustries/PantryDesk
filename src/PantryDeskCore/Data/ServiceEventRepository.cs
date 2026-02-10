@@ -32,6 +32,7 @@ public static class ServiceEventRepository
             cmd.Parameters.AddWithValue("@override_reason", (object?)serviceEvent.OverrideReason ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@notes", (object?)serviceEvent.Notes ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@visit_type", (object?)serviceEvent.VisitType ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@scheduled_for_member_id", (object?)serviceEvent.ScheduledForMemberId ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@created_at", createdAt);
 
             cmd.ExecuteNonQuery();
@@ -252,6 +253,7 @@ public static class ServiceEventRepository
             cmd.Parameters.AddWithValue("@override_reason", (object?)serviceEvent.OverrideReason ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@notes", (object?)serviceEvent.Notes ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@visit_type", (object?)serviceEvent.VisitType ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@scheduled_for_member_id", (object?)serviceEvent.ScheduledForMemberId ?? DBNull.Value);
 
             cmd.ExecuteNonQuery();
         }
@@ -287,6 +289,125 @@ public static class ServiceEventRepository
         }
     }
 
+    /// <summary>
+    /// Checks if a household has any completed qualifying visits in the date range, excluding a specific event.
+    /// Used when editing an existing event to avoid counting it against itself.
+    /// </summary>
+    public static bool HasCompletedQualifyingVisitInDateRangeExcluding(
+        SqliteConnection connection, int householdId, DateTime startDate, DateTime endDate, int excludeEventId)
+    {
+        var startDateStr = startDate.ToString("yyyy-MM-dd");
+        var endDateStr = endDate.ToString("yyyy-MM-dd");
+
+        DatabaseManager.OpenWithForeignKeys(connection);
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.ServiceEventSelectCompletedQualifyingByHouseholdAndDateRangeExcludingEvent, connection);
+            cmd.Parameters.AddWithValue("@household_id", householdId);
+            cmd.Parameters.AddWithValue("@start_date", startDateStr);
+            cmd.Parameters.AddWithValue("@end_date", endDateStr);
+            cmd.Parameters.AddWithValue("@exclude_event_id", excludeEventId);
+
+            using var reader = cmd.ExecuteReader();
+            return reader.Read();
+        }
+        finally
+        {
+            connection.Close();
+        }
+    }
+
+    /// <summary>
+    /// Gets past appointments (Completed/Cancelled/NoShow) within a date range for the Appointments form.
+    /// </summary>
+    public static List<AppointmentRow> GetAppointmentsPast(SqliteConnection connection, DateTime startDate, DateTime endDate, string statusFilter)
+    {
+        var rows = new List<AppointmentRow>();
+        var startDateStr = startDate.ToString("yyyy-MM-dd");
+        var endDateStr = endDate.ToString("yyyy-MM-dd");
+
+        DatabaseManager.OpenWithForeignKeys(connection);
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.ServiceEventSelectAppointmentsPast, connection);
+            cmd.Parameters.AddWithValue("@start_date", startDateStr);
+            cmd.Parameters.AddWithValue("@end_date", endDateStr);
+            cmd.Parameters.AddWithValue("@status_filter", statusFilter ?? "All");
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                rows.Add(MapAppointmentRowFromReader(reader));
+            }
+        }
+        finally
+        {
+            connection.Close();
+        }
+
+        return rows;
+    }
+
+    /// <summary>
+    /// Gets scheduled appointments for the Appointments form Future panel.
+    /// </summary>
+    public static List<AppointmentRow> GetAppointmentsScheduled(SqliteConnection connection)
+    {
+        var rows = new List<AppointmentRow>();
+
+        DatabaseManager.OpenWithForeignKeys(connection);
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.ServiceEventSelectAppointmentsScheduled, connection);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                rows.Add(MapAppointmentRowFromReader(reader));
+            }
+        }
+        finally
+        {
+            connection.Close();
+        }
+
+        return rows;
+    }
+
+    private static AppointmentRow MapAppointmentRowFromReader(SqliteDataReader reader)
+    {
+        var primaryName = reader.IsDBNull(11) ? string.Empty : reader.GetString(11);
+        var hasScheduledMember = !reader.IsDBNull(9);
+        string displayName;
+        if (hasScheduledMember && !reader.IsDBNull(12) && !reader.IsDBNull(13))
+        {
+            var memberFirstName = reader.GetString(12);
+            var memberLastName = reader.GetString(13);
+            var memberFullName = $"{memberFirstName} {memberLastName}".Trim();
+            var isPrimary = !reader.IsDBNull(14) && reader.GetInt32(14) == 1;
+            displayName = isPrimary ? memberFullName : $"{memberFullName} • {primaryName} Household";
+        }
+        else
+        {
+            displayName = primaryName;
+        }
+
+        return new AppointmentRow
+        {
+            Id = reader.GetInt32(0),
+            HouseholdId = reader.GetInt32(1),
+            EventType = reader.GetString(2),
+            EventStatus = reader.GetString(3),
+            EventDate = DateTime.Parse(reader.GetString(4)),
+            ScheduledText = reader.IsDBNull(5) ? null : reader.GetString(5),
+            OverrideReason = reader.IsDBNull(6) ? null : reader.GetString(6),
+            Notes = reader.IsDBNull(7) ? null : reader.GetString(7),
+            VisitType = reader.IsDBNull(8) ? null : reader.GetString(8),
+            CreatedAt = DateTime.Parse(reader.GetString(10)),
+            PrimaryName = primaryName,
+            DisplayName = displayName
+        };
+    }
+
     private static ServiceEvent MapFromReader(SqliteDataReader reader)
     {
         return new ServiceEvent
@@ -300,7 +421,8 @@ public static class ServiceEventRepository
             OverrideReason = reader.IsDBNull(6) ? null : reader.GetString(6),
             Notes = reader.IsDBNull(7) ? null : reader.GetString(7),
             VisitType = reader.IsDBNull(8) ? null : reader.GetString(8),
-            CreatedAt = DateTime.Parse(reader.GetString(9))
+            ScheduledForMemberId = reader.IsDBNull(9) ? null : reader.GetInt32(9),
+            CreatedAt = DateTime.Parse(reader.GetString(10))
         };
     }
 }

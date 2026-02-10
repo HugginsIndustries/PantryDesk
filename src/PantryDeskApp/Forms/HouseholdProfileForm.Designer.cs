@@ -60,15 +60,6 @@ partial class HouseholdProfileForm
         lblFilterType = new Label();
         cmbFilterType = new ComboBox();
         dgvServiceHistory = new DataGridView();
-        tabAppointments = new TabPage();
-        grpScheduleAppointment = new GroupBox();
-        lblScheduledDate = new Label();
-        dtpScheduledDate = new DateTimePicker();
-        lblScheduledText = new Label();
-        txtScheduledText = new TextBox();
-        lblAppointmentNotes = new Label();
-        txtAppointmentNotes = new TextBox();
-        btnSchedule = new Button();
         btnSave = new Button();
         btnCancel = new Button();
         lblError = new Label();
@@ -77,15 +68,12 @@ partial class HouseholdProfileForm
         ((System.ComponentModel.ISupportInitialize)grdMembers).BeginInit();
         tabServiceHistory.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)dgvServiceHistory).BeginInit();
-        tabAppointments.SuspendLayout();
-        grpScheduleAppointment.SuspendLayout();
         SuspendLayout();
         // 
         // tabControl
         // 
         tabControl.Controls.Add(tabProfile);
         tabControl.Controls.Add(tabServiceHistory);
-        tabControl.Controls.Add(tabAppointments);
         tabControl.Dock = DockStyle.Fill;
         tabControl.Location = new Point(0, 0);
         tabControl.Name = "tabControl";
@@ -412,96 +400,6 @@ partial class HouseholdProfileForm
         dgvServiceHistory.TabIndex = 4;
         dgvServiceHistory.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         // 
-        // tabAppointments
-        // 
-        tabAppointments.Controls.Add(grpScheduleAppointment);
-        tabAppointments.Location = new Point(4, 24);
-        tabAppointments.Name = "tabAppointments";
-        tabAppointments.Padding = new Padding(3);
-        tabAppointments.Size = new Size(792, 422);
-        tabAppointments.TabIndex = 2;
-        tabAppointments.Text = "Appointments";
-        tabAppointments.UseVisualStyleBackColor = true;
-        // 
-        // grpScheduleAppointment
-        // 
-        grpScheduleAppointment.Controls.Add(lblScheduledDate);
-        grpScheduleAppointment.Controls.Add(dtpScheduledDate);
-        grpScheduleAppointment.Controls.Add(lblScheduledText);
-        grpScheduleAppointment.Controls.Add(txtScheduledText);
-        grpScheduleAppointment.Controls.Add(lblAppointmentNotes);
-        grpScheduleAppointment.Controls.Add(txtAppointmentNotes);
-        grpScheduleAppointment.Controls.Add(btnSchedule);
-        grpScheduleAppointment.Location = new Point(12, 15);
-        grpScheduleAppointment.Name = "grpScheduleAppointment";
-        grpScheduleAppointment.Size = new Size(500, 300);
-        grpScheduleAppointment.TabIndex = 0;
-        grpScheduleAppointment.TabStop = false;
-        grpScheduleAppointment.Text = "Schedule New Appointment";
-        // 
-        // lblScheduledDate
-        // 
-        lblScheduledDate.AutoSize = true;
-        lblScheduledDate.Location = new Point(12, 25);
-        lblScheduledDate.Name = "lblScheduledDate";
-        lblScheduledDate.Size = new Size(88, 15);
-        lblScheduledDate.TabIndex = 0;
-        lblScheduledDate.Text = "Scheduled Date:";
-        // 
-        // dtpScheduledDate
-        // 
-        dtpScheduledDate.Location = new Point(12, 43);
-        dtpScheduledDate.Name = "dtpScheduledDate";
-        dtpScheduledDate.Size = new Size(200, 23);
-        dtpScheduledDate.TabIndex = 1;
-        // 
-        // lblScheduledText
-        // 
-        lblScheduledText.AutoSize = true;
-        lblScheduledText.Location = new Point(12, 80);
-        lblScheduledText.Name = "lblScheduledText";
-        lblScheduledText.Size = new Size(89, 15);
-        lblScheduledText.TabIndex = 2;
-        lblScheduledText.Text = "Scheduled Text:";
-        // 
-        // txtScheduledText
-        // 
-        txtScheduledText.Location = new Point(12, 98);
-        txtScheduledText.Multiline = true;
-        txtScheduledText.Name = "txtScheduledText";
-        txtScheduledText.PlaceholderText = "e.g., 10:00 AM - Food pickup";
-        txtScheduledText.ScrollBars = ScrollBars.Vertical;
-        txtScheduledText.Size = new Size(470, 80);
-        txtScheduledText.TabIndex = 3;
-        // 
-        // lblAppointmentNotes
-        // 
-        lblAppointmentNotes.AutoSize = true;
-        lblAppointmentNotes.Location = new Point(12, 190);
-        lblAppointmentNotes.Name = "lblAppointmentNotes";
-        lblAppointmentNotes.Size = new Size(41, 15);
-        lblAppointmentNotes.TabIndex = 4;
-        lblAppointmentNotes.Text = "Notes (Optional):";
-        // 
-        // txtAppointmentNotes
-        // 
-        txtAppointmentNotes.Location = new Point(12, 208);
-        txtAppointmentNotes.Multiline = true;
-        txtAppointmentNotes.Name = "txtAppointmentNotes";
-        txtAppointmentNotes.ScrollBars = ScrollBars.Vertical;
-        txtAppointmentNotes.Size = new Size(470, 60);
-        txtAppointmentNotes.TabIndex = 5;
-        // 
-        // btnSchedule
-        // 
-        btnSchedule.Location = new Point(407, 274);
-        btnSchedule.Name = "btnSchedule";
-        btnSchedule.Size = new Size(75, 30);
-        btnSchedule.TabIndex = 6;
-        btnSchedule.Text = "Schedule";
-        btnSchedule.UseVisualStyleBackColor = true;
-        btnSchedule.Click += BtnSchedule_Click;
-        // 
         // btnSave
         // 
         btnSave.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -560,9 +458,6 @@ partial class HouseholdProfileForm
         tabServiceHistory.ResumeLayout(false);
         tabServiceHistory.PerformLayout();
         ((System.ComponentModel.ISupportInitialize)dgvServiceHistory).EndInit();
-        tabAppointments.ResumeLayout(false);
-        grpScheduleAppointment.ResumeLayout(false);
-        grpScheduleAppointment.PerformLayout();
         ResumeLayout(false);
         PerformLayout();
     }
@@ -572,7 +467,6 @@ partial class HouseholdProfileForm
     private TabControl tabControl;
     private TabPage tabProfile;
     private TabPage tabServiceHistory;
-    private TabPage tabAppointments;
     private Label lblPrimaryName;
     private TextBox txtPrimaryName;
     private Label lblAddress1;
@@ -602,14 +496,6 @@ partial class HouseholdProfileForm
     private Label lblFilterType;
     private ComboBox cmbFilterType;
     private DataGridView dgvServiceHistory;
-    private GroupBox grpScheduleAppointment;
-    private Label lblScheduledDate;
-    private DateTimePicker dtpScheduledDate;
-    private Label lblScheduledText;
-    private TextBox txtScheduledText;
-    private Label lblAppointmentNotes;
-    private TextBox txtAppointmentNotes;
-    private Button btnSchedule;
     private Button btnSave;
     private Button btnCancel;
     private Label lblError;

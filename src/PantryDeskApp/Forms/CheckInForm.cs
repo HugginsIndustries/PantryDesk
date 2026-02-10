@@ -350,7 +350,7 @@ public partial class CheckInForm : Form
             {
                 notes = string.IsNullOrWhiteSpace(dialogNotes)
                     ? overrideNotes
-                    : $"{dialogNotes}\n\nOverride: {overrideNotes}";
+                    : $"{dialogNotes}\n\n- Override: {overrideNotes}";
             }
 
             // Determine event type: check if today is a pantry day
@@ -385,6 +385,12 @@ public partial class CheckInForm : Form
         {
             MessageBox.Show($"Error completing service: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void BtnAppointments_Click(object? sender, EventArgs e)
+    {
+        using var appointmentsForm = new AppointmentsForm();
+        appointmentsForm.ShowDialog(this);
     }
 
     private void BtnNewHousehold_Click(object? sender, EventArgs e)

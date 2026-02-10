@@ -5,8 +5,8 @@ namespace PantryDeskSeeder;
 /// </summary>
 public class SeederConfig
 {
-    public int HouseholdsCount { get; set; } = 300;
-    public int MonthsBack { get; set; } = 6;
+    public int HouseholdsCount { get; set; } = 500;
+    public int MonthsBack { get; set; } = 24;
     public Dictionary<string, int> CityWeights { get; set; } = new();
     public Dictionary<string, int> AgeWeights { get; set; } = new();
     public Dictionary<string, int> AgeGroupWeights { get; set; } = new();
@@ -33,8 +33,8 @@ public class SeederConfig
     {
         return new SeederConfig
         {
-            HouseholdsCount = 300,
-            MonthsBack = 6,
+            HouseholdsCount = 500,
+            MonthsBack = 24,
             CityWeights = new Dictionary<string, int>
             {
                 { "Winlock", 50 },
@@ -271,8 +271,8 @@ public class SeederConfig
         Console.WriteLine("Usage: PantryDeskSeeder [options]");
         Console.WriteLine();
         Console.WriteLine("Options:");
-        Console.WriteLine("  --households <count>              Number of households to generate (default: 300)");
-        Console.WriteLine("  --months-back <months>            How many months back to generate data (default: 6)");
+        Console.WriteLine("  --households <count>              Number of households to generate (default: 500)");
+        Console.WriteLine("  --months-back <months>            How many months back to generate data (default: 24)");
         Console.WriteLine("  --seed <number>                   RNG seed for deterministic generation (default: random)");
         Console.WriteLine("  --output <path>                   Output database path (default: demo_pantrydesk.db)");
         Console.WriteLine("  --city-weights <pairs>            City weights as key=value pairs (default: Winlock=50,Vader=30,Ryderwood=20)");

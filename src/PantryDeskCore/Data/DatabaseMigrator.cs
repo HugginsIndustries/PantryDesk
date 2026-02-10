@@ -8,7 +8,7 @@ namespace PantryDeskCore.Data;
 /// </summary>
 public static class DatabaseMigrator
 {
-    private const int CurrentSchemaVersion = 6;
+    private const int CurrentSchemaVersion = 7;
 
     /// <summary>
     /// Migrates the database to the latest schema version.
@@ -72,6 +72,10 @@ public static class DatabaseMigrator
                     if (currentVersion < 6)
                     {
                         MigrateFromV5ToV6(connection, transaction);
+                    }
+                    if (currentVersion < 7)
+                    {
+                        MigrateFromV6ToV7(connection, transaction);
                     }
                     SetSchemaVersion(connection, transaction, CurrentSchemaVersion);
                 }
@@ -139,6 +143,11 @@ public static class DatabaseMigrator
     private static void MigrateFromV5ToV6(SqliteConnection connection, SqliteTransaction transaction)
     {
         ExecuteCommand(connection, transaction, Sql.CreateDeckStatsMonthlyTable);
+    }
+
+    private static void MigrateFromV6ToV7(SqliteConnection connection, SqliteTransaction transaction)
+    {
+        ExecuteCommand(connection, transaction, Sql.ServiceEventAlterAddScheduledForMemberId);
     }
 
     private static void MigrateFromV1ToV2(SqliteConnection connection, SqliteTransaction transaction)

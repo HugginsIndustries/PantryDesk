@@ -44,6 +44,7 @@ public partial class HouseholdProfileForm : Form
         dgvServiceHistory.Columns.Add("EventDate", "Date");
         dgvServiceHistory.Columns.Add("EventType", "Type");
         dgvServiceHistory.Columns.Add("EventStatus", "Status");
+        dgvServiceHistory.Columns.Add("Member", "Member");
         dgvServiceHistory.Columns.Add("ScheduledText", "Scheduled Text");
         dgvServiceHistory.Columns.Add("Notes", "Notes");
         dgvServiceHistory.Columns.Add("EventId", "EventId");
@@ -56,12 +57,14 @@ public partial class HouseholdProfileForm : Form
         var dateColumn = dgvServiceHistory.Columns["EventDate"];
         var typeColumn = dgvServiceHistory.Columns["EventType"];
         var statusColumn = dgvServiceHistory.Columns["EventStatus"];
+        var memberColumn = dgvServiceHistory.Columns["Member"];
         var scheduledTextColumn = dgvServiceHistory.Columns["ScheduledText"];
         var notesColumn = dgvServiceHistory.Columns["Notes"];
 
         if (dateColumn != null) dateColumn.Width = 80;
         if (typeColumn != null) typeColumn.Width = 190;
         if (statusColumn != null) statusColumn.Width = 80;
+        if (memberColumn != null) memberColumn.Width = 160;
         if (scheduledTextColumn != null) scheduledTextColumn.Width = 200;
         if (notesColumn != null) notesColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
     }
@@ -191,19 +194,30 @@ public partial class HouseholdProfileForm : Form
     private void SetupContextMenu()
     {
         _contextMenu = new ContextMenuStrip();
-        var markCompleted = new ToolStripMenuItem("Mark Completed");
-        markCompleted.Click += MarkCompleted_Click;
-        _contextMenu.Items.Add(markCompleted);
-
-        var markCancelled = new ToolStripMenuItem("Mark Cancelled");
-        markCancelled.Click += MarkCancelled_Click;
-        _contextMenu.Items.Add(markCancelled);
-
-        var markNoShow = new ToolStripMenuItem("Mark NoShow");
-        markNoShow.Click += MarkNoShow_Click;
-        _contextMenu.Items.Add(markNoShow);
-
+        var editItem = new ToolStripMenuItem("Edit");
+        editItem.Click += EditServiceHistory_Click;
+        _contextMenu.Items.Add(editItem);
         dgvServiceHistory.ContextMenuStrip = _contextMenu;
+    }
+
+    private void EditServiceHistory_Click(object? sender, EventArgs e)
+    {
+        var selectedEvent = GetSelectedEvent();
+        if (selectedEvent == null)
+        {
+            MessageBox.Show("Please select an event.", "Invalid Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+        try
+        {
+            using var dlg = new EditServiceEventDialog(selectedEvent);
+            if (dlg.ShowDialog(this) == DialogResult.OK)
+                LoadServiceHistory();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private void LoadHousehold()
@@ -334,6 +348,18 @@ public partial class HouseholdProfileForm : Form
         ApplyFilters();
     }
 
+    private string GetMemberDisplayForEvent(ServiceEvent evt, string primaryName)
+    {
+        if (!evt.ScheduledForMemberId.HasValue || _household?.Members == null)
+            return evt.EventType == "Appointment" ? primaryName : string.Empty;
+
+        var member = _household.Members.FirstOrDefault(m => m.Id == evt.ScheduledForMemberId.Value);
+        if (member == null)
+            return primaryName;
+
+        return member.IsPrimary ? member.FullName : $"{member.FullName} • {primaryName} Household";
+    }
+
     private void ApplyFilters()
     {
         dgvServiceHistory.Rows.Clear();
@@ -348,6 +374,7 @@ public partial class HouseholdProfileForm : Form
             return statusMatch && typeMatch;
         }).ToList();
 
+        var primaryName = _household?.PrimaryName ?? string.Empty;
         foreach (var evt in filteredEvents)
         {
             var scheduledText = evt.EventStatus == "Scheduled" ? evt.ScheduledText ?? string.Empty : string.Empty;
@@ -356,63 +383,17 @@ public partial class HouseholdProfileForm : Form
                 ? evt.EventType
                 : $"{evt.EventType} - {evt.VisitType}";
 
+            var memberDisplay = GetMemberDisplayForEvent(evt, primaryName);
+
             var row = dgvServiceHistory.Rows.Add(
                 evt.EventDate.ToString("yyyy-MM-dd"),
                 typeDisplay,
                 evt.EventStatus,
+                memberDisplay,
                 scheduledText,
                 notes,
                 evt.Id
             );
-        }
-    }
-
-    private void BtnSchedule_Click(object? sender, EventArgs e)
-    {
-        ScheduleAppointment();
-    }
-
-    private void ScheduleAppointment()
-    {
-        // Validate ScheduledDate
-        var scheduledDate = dtpScheduledDate.Value.Date;
-
-        // Validate ScheduledText
-        if (string.IsNullOrWhiteSpace(txtScheduledText.Text))
-        {
-            MessageBox.Show("Scheduled Text is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            txtScheduledText.Focus();
-            return;
-        }
-
-        try
-        {
-            var serviceEvent = new ServiceEvent
-            {
-                HouseholdId = _householdId,
-                EventType = "Appointment",
-                EventStatus = "Scheduled",
-                EventDate = scheduledDate,
-                ScheduledText = txtScheduledText.Text.Trim(),
-                Notes = string.IsNullOrWhiteSpace(txtAppointmentNotes.Text) ? null : txtAppointmentNotes.Text.Trim()
-            };
-
-            using var connection = DatabaseManager.GetConnection();
-            ServiceEventRepository.Create(connection, serviceEvent);
-
-            // Clear form fields
-            txtScheduledText.Clear();
-            txtAppointmentNotes.Clear();
-            dtpScheduledDate.Value = DateTime.Today;
-
-            // Refresh service history
-            LoadServiceHistory();
-
-            MessageBox.Show("Appointment scheduled successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Error scheduling appointment: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -434,132 +415,4 @@ public partial class HouseholdProfileForm : Form
         return _allServiceEvents.FirstOrDefault(e => e.Id == eventId);
     }
 
-    private void MarkCompleted_Click(object? sender, EventArgs e)
-    {
-        var selectedEvent = GetSelectedEvent();
-        if (selectedEvent == null || selectedEvent.EventStatus != "Scheduled")
-        {
-            MessageBox.Show("Please select a Scheduled appointment.", "Invalid Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            return;
-        }
-
-        MarkAppointmentStatus(selectedEvent, "Completed");
-    }
-
-    private void MarkCancelled_Click(object? sender, EventArgs e)
-    {
-        var selectedEvent = GetSelectedEvent();
-        if (selectedEvent == null || selectedEvent.EventStatus != "Scheduled")
-        {
-            MessageBox.Show("Please select a Scheduled appointment.", "Invalid Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            return;
-        }
-
-        MarkAppointmentStatus(selectedEvent, "Cancelled");
-    }
-
-    private void MarkNoShow_Click(object? sender, EventArgs e)
-    {
-        var selectedEvent = GetSelectedEvent();
-        if (selectedEvent == null || selectedEvent.EventStatus != "Scheduled")
-        {
-            MessageBox.Show("Please select a Scheduled appointment.", "Invalid Selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            return;
-        }
-
-        MarkAppointmentStatus(selectedEvent, "NoShow");
-    }
-
-    private void MarkAppointmentStatus(ServiceEvent serviceEvent, string newStatus)
-    {
-        string? visitType = null;
-        string? dialogNotes = null;
-
-        // When marking as Completed, show CompleteServiceDialog first (Visit Type + Notes)
-        if (newStatus == "Completed")
-        {
-            using (var completeServiceDialog = new CompleteServiceDialog())
-            {
-                if (completeServiceDialog.ShowDialog() != DialogResult.OK)
-                {
-                    return; // User cancelled
-                }
-                visitType = completeServiceDialog.VisitType;
-                dialogNotes = completeServiceDialog.Notes;
-            }
-        }
-
-        try
-        {
-            using var connection = DatabaseManager.GetConnection();
-
-            string? overrideReason = null;
-            string? overrideNotes = null;
-
-            // If marking as Completed, check eligibility and handle override for Shop/Shop with TEFAP
-            if (newStatus == "Completed")
-            {
-                var countsTowardLimit = visitType == "Shop with TEFAP" || visitType == "Shop";
-                if (countsTowardLimit)
-                {
-                    var isEligible = EligibilityService.IsEligibleThisMonth(connection, _householdId, DateTime.Today);
-
-                    if (!isEligible)
-                    {
-                        using var overrideForm = new OverrideReasonForm();
-                        if (overrideForm.ShowDialog() != DialogResult.OK)
-                        {
-                            return; // User cancelled
-                        }
-
-                        overrideReason = overrideForm.OverrideReason;
-                        overrideNotes = overrideForm.Notes;
-                    }
-                }
-
-                // Merge notes: existing + dialog notes + override notes when applicable
-                string? notes = dialogNotes;
-                if (!string.IsNullOrWhiteSpace(overrideNotes))
-                {
-                    notes = string.IsNullOrWhiteSpace(dialogNotes)
-                        ? overrideNotes
-                        : $"{dialogNotes}\n\nOverride: {overrideNotes}";
-                }
-                if (!string.IsNullOrWhiteSpace(serviceEvent.Notes) && !string.IsNullOrWhiteSpace(notes))
-                {
-                    notes = $"{serviceEvent.Notes}\n\n{notes}";
-                }
-                else if (!string.IsNullOrWhiteSpace(serviceEvent.Notes))
-                {
-                    notes = serviceEvent.Notes;
-                }
-
-                serviceEvent.VisitType = visitType;
-                serviceEvent.Notes = notes;
-                serviceEvent.EventDate = DateTime.Today;
-            }
-
-            // Update the event
-            serviceEvent.EventStatus = newStatus;
-            serviceEvent.OverrideReason = overrideReason;
-
-            ServiceEventRepository.Update(connection, serviceEvent);
-
-            if (newStatus == "Completed")
-            {
-                HouseholdRepository.SetIsActive(connection, _householdId, true);
-                _household!.IsActive = true;
-                lblStatusValue.Text = "Active";
-            }
-
-            // Refresh service history
-            LoadServiceHistory();
-
-            MessageBox.Show($"Appointment marked as {newStatus}.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Error updating appointment status: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-    }
 }

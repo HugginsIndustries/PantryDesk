@@ -32,6 +32,7 @@ partial class CheckInForm
     {
         txtSearch = new TextBox();
         dgvResults = new DataGridView();
+        btnAppointments = new Button();
         btnCompleteService = new Button();
         btnNewHousehold = new Button();
         btnOpenProfile = new Button();
@@ -62,15 +63,17 @@ partial class CheckInForm
         // 
         // panelTopRow
         // 
-        panelTopRow.ColumnCount = 4;
+        panelTopRow.ColumnCount = 5;
         panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
-        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
-        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
+        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
+        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
         panelTopRow.Controls.Add(txtSearch, 0, 0);
-        panelTopRow.Controls.Add(btnCompleteService, 1, 0);
-        panelTopRow.Controls.Add(btnNewHousehold, 2, 0);
-        panelTopRow.Controls.Add(btnOpenProfile, 3, 0);
+        panelTopRow.Controls.Add(btnAppointments, 1, 0);
+        panelTopRow.Controls.Add(btnCompleteService, 2, 0);
+        panelTopRow.Controls.Add(btnNewHousehold, 3, 0);
+        panelTopRow.Controls.Add(btnOpenProfile, 4, 0);
         panelTopRow.Dock = DockStyle.Top;
         panelTopRow.Location = new Point(0, 24);
         panelTopRow.Name = "panelTopRow";
@@ -92,6 +95,18 @@ partial class CheckInForm
         txtSearch.TabIndex = 0;
         txtSearch.TextChanged += TxtSearch_TextChanged;
         txtSearch.KeyDown += TxtSearch_KeyDown;
+        // 
+        // btnAppointments
+        // 
+        btnAppointments.Dock = DockStyle.Fill;
+        btnAppointments.Location = new Point(520, 11);
+        btnAppointments.Margin = new Padding(6, 3, 3, 3);
+        btnAppointments.Name = "btnAppointments";
+        btnAppointments.Size = new Size(109, 32);
+        btnAppointments.TabIndex = 1;
+        btnAppointments.Text = "Appointments";
+        btnAppointments.UseVisualStyleBackColor = true;
+        btnAppointments.Click += BtnAppointments_Click;
         // 
         // btnCompleteService
         // 
@@ -283,7 +298,7 @@ partial class CheckInForm
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(800, 500);
+        ClientSize = new Size(1600, 750);
         MinimumSize = new Size(600, 400);
         Controls.Add(dgvResults);
         Controls.Add(panelTopRow);
@@ -308,6 +323,7 @@ partial class CheckInForm
     private TableLayoutPanel panelTopRow;
     private TextBox txtSearch;
     private DataGridView dgvResults;
+    private Button btnAppointments;
     private Button btnCompleteService;
     private Button btnNewHousehold;
     private Button btnOpenProfile;

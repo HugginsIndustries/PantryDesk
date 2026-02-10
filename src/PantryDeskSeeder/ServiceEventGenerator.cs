@@ -33,7 +33,7 @@ public static class ServiceEventGenerator
     /// Generates service events for households and pantry days.
     /// </summary>
     public static List<ServiceEvent> GenerateServiceEvents(
-        List<Household> households,
+        List<(Household Household, List<HouseholdMember> Members)> householdData,
         List<PantryDay> pantryDays,
         SeederConfig config,
         Random rng,
@@ -41,7 +41,7 @@ public static class ServiceEventGenerator
     {
         var events = new List<ServiceEvent>();
         var startDate = baseDate.AddMonths(-config.MonthsBack);
-        var allHouseholds = households;
+        var allHouseholds = householdData.Select(x => x.Household).ToList();
 
         if (allHouseholds.Count == 0)
         {
@@ -154,10 +154,14 @@ public static class ServiceEventGenerator
                     : allHouseholds[rng.Next(allHouseholds.Count)];
             }
 
-            // Only add override if this is a duplicate (household already served this month)
+            var scheduledForMemberId = PickScheduledForMember(household.Id, householdData, rng);
+            var statusRoll = rng.NextDouble();
+            var eventStatus = statusRoll < 0.92 ? "Completed" : statusRoll < 0.96 ? "Cancelled" : "NoShow";
+
+            // Override reason only valid for Completed appointments that exceed monthly limit
             string? overrideReason = null;
             string? notes = null;
-            if (isOverride)
+            if (isOverride && eventStatus == "Completed")
             {
                 overrideReason = OverrideReasons[rng.Next(OverrideReasons.Length)];
                 notes = rng.NextDouble() < 0.5 ? GenerateOverrideNotes(rng) : null;
@@ -167,17 +171,18 @@ public static class ServiceEventGenerator
             {
                 HouseholdId = household.Id,
                 EventType = "Appointment",
-                EventStatus = "Completed",
+                EventStatus = eventStatus,
                 EventDate = appointmentDate,
-                VisitType = PickVisitType(rng),
+                VisitType = eventStatus == "Completed" ? PickVisitType(rng) : null,
                 ScheduledText = ScheduledTexts[rng.Next(ScheduledTexts.Length)],
                 OverrideReason = overrideReason,
                 Notes = notes,
+                ScheduledForMemberId = scheduledForMemberId,
                 CreatedAt = appointmentDate.AddHours(9 + rng.Next(8))
             });
 
-            // Track that this household was served this month (if not already tracked)
-            if (!householdsServedThisMonth.Contains(household.Id))
+            // Track that this household was served this month only for Completed (matches IsEligibleThisMonth)
+            if (eventStatus == "Completed" && !householdsServedThisMonth.Contains(household.Id))
             {
                 householdsServedThisMonth.Add(household.Id);
             }
@@ -191,32 +196,56 @@ public static class ServiceEventGenerator
         for (int i = 0; i < scheduledCount; i++)
         {
             var daysAhead = rng.Next((futureEnd - futureStart).Days + 1);
-            var scheduledDate = futureStart.AddDays(daysAhead);
+            var eventDate = futureStart.AddDays(daysAhead);
 
-            // Don't schedule on pantry days
-            if (pantryDayDates.Contains(scheduledDate.Date))
-            {
+            if (pantryDayDates.Contains(eventDate.Date))
                 continue;
-            }
 
             var household = allHouseholds[rng.Next(allHouseholds.Count)];
             var scheduledText = ScheduledTexts[rng.Next(ScheduledTexts.Length)];
+            var scheduledForMemberId = PickScheduledForMember(household.Id, householdData, rng);
+            var isCancelled = rng.NextDouble() < 0.05;
 
             events.Add(new ServiceEvent
             {
                 HouseholdId = household.Id,
                 EventType = "Appointment",
-                EventStatus = "Scheduled",
-                EventDate = scheduledDate,
-                VisitType = null, // Scheduled events have no visit type until completed
+                EventStatus = isCancelled ? "Cancelled" : "Scheduled",
+                EventDate = eventDate,
+                VisitType = null,
                 ScheduledText = scheduledText,
                 Notes = rng.NextDouble() < 0.3 ? GenerateScheduledNotes(rng) : null,
+                ScheduledForMemberId = scheduledForMemberId,
                 CreatedAt = baseDate.AddHours(-rng.Next(168)) // Created within last week
             });
         }
 
 
         return events;
+    }
+
+    /// <summary>
+    /// For ~30-40% of appointments, returns a non-primary member ID. Otherwise returns null (primary).
+    /// </summary>
+    private static int? PickScheduledForMember(
+        int householdId,
+        List<(Household Household, List<HouseholdMember> Members)> householdData,
+        Random rng)
+    {
+        var data = householdData.FirstOrDefault(x => x.Household.Id == householdId);
+        if (data.Members == null || data.Members.Count == 0)
+            return null;
+
+        // 30-40% use a non-primary member for testing
+        if (rng.NextDouble() >= 0.35)
+            return null;
+
+        var nonPrimary = data.Members.Where(m => !m.IsPrimary).ToList();
+        if (nonPrimary.Count == 0)
+            return null;
+
+        var member = nonPrimary[rng.Next(nonPrimary.Count)];
+        return member.Id;
     }
 
     private static List<DateTime> GenerateAppointmentDates(
