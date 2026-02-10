@@ -379,7 +379,7 @@ Implement deck entry and storage with or before the report so the report can rea
   - Complexity: High
   - Acceptance Criteria:
     - **Entry point:** Reports menu, new item "Enter Deck Stats" opens the deck-only entry flow (also from Check-in menu).
-    - **One entry per month:** At most one deck-only record per (year, month). If user selects a month that already has deck stats, show a warning: "Deck stats already entered for [Month YYYY]. Do you want to edit them?" — Yes loads that month's data for editing; No cancels. On edit, replace existing data (no history).
+    - **One entry per month:** At most one deck-only record per (year, month). When opening or changing month/year: if that month has existing deck stats, auto-load them into the form; if not, clear the stats. On save, if data already exists for that month, prompt "Deck stats for [Month YYYY] already exist. Overwrite?" — only save if Yes. Replace existing data (no history).
     - **Dialog:** Month/year selector (default: last month). Staff enter **totals** (summed across all pages) for: household total, and age groups labeled "Infant (0-2)", "Child (2-18)", "Adult (18-55)", "Senior (55+)". Staff enter **number of pages**. Averages calculated automatically (each total ÷ number of pages) and stored; page count stored for audit.
     - Add deck-only averaged totals ONLY to duplicated individual counts for Monthly Activity Report: overall duplicated from averaged household total; per-age duplicated from averaged Infant, Child, Adult, Senior values. Do not derive unduplicated deck-only counts.
     - Admin-only CSV/JSON export includes deck stats.
@@ -411,46 +411,22 @@ Implement deck entry and storage with or before the report so the report can rea
 
 #### Appointment Visibility & Management
 
-- [ ] Add dedicated "Appointments" screen with filters and search
+- [ ] Add dedicated "Appointments" form (button left of Complete Service on Check-In)
   - Impact: High
   - Complexity: Medium
+  - Entry point: New "Appointments" button on main Check-In screen, left of "Complete Service" (order: Appointments | Complete Service | New Household | Open Profile)
   - Acceptance Criteria:
-    - New "Appointments" form accessible from Reports menu or top-level menu
-    - Filters: date range (Today, Next 7 Days, Next 30 Days, Custom), status (Scheduled/Completed/Cancelled/NoShow), type (Appointment/PantryDay), search by PrimaryName/City
-    - Columns: Date, Household Name, City/Zip, Status, Scheduled Text, Notes indicator
-    - Default sort by Scheduled Date ascending, secondary sort by Name
-    - Actions: Open Profile, Mark Completed/Cancelled/NoShow from selected row
+    - **View layout** — Two sections:
+      - **Left (Past):** Latest dates at top. Includes past appointments plus future-dated appointments already marked Completed/Cancelled/NoShow (display Cancelled/NoShow in red, Completed in green). Filters: date range (default: past year), status (default: no filter). Sort by date descending.
+      - **Right (Future):** Soonest/earliest dates at top. Shows all scheduled appointments (not Completed/Cancelled/NoShow). Overdue appointments displayed in red. Mark Completed/Cancelled/NoShow from this section (and/or from Service History in profile).
+    - **Create appointments:** Top-right "Create New Appointment" button. Flow: search by any household member name (not just primary) → select household from results → set Scheduled Date, Scheduled Text, optional notes → save. This replaces all appointment creation in household profiles.
+    - **Household profile:** Remove Appointments tab/creation UI. Appointments remain visible on Service History tab. Marking (Completed/Cancelled/NoShow) via right-click on Service History; explicit buttons optionally later.
   - Likely files:
-    - `src/PantryDeskApp/Forms/AppointmentsForm.cs` (new)
-    - `src/PantryDeskApp/Forms/AppointmentsForm.Designer.cs` (new)
-    - `src/PantryDeskApp/Forms/CheckInForm.cs` (menu entry)
-  - Rationale: Appointments currently only visible within individual household profiles, limiting scheduling oversight
-
-- [ ] Add "Upcoming Appointments" panel to Check-In screen
-  - Impact: High
-  - Complexity: Medium
-  - Acceptance Criteria:
-    - Compact panel on Check-In showing next 7/14/30 days (configurable range)
-    - Displays: Date, Household Name, Scheduled Text, Status
-    - Selecting a row enables "Open Profile" and "Mark Completed" buttons
-    - Default sort by earliest scheduled date
-    - Panel updates when appointments are created/completed
-  - Likely files:
-    - `src/PantryDeskApp/Forms/CheckInForm.cs`
-    - `src/PantryDeskApp/Forms/CheckInForm.Designer.cs`
-  - Rationale: Provides quick visibility of upcoming appointments in the main workflow hub
-
-- [ ] Surface appointment completion actions without right-click dependency
-  - Impact: High
-  - Complexity: Small
-  - Acceptance Criteria:
-    - "Mark Completed", "Mark Cancelled", "Mark NoShow" buttons appear above Service History grid when a Scheduled appointment is selected
-    - Buttons are disabled when no Scheduled appointment is selected or when non-Scheduled event is selected
-    - Right-click context menu remains available as alternative
-  - Likely files:
-    - `src/PantryDeskApp/Forms/HouseholdProfileForm.cs`
-    - `src/PantryDeskApp/Forms/HouseholdProfileForm.Designer.cs`
-  - Rationale: Context menu actions are not discoverable; explicit buttons improve usability
+    - `PantryDeskApp/Forms/AppointmentsForm.cs` (new)
+    - `PantryDeskApp/Forms/AppointmentsForm.Designer.cs` (new)
+    - `PantryDeskApp/Forms/CheckInForm.cs` (add Appointments button)
+    - `PantryDeskApp/Forms/HouseholdProfileForm.cs` (remove Appointments tab/creation UI)
+  - Rationale: Appointments currently only visible within individual household profiles; central form provides oversight and creation by any member name. No Upcoming panel on Check-In; may add "Appointments Today" hint later.
 
 #### Household Form Improvements
 
