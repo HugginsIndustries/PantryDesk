@@ -82,6 +82,20 @@ public static class Sql
             updated_at TEXT NOT NULL
         )";
 
+    public const string CreateDeckStatsMonthlyTable = @"
+        CREATE TABLE IF NOT EXISTS deck_stats_monthly (
+            year INTEGER NOT NULL,
+            month INTEGER NOT NULL,
+            household_total_avg REAL NOT NULL,
+            infant_avg REAL NOT NULL,
+            child_avg REAL NOT NULL,
+            adult_avg REAL NOT NULL,
+            senior_avg REAL NOT NULL,
+            page_count INTEGER,
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (year, month)
+        )";
+
     public const string CreateHouseholdMembersTable = @"
         CREATE TABLE IF NOT EXISTS household_members (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -380,6 +394,32 @@ public static class Sql
             salt = @salt,
             updated_at = @updated_at";
 
+    // DeckStatsMonthly queries
+    public const string DeckStatsMonthlyUpsert = @"
+        INSERT INTO deck_stats_monthly (year, month, household_total_avg, infant_avg, child_avg, adult_avg, senior_avg, page_count, updated_at)
+        VALUES (@year, @month, @household_total_avg, @infant_avg, @child_avg, @adult_avg, @senior_avg, @page_count, @updated_at)
+        ON CONFLICT(year, month) DO UPDATE SET
+            household_total_avg = @household_total_avg,
+            infant_avg = @infant_avg,
+            child_avg = @child_avg,
+            adult_avg = @adult_avg,
+            senior_avg = @senior_avg,
+            page_count = @page_count,
+            updated_at = @updated_at";
+
+    public const string DeckStatsMonthlySelectByYearMonth = @"
+        SELECT year, month, household_total_avg, infant_avg, child_avg, adult_avg, senior_avg, page_count, updated_at
+        FROM deck_stats_monthly
+        WHERE year = @year AND month = @month";
+
+    public const string DeckStatsMonthlyExists = @"
+        SELECT 1 FROM deck_stats_monthly WHERE year = @year AND month = @month LIMIT 1";
+
+    public const string DeckStatsMonthlySelectAll = @"
+        SELECT year, month, household_total_avg, infant_avg, child_avg, adult_avg, senior_avg, page_count, updated_at
+        FROM deck_stats_monthly
+        ORDER BY year DESC, month DESC";
+
     // Statistics queries
     public const string StatisticsCountActiveHouseholds = @"
         SELECT COUNT(*) FROM households WHERE is_active = 1";
@@ -455,6 +495,16 @@ public static class Sql
         FROM service_events
         WHERE event_status = 'Completed'
         AND event_date >= @start_date AND event_date <= @end_date";
+
+    /// <summary>
+    /// First completed (any type) service date in reporting year per household. Used for unduplicated/duplicated split in reports.
+    /// </summary>
+    public const string StatisticsFirstCompletedDateInReportingYearPerHousehold = @"
+        SELECT household_id, MIN(event_date) as first_date
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND event_date >= @reporting_year_start AND event_date <= @reporting_year_end
+        GROUP BY household_id";
 
     public const string StatisticsMonthlyVisitsTrend = @"
         SELECT 
@@ -534,4 +584,74 @@ public static class Sql
         ) served ON served.household_id = m.household_id
         GROUP BY COALESCE(NULLIF(TRIM(m.disabled_status), ''), 'Not Specified')
         ORDER BY count DESC";
+
+    /// <summary>
+    /// Veteran status for served households with derived "Disabled Veteran" (Veteran + Disabled counted only there).
+    /// </summary>
+    public const string StatisticsDemographicsByVeteranStatusWithDisabledVeteranInRange = @"
+        SELECT
+            CASE
+                WHEN TRIM(COALESCE(m.veteran_status, '')) = 'Veteran' AND TRIM(COALESCE(m.disabled_status, '')) = 'Disabled' THEN 'Disabled Veteran'
+                WHEN TRIM(COALESCE(m.veteran_status, '')) = 'Veteran' THEN 'Veteran'
+                ELSE COALESCE(NULLIF(TRIM(m.veteran_status), ''), 'Not Specified')
+            END as label,
+            COUNT(*) as count
+        FROM household_members m
+        INNER JOIN (
+            SELECT DISTINCT household_id
+            FROM service_events
+            WHERE event_status = 'Completed'
+            AND event_date >= @start_date AND event_date <= @end_date
+        ) served ON served.household_id = m.household_id
+        GROUP BY
+            CASE
+                WHEN TRIM(COALESCE(m.veteran_status, '')) = 'Veteran' AND TRIM(COALESCE(m.disabled_status, '')) = 'Disabled' THEN 'Disabled Veteran'
+                WHEN TRIM(COALESCE(m.veteran_status, '')) = 'Veteran' THEN 'Veteran'
+                ELSE COALESCE(NULLIF(TRIM(m.veteran_status), ''), 'Not Specified')
+            END
+        ORDER BY count DESC";
+
+    // Monthly Activity Report: qualifying visit types = Shop with TEFAP, TEFAP Only, Shop, Deck Only
+    public const string ActivityReportCountUniqueHouseholdsInMonth = @"
+        SELECT COUNT(DISTINCT household_id)
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND event_date >= @start_date AND event_date <= @end_date
+        AND (visit_type IN ('Shop with TEFAP', 'TEFAP Only', 'Shop', 'Deck Only') OR visit_type IS NULL OR TRIM(COALESCE(visit_type, '')) = '')";
+
+    public const string ActivityReportSelectHouseholdIdsInMonth = @"
+        SELECT DISTINCT household_id
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND event_date >= @start_date AND event_date <= @end_date
+        AND (visit_type IN ('Shop with TEFAP', 'TEFAP Only', 'Shop', 'Deck Only') OR visit_type IS NULL OR TRIM(COALESCE(visit_type, '')) = '')
+        ORDER BY household_id";
+
+    public const string ActivityReportTotalPeopleInMonth = @"
+        SELECT COALESCE(SUM(member_count), 0) FROM (
+            SELECT COUNT(m.id) as member_count
+            FROM household_members m
+            INNER JOIN (
+                SELECT DISTINCT household_id
+                FROM service_events
+                WHERE event_status = 'Completed'
+                AND event_date >= @start_date AND event_date <= @end_date
+                AND (visit_type IN ('Shop with TEFAP', 'TEFAP Only', 'Shop', 'Deck Only') OR visit_type IS NULL OR TRIM(COALESCE(visit_type, '')) = '')
+            ) served ON served.household_id = m.household_id
+            GROUP BY m.household_id
+        ) counts";
+
+    public const string ActivityReportFirstQualifyingDateInReportingYear = @"
+        SELECT household_id, MIN(event_date) as first_date
+        FROM service_events
+        WHERE event_status = 'Completed'
+        AND event_date >= @reporting_year_start AND event_date <= @reporting_year_end
+        AND (visit_type IN ('Shop with TEFAP', 'TEFAP Only', 'Shop', 'Deck Only') OR visit_type IS NULL OR TRIM(COALESCE(visit_type, '')) = '')
+        GROUP BY household_id";
+
+    public const string ActivityReportCountPantryDaysInMonth = @"
+        SELECT COUNT(*)
+        FROM pantry_days
+        WHERE pantry_date >= @start_date AND pantry_date <= @end_date
+        AND is_active = 1";
 }

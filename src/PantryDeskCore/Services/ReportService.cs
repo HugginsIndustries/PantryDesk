@@ -156,6 +156,143 @@ public static class ReportService
         document.GeneratePdf(filePath);
     }
 
+    /// <summary>
+    /// Generates the Monthly Activity Report PDF (one Letter-size page, landscape).
+    /// Uses same statistics as Statistics Dashboard: all completed services in range. Deck-only averages added to duplicated individuals only when deck stats exist.
+    /// </summary>
+    /// <param name="cityBreakdownLine">Optional one-line text of city counts with " · " separators (e.g. "Winlock: 76 · Vader: 37"); if provided, shown as "Total Households (per city): ..." after Households Served.</param>
+    /// <param name="raceLine">Optional one-line race distribution (e.g. "White: 100 · Hispanic: 50"); shown as "Race Distribution: ..." below Individuals table.</param>
+    /// <param name="veteranLine">Optional one-line veteran status (includes derived "Disabled Veteran"); shown as "Veteran Status: ..." below Individuals table.</param>
+    /// <param name="disabilityLine">Optional one-line disability status; shown as "Disability Status: ..." below Individuals table.</param>
+    public static void GenerateMonthlyActivityReportPdf(SqliteConnection connection, int year, int month, MonthlyActivityReportHeader header, string filePath, string? cityBreakdownLine = null, string? raceLine = null, string? veteranLine = null, string? disabilityLine = null)
+    {
+        var monthName = new DateTime(year, month, 1).ToString("MMMM yyyy");
+        var deckStats = DeckStatsRepository.Get(connection, year, month);
+        var stats = StatisticsService.GetMonthlyActivityReportStats(connection, year, month, deckStats);
+
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.Letter.Landscape());
+                page.Margin(40);
+
+                page.Header().Element(h =>
+                {
+                    h.Column(c =>
+                    {
+                        c.Item().Text("MONTHLY ACTIVITY REPORT: FOOD BANKS").FontSize(15).Bold().AlignCenter();
+                        c.Item().Text("This report is due by the 10th of each month.").FontSize(10).AlignCenter();
+                        c.Item().PaddingTop(4);
+                        c.Item().Row(r =>
+                        {
+                            r.RelativeItem().Column(left =>
+                            {
+                                left.Item().Text($"Food Bank: {header.FoodBankName}").FontSize(11);
+                                left.Item().Text($"County: {header.County}").FontSize(11);
+                                left.Item().Text($"Prepared by: {header.PreparedBy}").FontSize(11);
+                            });
+                            r.RelativeItem().Column(right =>
+                            {
+                                right.Item().AlignRight().Text($"Month/Year: {monthName}").FontSize(11);
+                                right.Item().AlignRight().Text($"Phone: {header.Phone}").FontSize(11);
+                            });
+                        });
+                        c.Item().PaddingBottom(6);
+                    });
+                });
+
+                page.Content().Column(column =>
+                {
+                    column.Item().Row(r =>
+                    {
+                        r.RelativeItem().AlignLeft().Text($"Total number of days open for food distribution this month: {stats.TotalDaysOpen} days").FontSize(11);
+                        r.RelativeItem().AlignRight().Text($"Total pounds of food distributed from all sources: {stats.TotalPounds:N0} lbs").FontSize(11);
+                    });
+                    column.Item().PaddingVertical(4);
+
+                    column.Item().Text("Households Served:").FontSize(12).Bold();
+                    column.Item().PaddingBottom(4);
+                    column.Item().Row(r =>
+                    {
+                        r.RelativeItem().AlignLeft().Text($"Duplicated (returning): {stats.HouseholdsDuplicated}").FontSize(11);
+                        r.RelativeItem().AlignCenter().Text($"Unduplicated (first visit this year): {stats.HouseholdsUnduplicated}").FontSize(11);
+                        r.RelativeItem().AlignRight().Text($"Total Households Served: {stats.HouseholdsTotal}").FontSize(11);
+                    });
+                    if (!string.IsNullOrEmpty(cityBreakdownLine))
+                    {
+                        column.Item().PaddingBottom(6);
+                        column.Item().Text($"Total Households (per city): {cityBreakdownLine}").FontSize(11);
+                        column.Item().Height(6);
+                    }
+                    else
+                    {
+                        column.Item().Height(6);
+                    }
+
+                    column.Item().Text("Individuals Served:").FontSize(12).Bold();
+                    column.Item().PaddingBottom(4);
+                    column.Item().Table(t =>
+                    {
+                        t.ColumnsDefinition(cd =>
+                        {
+                            cd.ConstantColumn(120);
+                            cd.RelativeColumn();
+                            cd.RelativeColumn();
+                            cd.RelativeColumn();
+                        });
+                        t.Header(h =>
+                        {
+                            h.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(3).Text("Age Group").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(3).Text("Duplicated (returning)").FontSize(11).Bold().AlignRight());
+                            h.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(3).Text("Unduplicated (first visit this year)").FontSize(11).Bold().AlignRight());
+                            h.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(3).Text("Total Individuals Served").FontSize(11).Bold().AlignRight());
+                        });
+                        RenderActivityReportRow(t, "Infant (0-2)", stats.InfantDuplicated, stats.InfantUnduplicated);
+                        RenderActivityReportRow(t, "Child (2-18)", stats.ChildDuplicated, stats.ChildUnduplicated);
+                        RenderActivityReportRow(t, "Adult (18-55)", stats.AdultDuplicated, stats.AdultUnduplicated);
+                        RenderActivityReportRow(t, "Senior (55+)", stats.SeniorDuplicated, stats.SeniorUnduplicated);
+                        t.Cell().Element(c => c.Padding(3).Text("Total").FontSize(11).Bold());
+                        t.Cell().Element(c => c.Padding(3).Text(stats.IndividualsDuplicated.ToString("N0")).FontSize(11).AlignRight());
+                        t.Cell().Element(c => c.Padding(3).Text(stats.IndividualsUnduplicated.ToString("N0")).FontSize(11).AlignRight());
+                        t.Cell().Element(c => c.Padding(3).Text(stats.IndividualsTotal.ToString("N0")).FontSize(11).AlignRight());
+                    });
+                    column.Item().Height(6);
+                    if (!string.IsNullOrEmpty(raceLine))
+                    {
+                        column.Item().Text($"Race Distribution: {raceLine}").FontSize(11);
+                        column.Item().Height(6);
+                    }
+                    if (!string.IsNullOrEmpty(veteranLine))
+                    {
+                        column.Item().Text($"Veteran Status: {veteranLine}").FontSize(11);
+                        column.Item().Height(6);
+                    }
+                    if (!string.IsNullOrEmpty(disabilityLine))
+                    {
+                        column.Item().Text($"Disability Status: {disabilityLine}").FontSize(11);
+                        column.Item().Height(6);
+                    }
+                });
+
+                page.Footer().Element(f =>
+                {
+                    f.AlignCenter().Text($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}").FontSize(8).FontColor(Colors.Grey.Medium);
+                });
+            });
+        });
+
+        document.GeneratePdf(filePath);
+    }
+
+    private static void RenderActivityReportRow(TableDescriptor t, string label, int dup, int undup)
+    {
+        t.Cell().Element(c => c.Padding(3).Text(label).FontSize(11));
+        t.Cell().Element(c => c.Padding(3).Text(dup.ToString("N0")).FontSize(11).AlignRight());
+        t.Cell().Element(c => c.Padding(3).Text(undup.ToString("N0")).FontSize(11).AlignRight());
+        t.Cell().Element(c => c.Padding(3).Text((dup + undup).ToString("N0")).FontSize(11).AlignRight());
+    }
+
     private static string GetDateRangeLabel(DateTime startDate, DateTime endDate)
     {
         if (startDate.Year == endDate.Year && startDate.Month == endDate.Month)

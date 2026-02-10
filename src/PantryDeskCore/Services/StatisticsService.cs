@@ -447,6 +447,15 @@ public static class StatisticsService
         return GetDemographicsBreakdown(connection, startDate, endDate, Sql.StatisticsDemographicsByDisabledStatusInRange);
     }
 
+    /// <summary>
+    /// Gets veteran status breakdown for served households with derived "Disabled Veteran" category.
+    /// Anyone who is both Veteran and Disabled is counted only in "Disabled Veteran", not in "Veteran".
+    /// </summary>
+    public static List<DemographicsBreakdown> GetVeteranStatusWithDisabledVeteranBreakdown(SqliteConnection connection, DateTime startDate, DateTime endDate)
+    {
+        return GetDemographicsBreakdown(connection, startDate, endDate, Sql.StatisticsDemographicsByVeteranStatusWithDisabledVeteranInRange);
+    }
+
     private static List<DemographicsBreakdown> GetDemographicsBreakdown(SqliteConnection connection, DateTime startDate, DateTime endDate, string query)
     {
         var breakdowns = new List<DemographicsBreakdown>();
@@ -476,5 +485,167 @@ public static class StatisticsService
         }
 
         return breakdowns;
+    }
+
+    /// <summary>
+    /// Gets stats for the Monthly Activity Report. Uses same definition as Statistics Dashboard: all completed services in range (no visit_type filter).
+    /// If deckStats is provided for the month, adds deck averages to duplicated individuals only (rounded to int).
+    /// </summary>
+    public static MonthlyActivityReportStats GetMonthlyActivityReportStats(SqliteConnection connection, int year, int month, DeckStatsMonthly? deckStats = null)
+    {
+        var monthStart = new DateTime(year, month, 1);
+        var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+        var startDateStr = monthStart.ToString("yyyy-MM-dd");
+        var endDateStr = monthEnd.ToString("yyyy-MM-dd");
+
+        var result = new MonthlyActivityReportStats();
+        connection.Open();
+        try
+        {
+            var reportingYearStart = ActiveStatusSyncService.GetReportingYearStartForMonth(connection, year, month);
+            var reportingYearEnd = reportingYearStart.AddYears(1).AddDays(-1);
+            var reportingYearStartStr = reportingYearStart.ToString("yyyy-MM-dd");
+            var reportingYearEndStr = reportingYearEnd.ToString("yyyy-MM-dd");
+
+            // Total days open (pantry days in month)
+            using (var cmd = new SqliteCommand(Sql.ActivityReportCountPantryDaysInMonth, connection))
+            {
+                cmd.Parameters.AddWithValue("@start_date", startDateStr);
+                cmd.Parameters.AddWithValue("@end_date", endDateStr);
+                var r = cmd.ExecuteScalar();
+                result.TotalDaysOpen = r != null ? Convert.ToInt32(r) : 0;
+            }
+
+            // Total households served in month (all completed services; same definition as Statistics Dashboard)
+            using (var cmd = new SqliteCommand(Sql.StatisticsCountUniqueHouseholdsServedInRange, connection))
+            {
+                cmd.Parameters.AddWithValue("@start_date", startDateStr);
+                cmd.Parameters.AddWithValue("@end_date", endDateStr);
+                var r = cmd.ExecuteScalar();
+                result.HouseholdsTotal = r != null ? Convert.ToInt32(r) : 0;
+            }
+
+            if (result.HouseholdsTotal == 0)
+            {
+                result.TotalPounds = 0;
+                connection.Close();
+                return result;
+            }
+
+            // Household IDs served in month (all completed; same as Statistics Dashboard)
+            var householdIdsInMonth = new List<int>();
+            using (var cmd = new SqliteCommand(Sql.StatisticsSelectServedHouseholdIdsInRange, connection))
+            {
+                cmd.Parameters.AddWithValue("@start_date", startDateStr);
+                cmd.Parameters.AddWithValue("@end_date", endDateStr);
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    householdIdsInMonth.Add(reader.GetInt32(0));
+                }
+            }
+
+            // First completed (any type) date in reporting year per household for undup/dup split
+            var firstDateByHousehold = new Dictionary<int, DateTime>();
+            using (var cmd = new SqliteCommand(Sql.StatisticsFirstCompletedDateInReportingYearPerHousehold, connection))
+            {
+                cmd.Parameters.AddWithValue("@reporting_year_start", reportingYearStartStr);
+                cmd.Parameters.AddWithValue("@reporting_year_end", reportingYearEndStr);
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    var hid = reader.GetInt32(0);
+                    var firstDate = DateTime.Parse(reader.GetString(1));
+                    firstDateByHousehold[hid] = firstDate;
+                }
+            }
+
+            var undupIds = new List<int>();
+            var dupIds = new List<int>();
+            foreach (var hid in householdIdsInMonth)
+            {
+                if (firstDateByHousehold.TryGetValue(hid, out var firstDate) && firstDate >= monthStart && firstDate <= monthEnd)
+                {
+                    undupIds.Add(hid);
+                }
+                else
+                {
+                    dupIds.Add(hid);
+                }
+            }
+
+            result.HouseholdsUnduplicated = undupIds.Count;
+            result.HouseholdsDuplicated = dupIds.Count;
+
+            // Composition for unduplicated and duplicated
+            var (infantU, childU, adultU, seniorU) = GetCompositionForHouseholdIds(connection, undupIds, monthEnd);
+            var (infantD, childD, adultD, seniorD) = GetCompositionForHouseholdIds(connection, dupIds, monthEnd);
+
+            result.InfantUnduplicated = infantU;
+            result.ChildUnduplicated = childU;
+            result.AdultUnduplicated = adultU;
+            result.SeniorUnduplicated = seniorU;
+            result.InfantDuplicated = infantD;
+            result.ChildDuplicated = childD;
+            result.AdultDuplicated = adultD;
+            result.SeniorDuplicated = seniorD;
+
+            result.IndividualsUnduplicated = infantU + childU + adultU + seniorU;
+            result.IndividualsDuplicated = infantD + childD + adultD + seniorD;
+            result.IndividualsTotal = result.IndividualsUnduplicated + result.IndividualsDuplicated;
+
+            // Add deck-only averages to duplicated only (rounded)
+            if (deckStats != null)
+            {
+                result.IndividualsDuplicated += (int)Math.Round(deckStats.HouseholdTotalAvg);
+                result.InfantDuplicated += (int)Math.Round(deckStats.InfantAvg);
+                result.ChildDuplicated += (int)Math.Round(deckStats.ChildAvg);
+                result.AdultDuplicated += (int)Math.Round(deckStats.AdultAvg);
+                result.SeniorDuplicated += (int)Math.Round(deckStats.SeniorAvg);
+                result.IndividualsTotal = result.IndividualsUnduplicated + result.IndividualsDuplicated;
+            }
+
+            result.TotalPounds = result.HouseholdsTotal * 65;
+        }
+        finally
+        {
+            connection.Close();
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Gets age-group composition (Infant, Child, Adult, Senior) for the given household IDs, using endDate as reference for age.
+    /// </summary>
+    private static (int Infant, int Child, int Adult, int Senior) GetCompositionForHouseholdIds(SqliteConnection connection, List<int> householdIds, DateTime endDate)
+    {
+        if (householdIds.Count == 0)
+        {
+            return (0, 0, 0, 0);
+        }
+
+        var infant = 0;
+        var child = 0;
+        var adult = 0;
+        var senior = 0;
+
+        foreach (var householdId in householdIds)
+        {
+            var members = HouseholdMemberRepository.GetByHouseholdId(connection, householdId);
+            foreach (var member in members)
+            {
+                var ageGroup = AgeGroupHelper.GetAgeGroup(member.Birthday, endDate);
+                switch (ageGroup)
+                {
+                    case "Infant": infant++; break;
+                    case "Child": child++; break;
+                    case "Adult": adult++; break;
+                    case "Senior": senior++; break;
+                }
+            }
+        }
+
+        return (infant, child, adult, senior);
     }
 }

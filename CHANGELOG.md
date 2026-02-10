@@ -240,9 +240,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Backup to USB: fixed for in-use DB (temp DB read into memory while connection open, then zipped); rotation keeps max 8 backups per folder and deletes matching `.zip.meta.json` with each removed zip
   - Weekly manual-backup reminder on launch (7+ days): dialog with Snooze and Backup Now (Admin opens Backup to USB; Entry sees disabled button and note to log in as Admin)
   - "Backup Now" menu item removed (automatic backup still runs once per day on first launch)
+- **Monthly Activity Report & Deck-Only Bulk Entry** (COMPLETED: 2026-02-09, TODO: Monthly Activity Report & Deck-Only Monthly Bulk Entry)
+  - Monthly Activity Report: one-page landscape PDF (Reports → Monthly Activity Report); due-by-10th reminder in header; configurable header (Food Bank, County, Prepared by, Phone) persisted in config; total days open and pounds distributed; Households Served (Duplicated/Unduplicated/Total) with one-line **Total Households (per city)** breakdown (e.g. `Winlock: 76 · Ryderwood: 37 · Vader: 37`, highest to lowest, · separator); Individuals Served table by age group (Infant, Child, Adult, Senior) with Duplicated/Unduplicated/Total columns; **Race Distribution**, **Veteran Status** (includes derived "Disabled Veteran" — individuals who are both Veteran and Disabled counted only there), and **Disability Status** lines in same format below table; Export PDF and Print
+  - Enter Deck Stats: Reports → Enter Deck Stats (or Check-in menu); one record per (year, month); enter totals across deck-only pages (household total, Infant/Child/Adult/Senior, number of pages); app stores per-page averages; when deck stats exist for a month, report adds those averages (rounded) to Duplicated individuals only
+  - Unified statistics: all reporting (Statistics Dashboard PDF and Monthly Activity Report PDF) uses completed services only (cancelled/no-show excluded) and any completed event for households/individuals served; eligibility once-per-month rule (Shop/Shop with TEFAP) still uses qualifying visit types
+  - Schema: `deck_stats_monthly` table (migration v6); `DeckStatsMonthly` model and `DeckStatsRepository`; `StatisticsFirstCompletedDateInReportingYearPerHousehold` and shared completed-service queries for activity report; veteran status demographics query with derived "Disabled Veteran" (SQL CASE); CSV/JSON export for deck stats (Admin-only)
 
 ### Changed
 
+- Statistics Dashboard and Monthly Activity Report now share the same statistics definition (completed services only; any completed event counts toward served households/individuals; eligibility rules unchanged)
 - Statistics Dashboard: two-page Demographics + Services layout; Visit Type/Event Type pie labels use radial-only connectors; Age Group pie hides zero slices; Pantry Day Volume chart fills remaining space
 - Member demographics: Veteran status options reduced to Veteran, Not Veteran, Not Specified; Disabled status uses Not Specified (replacing Unknown, Prefer Not To Answer)
 - Statistics Dashboard now supports flexible date ranges instead of fixed monthly view

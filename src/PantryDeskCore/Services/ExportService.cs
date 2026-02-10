@@ -51,6 +51,12 @@ public static class ExportService
         WriteHouseholdMembersCsv(members, membersPath);
         files.Add(membersPath);
 
+        // Export deck stats monthly
+        var deckStats = DeckStatsRepository.GetAll(connection);
+        var deckStatsPath = Path.Combine(outputFolder, $"{baseFileName}_deck_stats.csv");
+        WriteDeckStatsCsv(deckStats, deckStatsPath);
+        files.Add(deckStatsPath);
+
         return files.ToArray();
     }
 
@@ -74,7 +80,8 @@ public static class ExportService
             Households = HouseholdRepository.GetAll(connection),
             HouseholdMembers = HouseholdMemberRepository.GetAll(connection),
             ServiceEvents = ServiceEventRepository.GetAll(connection),
-            PantryDays = PantryDayRepository.GetAll(connection)
+            PantryDays = PantryDayRepository.GetAll(connection),
+            DeckStatsMonthly = DeckStatsRepository.GetAll(connection)
         };
 
         var options = new JsonSerializerOptions
@@ -192,6 +199,30 @@ public static class ExportService
         }
     }
 
+    private static void WriteDeckStatsCsv(List<DeckStatsMonthly> deckStats, string filePath)
+    {
+        using var writer = new StreamWriter(filePath, false, new UTF8Encoding(true)); // UTF-8 with BOM
+
+        writer.WriteLine("Year,Month,HouseholdTotalAvg,InfantAvg,ChildAvg,AdultAvg,SeniorAvg,PageCount,UpdatedAt");
+
+        foreach (var d in deckStats)
+        {
+            var row = new List<string>
+            {
+                EscapeCsvField(d.Year.ToString()),
+                EscapeCsvField(d.Month.ToString()),
+                EscapeCsvField(d.HouseholdTotalAvg.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                EscapeCsvField(d.InfantAvg.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                EscapeCsvField(d.ChildAvg.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                EscapeCsvField(d.AdultAvg.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                EscapeCsvField(d.SeniorAvg.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                EscapeCsvField(d.PageCount?.ToString() ?? ""),
+                EscapeCsvField(d.UpdatedAt)
+            };
+            writer.WriteLine(string.Join(",", row));
+        }
+    }
+
     private static string EscapeCsvField(string? value)
     {
         if (value == null)
@@ -218,5 +249,6 @@ public static class ExportService
         public List<HouseholdMember> HouseholdMembers { get; set; } = new();
         public List<ServiceEvent> ServiceEvents { get; set; } = new();
         public List<PantryDay> PantryDays { get; set; } = new();
+        public List<DeckStatsMonthly> DeckStatsMonthly { get; set; } = new();
     }
 }

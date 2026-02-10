@@ -442,6 +442,18 @@ public partial class CheckInForm : Form
         }
     }
 
+    private void MenuItemEnterDeckStats_Click(object? sender, EventArgs e)
+    {
+        using var form = new DeckStatsEntryForm();
+        form.ShowDialog();
+    }
+
+    private void MenuItemMonthlyActivityReport_Click(object? sender, EventArgs e)
+    {
+        using var form = new MonthlyActivityReportForm();
+        form.ShowDialog();
+    }
+
     private void MenuItemStatisticsDashboard_Click(object? sender, EventArgs e)
     {
         using var statsForm = new StatsForm();

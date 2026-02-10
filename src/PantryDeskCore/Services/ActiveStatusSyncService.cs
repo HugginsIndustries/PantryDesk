@@ -15,6 +15,30 @@ public static class ActiveStatusSyncService
     private const int DefaultDay = 1;
 
     /// <summary>
+    /// Gets the first day of the reporting year that contains the given month.
+    /// Uses config keys active_status_reset_month and active_status_reset_day; defaults to Jan 1.
+    /// Connection must be open; does not close it.
+    /// </summary>
+    public static DateTime GetReportingYearStartForMonth(SqliteConnection connection, int forYear, int forMonth)
+    {
+        var month = ReadConfigInt(connection, ConfigKeyResetMonth, DefaultMonth);
+        var dayConfig = ReadConfigInt(connection, ConfigKeyResetDay, DefaultDay);
+        month = Math.Clamp(month, 1, 12);
+
+        var firstOfMonth = new DateTime(forYear, forMonth, 1);
+        var resetDayInYear = Math.Min(dayConfig, DateTime.DaysInMonth(forYear, month));
+        var resetInYear = new DateTime(forYear, month, resetDayInYear);
+
+        if (resetInYear <= firstOfMonth)
+        {
+            return resetInYear;
+        }
+
+        var resetDayLastYear = Math.Min(dayConfig, DateTime.DaysInMonth(forYear - 1, month));
+        return new DateTime(forYear - 1, month, resetDayLastYear);
+    }
+
+    /// <summary>
     /// Gets the current reset date: the most recent occurrence of (month, day) that is on or before today.
     /// Uses config keys active_status_reset_month and active_status_reset_day; defaults to Jan 1.
     /// </summary>

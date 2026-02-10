@@ -38,6 +38,8 @@ partial class CheckInForm
         panelTopRow = new TableLayoutPanel();
         menuStrip = new MenuStrip();
         menuReports = new ToolStripMenuItem();
+        menuItemEnterDeckStats = new ToolStripMenuItem();
+        menuItemMonthlyActivityReport = new ToolStripMenuItem();
         menuItemStatisticsDashboard = new ToolStripMenuItem();
         menuAdmin = new ToolStripMenuItem();
         menuItemBackupToUsb = new ToolStripMenuItem();
@@ -155,10 +157,24 @@ partial class CheckInForm
         // 
         // menuReports
         // 
-        menuReports.DropDownItems.AddRange(new ToolStripItem[] { menuItemStatisticsDashboard });
+        menuReports.DropDownItems.AddRange(new ToolStripItem[] { menuItemEnterDeckStats, menuItemMonthlyActivityReport, menuItemStatisticsDashboard });
         menuReports.Name = "menuReports";
         menuReports.Size = new Size(59, 20);
         menuReports.Text = "Reports";
+        // 
+        // menuItemEnterDeckStats
+        // 
+        menuItemEnterDeckStats.Name = "menuItemEnterDeckStats";
+        menuItemEnterDeckStats.Size = new Size(195, 22);
+        menuItemEnterDeckStats.Text = "Enter Deck Stats";
+        menuItemEnterDeckStats.Click += MenuItemEnterDeckStats_Click;
+        // 
+        // menuItemMonthlyActivityReport
+        // 
+        menuItemMonthlyActivityReport.Name = "menuItemMonthlyActivityReport";
+        menuItemMonthlyActivityReport.Size = new Size(195, 22);
+        menuItemMonthlyActivityReport.Text = "Monthly Activity Report";
+        menuItemMonthlyActivityReport.Click += MenuItemMonthlyActivityReport_Click;
         // 
         // menuItemStatisticsDashboard
         // 
@@ -297,6 +313,8 @@ partial class CheckInForm
     private Button btnOpenProfile;
     private MenuStrip menuStrip;
     private ToolStripMenuItem menuReports;
+    private ToolStripMenuItem menuItemEnterDeckStats;
+    private ToolStripMenuItem menuItemMonthlyActivityReport;
     private ToolStripMenuItem menuItemStatisticsDashboard;
     private ToolStripMenuItem menuAdmin;
     private ToolStripMenuItem menuItemBackupToUsb;

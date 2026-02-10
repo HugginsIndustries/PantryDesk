@@ -370,6 +370,39 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskSeeder/SeederConfig.cs`
   - Rationale: Provides confirmation of effective configuration before potentially long-running operation
 
+### Monthly Activity Report & Deck-Only Monthly Bulk Entry (Complete)
+
+Implement deck entry and storage with or before the report so the report can read deck-only data for a month.
+
+- [x] Add deck-only monthly bulk entry with averaged totals
+  - Impact: High
+  - Complexity: High
+  - Acceptance Criteria:
+    - **Entry point:** Reports menu, new item "Enter Deck Stats" opens the deck-only entry flow (also from Check-in menu).
+    - **One entry per month:** At most one deck-only record per (year, month). If user selects a month that already has deck stats, show a warning: "Deck stats already entered for [Month YYYY]. Do you want to edit them?" — Yes loads that month's data for editing; No cancels. On edit, replace existing data (no history).
+    - **Dialog:** Month/year selector (default: last month). Staff enter **totals** (summed across all pages) for: household total, and age groups labeled "Infant (0-2)", "Child (2-18)", "Adult (18-55)", "Senior (55+)". Staff enter **number of pages**. Averages calculated automatically (each total ÷ number of pages) and stored; page count stored for audit.
+    - Add deck-only averaged totals ONLY to duplicated individual counts for Monthly Activity Report: overall duplicated from averaged household total; per-age duplicated from averaged Infant, Child, Adult, Senior values. Do not derive unduplicated deck-only counts.
+    - Admin-only CSV/JSON export includes deck stats.
+  - Likely files:
+    - `DeckStatsEntryForm`, `StatisticsService`, `ReportService`, `DeckStatsRepository`, `deck_stats_monthly` table (migration v6)
+  - Rationale: Deck-only visitors fill paper form; staff incorporate averaged totals into reports; one entry per month with edit replaces to avoid duplicates
+
+- [x] Add formatted "Monthly Activity Report" (one Letter-size page, landscape)
+  - Impact: High
+  - Complexity: High
+  - Acceptance Criteria:
+    - **Entry point:** Reports menu, item "Monthly Activity Report"; opens dialog. Default month: last month; allow selecting month.
+    - **Header:** Required fields (Food bank name, county, prepared by, phone); persisted in config. Month/year and due-by-10th reminder in header.
+    - Total days open (pantry days in month); total pounds distributed (households × 65).
+    - **Households served:** Total, Unduplicated (first completed service in reporting year in selected month), Duplicated (Total − Unduplicated). **Total Households (per city):** one-line text, format `City: n · City: n` (highest to lowest count), same styling as demographics lines.
+    - **Individuals served:** Table by age group (Infant, Child, Adult, Senior) with Duplicated / Unduplicated / Total columns; deck-only averages added to duplicated counts when deck stats exist for month.
+    - **Demographics (below table):** Race Distribution, Veteran Status, Disability Status — each as one line in format `Label: n · Label: n` (same as city line). Veteran Status includes derived "Disabled Veteran" (Veteran + Disabled counted only there to avoid double-counting).
+    - **Unified statistics:** Report uses same definition as Statistics Dashboard: completed services only (cancelled/no-show excluded); any completed event counts toward served households/individuals. Eligibility once-per-month rule still uses qualifying visit types (Shop / Shop with TEFAP).
+    - Fit on one Letter-size sheet, landscape; Export PDF and Print.
+  - Likely files:
+    - `MonthlyActivityReportForm`, `ReportService`, `StatisticsService`, `Sql.cs` (activity report and veteran-with-disabled-veteran queries)
+  - Rationale: Grant reporting requires specific format and metrics
+
 ---
 
 ## Open
@@ -449,51 +482,3 @@ Implementation checklist based on phased plan.
     - `src/PantryDeskApp/Forms/PantryDaysForm.cs`
     - `src/PantryDeskApp/Forms/PantryDaysForm.Designer.cs`
   - Rationale: Reduces scrolling when managing large numbers of pantry days
-
-#### Monthly Activity Report & Deck-Only Monthly Bulk Entry
-
-Implement deck entry and storage with or before the report so the report can read deck-only data for a month.
-
-- [ ] Add deck-only monthly bulk entry with averaged totals
-  - Impact: High
-  - Complexity: High
-  - Acceptance Criteria:
-    - **Entry point:** Reports menu, new item "Enter Deck Stats" opens the deck-only entry flow.
-    - **One entry per month:** At most one deck-only record per (year, month). If user selects a month that already has deck stats, show a warning: "Deck stats already entered for [Month YYYY]. Do you want to edit them?" — Yes loads that month's data for editing; No cancels. On edit, replace existing data (no history).
-    - **Dialog:** Month/year selector (default: last month). Staff enter **totals** (summed across all pages) for: household size, and age groups labeled "Infant (0-2)", "Child (2-18)", "Adult (18-55)", "Senior (55+)". Staff enter **number of pages**. Averages calculated automatically (each total ÷ number of pages) and stored as that month's deck-only stats. Number of pages may be stored for audit but is not shown on the Monthly Activity Report.
-    - Staff sum paper forms across pages (same households repeat across pages), then divide by page count to get averages.
-    - Add deck-only averaged totals ONLY to duplicated individual counts for Monthly Activity Report: the **overall** duplicated individuals count uses the averaged **household total** from the deck form; the per-age duplicated counts use the averaged Infant, Child, Adult, Senior values.
-    - Do not derive unduplicated deck-only counts.
-  - Likely files:
-    - New deck-only entry form/dialog
-    - `StatisticsService`, Monthly Activity Report logic
-    - Config/table for storing deck-only monthly data (year, month, averaged household, infant, child, adult, senior; optional page count)
-  - Rationale: Deck-only visitors fill paper form; staff incorporate averaged totals into reports; one entry per month with edit replaces to avoid duplicates
-
-- [ ] Add formatted "Monthly Activity Report" (one Letter-size page, landscape)
-  - Impact: High
-  - Complexity: High
-  - Acceptance Criteria:
-    - **Entry point:** Reports menu, item "Monthly Activity Report"; opens dialog.
-    - Default month: last month; allow selecting month
-    - Required header fields: Food bank name, county, prepared by, month/year, phone number
-    - Total days open for food distribution: pantry days only (usually 3 unless schedule changes)
-    - Household counting: count each household at most once per month; include if at least one Completed qualifying service in selected month
-    - Qualifying service types: "Shop with TEFAP", "TEFAP Only", "Shop" only (excludes "Deck Only")
-    - Total pounds distributed: (Households Served Total * 65 lbs/household) from all sources
-    - Households served:
-      - Total = unique households with at least one qualifying service in month
-      - Unduplicated = first qualifying service this reporting year occurs in selected month. "Reporting year" uses the same configurable reset date as the app (default Jan 1).
-      - Duplicated = Total - Unduplicated
-    - Individuals served:
-      - Based on served households; count each household's members once
-      - Breakdown by age group with labels "Infant (0-2)", "Child (2-18)", "Adult (18-55)", "Senior (55+)" with totals and grand total
-      - Duplicated/unduplicated splits match household classification
-      - Add deck-only averaged monthly totals to duplicated individual counts: overall from deck averaged household total; per-age from deck Infant, Child, Adult, Senior averages
-    - Fit on one Letter-size sheet, landscape orientation
-    - Export PDF and Print options (same as statistics dashboard)
-  - Likely files:
-    - New `MonthlyActivityReportForm.cs`
-    - `ReportService` (PDF generation)
-    - `StatisticsService` (report queries)
-  - Rationale: Grant reporting requires specific format and metrics
