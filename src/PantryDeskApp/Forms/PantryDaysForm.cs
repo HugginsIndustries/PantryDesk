@@ -1,6 +1,7 @@
 using PantryDeskCore.Data;
 using PantryDeskCore.Models;
 using PantryDeskCore.Security;
+using PantryDeskCore.Services;
 
 namespace PantryDeskApp.Forms;
 
@@ -132,7 +133,7 @@ public partial class PantryDaysForm : Form
         try
         {
             using var connection = DatabaseManager.GetConnection();
-            var count = GeneratePantryDaysForYear(connection, year);
+            var count = PantryDayCalendarService.EnsurePantryDaysForYear(connection, year);
 
             MessageBox.Show($"Generated {count} pantry days for {year}.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             LoadPantryDays();
@@ -141,106 +142,6 @@ public partial class PantryDaysForm : Form
         {
             MessageBox.Show($"Error generating pantry days: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
-    }
-
-    private int GeneratePantryDaysForYear(Microsoft.Data.Sqlite.SqliteConnection connection, int year)
-    {
-        var createdCount = 0;
-
-        // Jan-Oct: 2nd, 3rd, 4th Wednesday
-        for (int month = 1; month <= 10; month++)
-        {
-            var dates = new[]
-            {
-                GetNthWeekdayOfMonth(year, month, DayOfWeek.Wednesday, 2),
-                GetNthWeekdayOfMonth(year, month, DayOfWeek.Wednesday, 3),
-                GetNthWeekdayOfMonth(year, month, DayOfWeek.Wednesday, 4)
-            };
-
-            foreach (var date in dates)
-            {
-                // Check if pantry day already exists
-                var existing = PantryDayRepository.GetByDate(connection, date);
-                if (existing != null)
-                {
-                    continue; // Skip if already exists
-                }
-
-                var pantryDay = new PantryDay
-                {
-                    PantryDate = date,
-                    IsActive = true,
-                    Notes = null
-                };
-
-                PantryDayRepository.Create(connection, pantryDay);
-                createdCount++;
-            }
-        }
-
-        // Nov-Dec: 1st, 2nd, 3rd Wednesday
-        for (int month = 11; month <= 12; month++)
-        {
-            var dates = new[]
-            {
-                GetNthWeekdayOfMonth(year, month, DayOfWeek.Wednesday, 1),
-                GetNthWeekdayOfMonth(year, month, DayOfWeek.Wednesday, 2),
-                GetNthWeekdayOfMonth(year, month, DayOfWeek.Wednesday, 3)
-            };
-
-            foreach (var date in dates)
-            {
-                // Check if pantry day already exists
-                var existing = PantryDayRepository.GetByDate(connection, date);
-                if (existing != null)
-                {
-                    continue; // Skip if already exists
-                }
-
-                var pantryDay = new PantryDay
-                {
-                    PantryDate = date,
-                    IsActive = true,
-                    Notes = null
-                };
-
-                PantryDayRepository.Create(connection, pantryDay);
-                createdCount++;
-            }
-        }
-
-        return createdCount;
-    }
-
-    private static DateTime GetNthWeekdayOfMonth(int year, int month, DayOfWeek dayOfWeek, int occurrence)
-    {
-        // Find the first occurrence of the weekday in the month
-        var firstDay = new DateTime(year, month, 1);
-        var firstDayOfWeek = (int)firstDay.DayOfWeek;
-        var targetDayOfWeek = (int)dayOfWeek;
-
-        // Calculate days to add to get to the first occurrence
-        // If first day is the target day, daysToAdd = 0
-        // Otherwise, calculate how many days forward to the first occurrence
-        var daysToAdd = (targetDayOfWeek - firstDayOfWeek + 7) % 7;
-        if (daysToAdd == 0 && firstDay.DayOfWeek != dayOfWeek)
-        {
-            // This shouldn't happen with the modulo, but handle edge case
-            daysToAdd = 7;
-        }
-
-        var firstOccurrence = firstDay.AddDays(daysToAdd);
-
-        // Add weeks for the nth occurrence (occurrence is 1-based)
-        var targetDate = firstOccurrence.AddDays((occurrence - 1) * 7);
-
-        // Verify we're still in the same month
-        if (targetDate.Month != month)
-        {
-            throw new ArgumentException($"Month {month} does not have {occurrence} occurrences of {dayOfWeek}");
-        }
-
-        return targetDate;
     }
 
     private void BtnSave_Click(object? sender, EventArgs e)

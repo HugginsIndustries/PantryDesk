@@ -264,6 +264,19 @@ Implementation checklist based on phased plan.
     - `PantryDeskApp/Forms/HouseholdProfileForm.cs` (remove Appointments tab/creation UI)
   - Rationale: Appointments currently only visible within individual household profiles; central form provides oversight and creation by any member name. No Upcoming panel on Check-In; may add "Appointments Today" hint later.
 
+#### Pantry Day Calendar Improvements (Complete)
+
+- [x] Automatically generate pantry days for current year
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - At **app start**, ensure pantry days for the current year exist using the same rule logic as the "Generate Pantry Days" button in the Pantry Days Calendar dialog (e.g. Jan–Oct: 2nd/3rd/4th Wed; Nov–Dec: 1st/2nd/3rd Wed). Create only missing dates; do not duplicate or overwrite existing pantry days. Fully automatic—no need to open the Pantry Days Calendar or click the button. Runs once at app start so pantry days exist even if an admin never opens the dialog.
+    - Client no longer needs to manually click "Generate Pantry Days" in the Pantry Days Calendar dialog for the current year.
+  - Likely files:
+    - App startup flow (e.g. after DB init, before or after first form shown)
+    - `src/PantryDeskCore` (reuse or call existing logic behind "Generate Pantry Days")
+  - Rationale: Improves UX; client prefers fully automatic generation at app start, with no manual step.
+
 ### Phase 10 — UX Improvements & Workflow Enhancements (Complete)
 
 #### Search & Check-In Improvements
@@ -456,19 +469,6 @@ Implement deck entry and storage with or before the report so the report can rea
     - Dialog width and column layout match Household Profile for consistency.
   - Likely files: `NewHouseholdForm.cs`, `NewHouseholdForm.Designer.cs`.
   - Rationale: Consistency between New Household and Household Profile for the members table and dialog size.
-
-#### Pantry Day Calendar Improvements
-
-- [ ] Automatically generate pantry days for current year
-  - Impact: Medium
-  - Complexity: Small
-  - Acceptance Criteria:
-    - At **app start**, ensure pantry days for the current year exist using the same rule logic as the "Generate Pantry Days" button in the Pantry Days Calendar dialog (e.g. Jan–Oct: 2nd/3rd/4th Wed; Nov–Dec: 1st/2nd/3rd Wed). Create only missing dates; do not duplicate or overwrite existing pantry days. Fully automatic—no need to open the Pantry Days Calendar or click the button. Runs once at app start so pantry days exist even if an admin never opens the dialog.
-    - Client no longer needs to manually click "Generate Pantry Days" in the Pantry Days Calendar dialog for the current year.
-  - Likely files:
-    - App startup flow (e.g. after DB init, before or after first form shown)
-    - `src/PantryDeskCore` (reuse or call existing logic behind "Generate Pantry Days")
-  - Rationale: Improves UX; client prefers fully automatic generation at app start, with no manual step.
 
 #### Statistics Dashboard — Cards, PDF, and Tooltips
 

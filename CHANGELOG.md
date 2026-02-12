@@ -279,6 +279,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Publish script**: Demo DB and config now placed only in `PantryDeskApp/` folder; use relative path (`demo_pantrydesk.db`) for portable demos. Copy the `PantryDeskApp/` folder to USB for demos without path changes.
 - **AppConfig**: Demo DB path supports relative paths, resolved from the config file location.
 - Seeder defaults: households 500 (was 300), months-back 24 (was 6)
+- **Pantry Day Calendar: auto-ensure current year at startup** (COMPLETED: 2025-02-12, TODO: Pantry Day Calendar Improvements)
+  - At app start, pantry days for the current year are ensured using the same rule (Jan–Oct: 2nd/3rd/4th Wed; Nov–Dec: 1st/2nd/3rd Wed). Only missing dates are created; existing pantry days are not duplicated or overwritten.
+  - New `PantryDayCalendarService` in PantryDeskCore; Pantry Days form "Generate for Year" now uses this service. Startup call is non-blocking (failures logged only).
 
 ### Removed
 

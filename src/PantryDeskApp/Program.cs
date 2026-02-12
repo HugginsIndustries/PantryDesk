@@ -25,6 +25,17 @@ static class Program
             ActiveStatusSyncService.SyncAllHouseholds(connection);
         }
 
+        // Ensure pantry days for current year exist (create only missing)
+        try
+        {
+            using var connection = DatabaseManager.GetConnection();
+            PantryDayCalendarService.EnsurePantryDaysForYear(connection, DateTime.Now.Year);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Ensure pantry days failed: {ex.Message}");
+        }
+
         // Check if automatic backup is needed for today
         try
         {
