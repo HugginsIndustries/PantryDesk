@@ -432,34 +432,43 @@ Implement deck entry and storage with or before the report so the report can rea
 
 #### Household Form Improvements
 
-- [ ] Add "Possible duplicates" hint on name field focus loss
+- [ ] Duplicate detection on New Household form (member name + birthday, red warning)
+  - Impact: Medium
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - **When:** Run duplicate check after the user adds or edits a household member (on Save from the Household Member dialog). Re-run whenever the member list changes (add or edit) so the warning stays accurate.
+    - **Method:** For each member on the form, check (first name, last name, birthday) against all members in other households. Consider a possible duplicate when a name+birthday pair matches—or fuzzily matches (typos)—an existing member in a different household. Use one consistent fuzzy-matching approach for first/last name (e.g. Levenshtein or normalized token overlap). Check all household members; if any match, show warning.
+    - **UI:** Display a non-blocking message in the **lower left** of the New Household form: **"Warning: Possible Duplicate"** in **red** text when any member matches. Hide or clear the message when no duplicates are found. Do not block saving the member. **Save-time confirmation:** When the user clicks "Save" Household, if potential duplicates exist, show a confirmation dialog (Yes/No) before creating the household.
+    - Scope: New Household form only (not Household Profile).
+  - Likely files:
+    - `src/PantryDeskApp/Forms/NewHouseholdForm.cs`
+    - `src/PantryDeskApp/Forms/NewHouseholdForm.Designer.cs` (label/panel lower left)
+    - `src/PantryDeskCore/Data/HouseholdRepository.cs` or new helper (member-based duplicate search with name+birthday ± fuzzy name)
+  - Rationale: Prevent adding duplicate households by matching member identity (name + birthday) across households; red warning gives early feedback; save-time confirmation prevents accidental duplicate creation.
+
+  - [ ] Align New Household dialog members table with Household Profile
   - Impact: Medium
   - Complexity: Small
   - Acceptance Criteria:
-    - When PrimaryName field loses focus, check for similar household names
-    - Display hint message below name field if potential duplicates found (e.g., "Possible duplicate: Smith, John")
-    - Hint appears immediately on focus loss (no debounce needed)
-    - Hint does not block form submission but provides early warning
-  - Likely files:
-    - `src/PantryDeskApp/Forms/NewHouseholdForm.cs`
-    - `src/PantryDeskApp/Forms/NewHouseholdForm.Designer.cs`
-    - `src/PantryDeskCore/Data/HouseholdRepository.cs` (may need similarity search method)
-  - Rationale: Current duplicate warning only appears at save time; early hint reduces data entry waste
+    - Increase New Household dialog width to match Household Profile.
+    - Members table: same columns and order as profile — First Name, Last Name, Birthday, Primary, Race, Veteran, Disabled. Show all member info (add Race, Veteran, Disabled; currently only First/Last, Birthday, Primary).
+    - Last column (Disabled) uses Fill; column widths/sizing consistent with profile (e.g. AllCells for non-fill columns, Fill for last).
+    - Dialog width and column layout match Household Profile for consistency.
+  - Likely files: `NewHouseholdForm.cs`, `NewHouseholdForm.Designer.cs`.
+  - Rationale: Consistency between New Household and Household Profile for the members table and dialog size.
 
 #### Pantry Day Calendar Improvements
 
-- [ ] Add month/year filter to Pantry Days admin view
-  - Impact: Low
+- [ ] Automatically generate pantry days for current year
+  - Impact: Medium
   - Complexity: Small
   - Acceptance Criteria:
-    - Dropdown filters for month and year
-    - Grid shows only pantry days matching selected month/year
-    - "All" option available to show all pantry days
-    - Inactive days highlighted (grayed out) in grid for visibility
+    - At **login** (any user—Entry or Admin), ensure pantry days for the current year exist using the same rule logic as "Generate for Year" (e.g. Jan–Oct: 2nd/3rd/4th Wed; Nov–Dec: 1st/2nd/3rd Wed). Create only missing dates; do not duplicate or overwrite existing pantry days. Fully automatic—no need to open the Pantry Days screen. Must run for every login so pantry days are generated even when an admin never logs in.
+    - Client no longer needs to manually click "Generate Pantry Days" for the current year.
   - Likely files:
-    - `src/PantryDeskApp/Forms/PantryDaysForm.cs`
-    - `src/PantryDeskApp/Forms/PantryDaysForm.Designer.cs`
-  - Rationale: Reduces scrolling when managing large numbers of pantry days
+    - Login / post-login flow (after successful authentication for any role)
+    - `src/PantryDeskCore` (reuse or call existing Generate-for-Year logic)
+  - Rationale: Improves UX; client prefers fully automatic generation when any user logs in, with no manual step.
 
 #### Statistics Dashboard — Cards, PDF, and Tooltips
 
