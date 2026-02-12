@@ -470,7 +470,7 @@ Implement deck entry and storage with or before the report so the report can rea
 
 ### Client Requirements
 
-#### Statistics Dashboard — Cards, PDF, and Tooltips
+#### Statistics Dashboard — Summary Cards and Deck Total
 
 - [ ] Reorder summary cards and add deck total; update PDF summary
   - Impact: Medium
@@ -481,12 +481,16 @@ Implement deck entry and storage with or before the report so the report can rea
     - PDF: Update top/summary section to show same info (first = Unique Households Served, fourth = Deck Total as above).
   - Likely files: Stats form, PDF export for statistics dashboard.
 
+#### Statistics Dashboard — Pantry Day Volume Tooltip
+
 - [ ] Fix Pantry Day Volume chart tooltip on Services page
   - Impact: Low
   - Complexity: Small
   - Acceptance Criteria:
     - Tooltip shows "Count: {n}" with actual count; fix "Count: Count" display bug.
   - Likely files: StatsForm or Services tab chart/tooltip code.
+
+#### Statistics Dashboard — PDF Export (Demographics and Services)
 
 - [ ] Statistics Dashboard PDF: export all demographics and services charts with consistent layout
   - Impact: High
