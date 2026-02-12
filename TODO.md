@@ -460,3 +460,45 @@ Implement deck entry and storage with or before the report so the report can rea
     - `src/PantryDeskApp/Forms/PantryDaysForm.cs`
     - `src/PantryDeskApp/Forms/PantryDaysForm.Designer.cs`
   - Rationale: Reduces scrolling when managing large numbers of pantry days
+
+#### Statistics Dashboard — Cards, PDF, and Tooltips
+
+- [ ] Reorder summary cards and add deck total; update PDF summary
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Card 1: Replace "Total Active Households" with "Unique Households Served" (same value as current 4th card).
+    - Card 4: Replace "Unique Households Served" with total of "Household total" from Enter Deck Stats dialog for all months in the selected date range. Card title "Deck Total".
+    - PDF: Update top/summary section to show same info (first = Unique Households Served, fourth = Deck Total as above).
+  - Likely files: Stats form, PDF export for statistics dashboard.
+
+- [ ] Fix Pantry Day Volume chart tooltip on Services page
+  - Impact: Low
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Tooltip shows "Count: {n}" with actual count; fix "Count: Count" display bug.
+  - Likely files: StatsForm or Services tab chart/tooltip code.
+
+- [ ] Statistics Dashboard PDF: export all demographics and services charts with consistent layout
+  - Impact: High
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - City Breakdown: leave as-is (own section).
+    - Household composition section: add Race, Veteran, and Disability charts and detailed info (Age already present). Same format: title, then chart, then detailed info.
+    - Add "Visit Type" section (after demographics, before pantry day breakdown): services charts/info, same format.
+    - Add "Event Type" section (after Visit Type, before pantry day breakdown): event charts/info, same format.
+    - Order: summary at top → City Breakdown → Household composition (with Age, Race, Veteran, Disability) → Visit Type → Event Type → Pantry Day breakdown → Monthly Visits Trend.
+  - Likely files: PDF export / report generation for statistics dashboard.
+
+#### Forms (PDF Generator) — Registration and Deck Sign In
+
+- [ ] Add "Forms" menu with Registration and Deck Sign In; blank PDFs with shared export/print dialog
+  - Impact: High
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - Main menu: Add "Forms" as the first (leftmost) menu option, to the left of Reports, with subitems "Registration" and "Deck Sign In".
+    - **Registration:** One page, portrait, letter. Blank form. Title: "Winlock-Vader Food Bank Registration & Shopper Designation Form". Subtitle: "Information below MUST MATCH your proof of residency information." Main household contact: Address, Phone, Email. Household Members table: Name, Birthday, Primary? (blank column for check or "yes"), Race, Veteran, Disabled. For printing and hand-fill on first visit.
+    - **Deck Sign In:** One page, landscape, letter. Blank form. Title: "Winlock-Vader Food Bank Deck Sign In". Table: Name (please print), Household Size, Infants, Children, Adults, Seniors, Comment. At least 21 rows (more if page fits).
+    - Shared dialog for both: line above buttons "Form: Registration" or "Form: Deck Sign In"; buttons "Export PDF" and "Print". Same behavior as Statistics / Monthly Activity Report.
+  - Likely files: Main form menu, new Forms dialog, PDF generation for Registration and Deck forms.
+  - Rationale: Blank forms for client registration and deck sign-in; existing clients will re-fill registration since data is not transferred into new app.
