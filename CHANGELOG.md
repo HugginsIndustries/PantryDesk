@@ -282,6 +282,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Pantry Day Calendar: auto-ensure current year at startup** (COMPLETED: 2025-02-12, TODO: Pantry Day Calendar Improvements)
   - At app start, pantry days for the current year are ensured using the same rule (Jan–Oct: 2nd/3rd/4th Wed; Nov–Dec: 1st/2nd/3rd Wed). Only missing dates are created; existing pantry days are not duplicated or overwritten.
   - New `PantryDayCalendarService` in PantryDeskCore; Pantry Days form "Generate for Year" now uses this service. Startup call is non-blocking (failures logged only).
+- **Household Form Improvements** (COMPLETED: 2025-02-12, TODO: Client Requirements/Household Form Improvements)
+  - New Household form: duplicate detection by member name + birthday (exact or Levenshtein fuzzy match) against existing members; red "Warning: Possible Duplicate" in lower left; save-time Yes/No confirmation when duplicates exist. Core: `StringSimilarity` helper and `HouseholdMemberRepository.FindPotentialDuplicateMembers`.
+  - New Household dialog aligned with Household Profile: width 800px; members table columns First Name, Last Name, Birthday, Primary, Race, Veteran, Disabled (AllCells for first six, Fill for last).
 
 ### Removed
 

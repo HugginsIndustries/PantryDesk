@@ -41,6 +41,7 @@ partial class NewHouseholdForm
         btnSave = new Button();
         btnCancel = new Button();
         lblError = new Label();
+        lblDuplicateWarning = new Label();
         grpContact.SuspendLayout();
         grpMembers.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)grdMembers).BeginInit();
@@ -62,7 +63,7 @@ partial class NewHouseholdForm
         grpContact.Controls.Add(lblAddress1);
         grpContact.Location = new Point(12, 12);
         grpContact.Name = "grpContact";
-        grpContact.Size = new Size(450, 150);
+        grpContact.Size = new Size(768, 150);
         grpContact.TabIndex = 0;
         grpContact.TabStop = false;
         grpContact.Text = "Contact Information";
@@ -80,7 +81,7 @@ partial class NewHouseholdForm
         //
         txtAddress1.Location = new Point(10, 43);
         txtAddress1.Name = "txtAddress1";
-        txtAddress1.Size = new Size(420, 23);
+        txtAddress1.Size = new Size(738, 23);
         txtAddress1.TabIndex = 1;
         //
         // lblCity
@@ -161,7 +162,7 @@ partial class NewHouseholdForm
         //
         txtEmail.Location = new Point(55, 117);
         txtEmail.Name = "txtEmail";
-        txtEmail.Size = new Size(375, 23);
+        txtEmail.Size = new Size(693, 23);
         txtEmail.TabIndex = 6;
         //
         // grpMembers
@@ -173,7 +174,7 @@ partial class NewHouseholdForm
         grpMembers.Controls.Add(grdMembers);
         grpMembers.Location = new Point(12, 168);
         grpMembers.Name = "grpMembers";
-        grpMembers.Size = new Size(450, 230);
+        grpMembers.Size = new Size(768, 230);
         grpMembers.TabIndex = 1;
         grpMembers.TabStop = false;
         grpMembers.Text = "Household Members (at least one; one must be primary)";
@@ -188,7 +189,7 @@ partial class NewHouseholdForm
         grdMembers.Name = "grdMembers";
         grdMembers.ReadOnly = true;
         grdMembers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        grdMembers.Size = new Size(430, 150);
+        grdMembers.Size = new Size(748, 150);
         grdMembers.TabIndex = 0;
         //
         // btnAddMember
@@ -246,12 +247,12 @@ partial class NewHouseholdForm
         txtNotes.Multiline = true;
         txtNotes.Name = "txtNotes";
         txtNotes.ScrollBars = ScrollBars.Vertical;
-        txtNotes.Size = new Size(450, 60);
+        txtNotes.Size = new Size(768, 60);
         txtNotes.TabIndex = 2;
         //
         // btnSave
         //
-        btnSave.Location = new Point(306, 495);
+        btnSave.Location = new Point(629, 495);
         btnSave.Name = "btnSave";
         btnSave.Size = new Size(75, 30);
         btnSave.TabIndex = 4;
@@ -261,7 +262,7 @@ partial class NewHouseholdForm
         //
         // btnCancel
         //
-        btnCancel.Location = new Point(387, 495);
+        btnCancel.Location = new Point(713, 495);
         btnCancel.Name = "btnCancel";
         btnCancel.Size = new Size(75, 30);
         btnCancel.TabIndex = 5;
@@ -279,13 +280,25 @@ partial class NewHouseholdForm
         lblError.TabIndex = 6;
         lblError.Visible = false;
         //
+        // lblDuplicateWarning
+        //
+        lblDuplicateWarning.AutoSize = true;
+        lblDuplicateWarning.ForeColor = Color.Red;
+        lblDuplicateWarning.Location = new Point(12, 498);
+        lblDuplicateWarning.Name = "lblDuplicateWarning";
+        lblDuplicateWarning.Size = new Size(0, 15);
+        lblDuplicateWarning.TabIndex = 7;
+        lblDuplicateWarning.Text = "Warning: Possible Duplicate";
+        lblDuplicateWarning.Visible = false;
+        //
         // NewHouseholdForm
         //
         AcceptButton = btnSave;
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
         CancelButton = btnCancel;
-        ClientSize = new Size(474, 537);
+        ClientSize = new Size(800, 537);
+        Controls.Add(lblDuplicateWarning);
         Controls.Add(lblError);
         Controls.Add(btnCancel);
         Controls.Add(btnSave);
@@ -333,4 +346,5 @@ partial class NewHouseholdForm
     private Button btnSave;
     private Button btnCancel;
     private Label lblError;
+    private Label lblDuplicateWarning;
 }

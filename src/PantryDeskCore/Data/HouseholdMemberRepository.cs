@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.Data.Sqlite;
+using PantryDeskCore.Helpers;
 using PantryDeskCore.Models;
 
 namespace PantryDeskCore.Data;
@@ -247,6 +248,57 @@ public static class HouseholdMemberRepository
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// Returns true if any candidate (first name, last name, birthday) matches an existing member
+    /// in the database (same birthday and exact or fuzzy name match). Used for New Household
+    /// duplicate warning only; does not consider household id (candidates are not yet saved).
+    /// All SQL is parameterized; no PII is logged.
+    /// </summary>
+    /// <param name="connection">The database connection (caller manages open/close).</param>
+    /// <param name="candidates">Candidate members to check: FirstName, LastName, Birthday.</param>
+    /// <returns>True if at least one candidate has a possible duplicate in the DB.</returns>
+    public static bool FindPotentialDuplicateMembers(
+        SqliteConnection connection,
+        IEnumerable<(string FirstName, string LastName, DateTime Birthday)> candidates)
+    {
+        var list = candidates.ToList();
+        if (list.Count == 0)
+            return false;
+
+        var existing = new List<HouseholdMember>();
+        var wasOpen = connection.State == ConnectionState.Open;
+        if (!wasOpen)
+            connection.Open();
+        try
+        {
+            using var cmd = new SqliteCommand(Sql.HouseholdMemberSelectAll, connection);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                existing.Add(MapFromReader(reader));
+            }
+        }
+        finally
+        {
+            if (!wasOpen)
+                connection.Close();
+        }
+
+        foreach (var (firstName, lastName, birthday) in list)
+        {
+            var candDate = birthday.Date;
+            foreach (var m in existing)
+            {
+                if (m.Birthday.Date != candDate)
+                    continue;
+                if (StringSimilarity.NamesMatchFuzzy(firstName, lastName, m.FirstName, m.LastName))
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

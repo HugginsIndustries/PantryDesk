@@ -29,10 +29,18 @@ public partial class NewHouseholdForm : Form
         grdMembers.Columns.Add("LastName", "Last Name");
         grdMembers.Columns.Add("Birthday", "Birthday");
         grdMembers.Columns.Add("Primary", "Primary");
-        grdMembers.Columns[0].Width = 100;
-        grdMembers.Columns[1].Width = 100;
-        grdMembers.Columns[2].Width = 90;
-        grdMembers.Columns[3].Width = 60;
+        grdMembers.Columns.Add("Race", "Race");
+        grdMembers.Columns.Add("Veteran", "Veteran");
+        grdMembers.Columns.Add("Disabled", "Disabled");
+
+        // AllCells for content-fit; Fill for last column so table fills available width (match Household Profile)
+        for (var i = 0; i < grdMembers.Columns.Count - 1; i++)
+        {
+            grdMembers.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+        }
+        var disabledCol = grdMembers.Columns["Disabled"];
+        if (disabledCol != null)
+            disabledCol.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
     }
 
     private void RefreshMembersGrid()
@@ -40,7 +48,14 @@ public partial class NewHouseholdForm : Form
         grdMembers.Rows.Clear();
         foreach (var m in _members)
         {
-            var idx = grdMembers.Rows.Add(m.FirstName, m.LastName, m.Birthday.ToString("yyyy-MM-dd"), m.IsPrimary ? "Yes" : "");
+            var idx = grdMembers.Rows.Add(
+                m.FirstName,
+                m.LastName,
+                m.Birthday.ToString("yyyy-MM-dd"),
+                m.IsPrimary ? "Yes" : "",
+                m.Race ?? "",
+                m.VeteranStatus ?? "",
+                m.DisabledStatus ?? "");
             grdMembers.Rows[idx].Tag = m;
         }
     }
@@ -62,6 +77,7 @@ public partial class NewHouseholdForm : Form
 
         _members.Add(member);
         RefreshMembersGrid();
+        RefreshDuplicateWarning();
     }
 
     private void BtnEditMember_Click(object? sender, EventArgs e)
@@ -86,6 +102,7 @@ public partial class NewHouseholdForm : Form
         var idx = _members.IndexOf(existing);
         _members[idx] = member;
         RefreshMembersGrid();
+        RefreshDuplicateWarning();
     }
 
     private void BtnRemoveMember_Click(object? sender, EventArgs e)
@@ -102,6 +119,7 @@ public partial class NewHouseholdForm : Form
         if (wasPrimary && _members.Count > 0)
             _members[0].IsPrimary = true;
         RefreshMembersGrid();
+        RefreshDuplicateWarning();
     }
 
     private void BtnSetPrimary_Click(object? sender, EventArgs e)
@@ -135,6 +153,17 @@ public partial class NewHouseholdForm : Form
         {
             ShowError("One member must be set as primary contact.");
             return;
+        }
+
+        if (HasPotentialDuplicateMembers())
+        {
+            var result = MessageBox.Show(
+                "Possible duplicate member(s) found. Create this household anyway?",
+                "Possible Duplicate",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+            if (result == DialogResult.No)
+                return;
         }
 
         var primaryName = primary.FullName;
@@ -215,5 +244,41 @@ public partial class NewHouseholdForm : Form
     {
         lblError.Text = message;
         lblError.Visible = true;
+    }
+
+    private void RefreshDuplicateWarning()
+    {
+        if (_members.Count == 0)
+        {
+            lblDuplicateWarning.Visible = false;
+            return;
+        }
+        try
+        {
+            using var connection = DatabaseManager.GetConnection();
+            var candidates = _members.Select(m => (m.FirstName, m.LastName, m.Birthday));
+            var hasDuplicate = HouseholdMemberRepository.FindPotentialDuplicateMembers(connection, candidates);
+            lblDuplicateWarning.Visible = hasDuplicate;
+        }
+        catch
+        {
+            lblDuplicateWarning.Visible = false;
+        }
+    }
+
+    private bool HasPotentialDuplicateMembers()
+    {
+        if (_members.Count == 0)
+            return false;
+        try
+        {
+            using var connection = DatabaseManager.GetConnection();
+            var candidates = _members.Select(m => (m.FirstName, m.LastName, m.Birthday));
+            return HouseholdMemberRepository.FindPotentialDuplicateMembers(connection, candidates);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
