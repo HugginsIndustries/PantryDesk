@@ -463,12 +463,12 @@ Implement deck entry and storage with or before the report so the report can rea
   - Impact: Medium
   - Complexity: Small
   - Acceptance Criteria:
-    - At **login** (any user—Entry or Admin), ensure pantry days for the current year exist using the same rule logic as "Generate for Year" (e.g. Jan–Oct: 2nd/3rd/4th Wed; Nov–Dec: 1st/2nd/3rd Wed). Create only missing dates; do not duplicate or overwrite existing pantry days. Fully automatic—no need to open the Pantry Days screen. Must run for every login so pantry days are generated even when an admin never logs in.
-    - Client no longer needs to manually click "Generate Pantry Days" for the current year.
+    - At **app start**, ensure pantry days for the current year exist using the same rule logic as the "Generate Pantry Days" button in the Pantry Days Calendar dialog (e.g. Jan–Oct: 2nd/3rd/4th Wed; Nov–Dec: 1st/2nd/3rd Wed). Create only missing dates; do not duplicate or overwrite existing pantry days. Fully automatic—no need to open the Pantry Days Calendar or click the button. Runs once at app start so pantry days exist even if an admin never opens the dialog.
+    - Client no longer needs to manually click "Generate Pantry Days" in the Pantry Days Calendar dialog for the current year.
   - Likely files:
-    - Login / post-login flow (after successful authentication for any role)
-    - `src/PantryDeskCore` (reuse or call existing Generate-for-Year logic)
-  - Rationale: Improves UX; client prefers fully automatic generation when any user logs in, with no manual step.
+    - App startup flow (e.g. after DB init, before or after first form shown)
+    - `src/PantryDeskCore` (reuse or call existing logic behind "Generate Pantry Days")
+  - Rationale: Improves UX; client prefers fully automatic generation at app start, with no manual step.
 
 #### Statistics Dashboard — Cards, PDF, and Tooltips
 
