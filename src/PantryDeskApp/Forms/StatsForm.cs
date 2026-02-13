@@ -248,10 +248,10 @@ public partial class StatsForm : Form
             var pantryDayVolume = StatisticsService.GetPantryDayVolumeByEvent(connection, startDate, endDate);
 
             // Update summary cards
-            lblCardTotalActiveHouseholdsValue.Text = stats.TotalActiveHouseholds.ToString("N0");
+            lblCardTotalActiveHouseholdsValue.Text = stats.UniqueHouseholdsServed.ToString("N0");
             lblCardTotalPeopleValue.Text = stats.TotalPeople.ToString("N0");
             lblCardCompletedServicesValue.Text = stats.CompletedServices.ToString("N0");
-            lblCardUniqueHouseholdsServedValue.Text = stats.UniqueHouseholdsServed.ToString("N0");
+            lblCardUniqueHouseholdsServedValue.Text = stats.DeckTotal.ToString("N0");
 
             // Demographics page charts
             PopulateCityDistributionChart(cityBreakdown);

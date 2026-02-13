@@ -95,6 +95,10 @@ public static class StatisticsService
                 var result = cmd.ExecuteScalar();
                 stats.OverridesCount = result != null ? Convert.ToInt32(result) : 0;
             }
+
+            // Deck total for single month
+            var deckStats = DeckStatsRepository.Get(connection, year, month);
+            stats.DeckTotal = deckStats != null ? (int)Math.Round(deckStats.HouseholdTotalAvg) : 0;
         }
         finally
         {
@@ -261,6 +265,32 @@ public static class StatisticsService
     }
 
     /// <summary>
+    /// Gets deck total (sum of averaged household values) for all months in the date range.
+    /// For each month in range, sums HouseholdTotalAvg (the averaged value = entered total ÷ number of pages).
+    /// </summary>
+    private static int GetDeckTotalForDateRange(SqliteConnection connection, DateTime startDate, DateTime endDate)
+    {
+        double sum = 0.0;
+
+        // Iterate through each calendar month in the date range
+        var currentMonth = new DateTime(startDate.Year, startDate.Month, 1);
+        var endMonth = new DateTime(endDate.Year, endDate.Month, 1);
+
+        while (currentMonth <= endMonth)
+        {
+            var deckStats = DeckStatsRepository.Get(connection, currentMonth.Year, currentMonth.Month);
+            if (deckStats != null)
+            {
+                sum += deckStats.HouseholdTotalAvg;
+            }
+
+            currentMonth = currentMonth.AddMonths(1);
+        }
+
+        return (int)Math.Round(sum);
+    }
+
+    /// <summary>
     /// Gets statistics for an arbitrary date range.
     /// </summary>
     public static MonthlyStatistics GetStatsForDateRange(SqliteConnection connection, DateTime startDate, DateTime endDate)
@@ -338,6 +368,9 @@ public static class StatisticsService
                 var result = cmd.ExecuteScalar();
                 stats.OverridesCount = result != null ? Convert.ToInt32(result) : 0;
             }
+
+            // Deck total = sum of averaged household values for each month in range
+            stats.DeckTotal = GetDeckTotalForDateRange(connection, startDate, endDate);
         }
         finally
         {

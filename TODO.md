@@ -304,6 +304,17 @@ Implementation checklist based on phased plan.
   - Likely files: `NewHouseholdForm.cs`, `NewHouseholdForm.Designer.cs`.
   - Rationale: Consistency between New Household and Household Profile for the members table and dialog size.
 
+#### Statistics Dashboard — Summary Cards and Deck Total
+
+- [x] Reorder summary cards and add deck total; update PDF summary
+  - Impact: Medium
+  - Complexity: Small
+  - Acceptance Criteria:
+    - Card 1: Replace "Total Active Households" with "Unique Households Served" (same value as current 4th card).
+    - Card 4: Replace "Unique Households Served" with "Deck Total", where Deck Total is the sum of the averaged deck household value (household_total_avg) for each month in the selected date range based on Enter Deck Stats. Card title "Deck Total".
+    - PDF: Update top/summary section to show same info (first = Unique Households Served, fourth = Deck Total as above).
+  - Likely files: Stats form, PDF export for statistics dashboard.
+
 ### Phase 10 — UX Improvements & Workflow Enhancements (Complete)
 
 #### Search & Check-In Improvements
@@ -470,17 +481,6 @@ Implement deck entry and storage with or before the report so the report can rea
 
 ### Client Requirements
 
-#### Statistics Dashboard — Summary Cards and Deck Total
-
-- [ ] Reorder summary cards and add deck total; update PDF summary
-  - Impact: Medium
-  - Complexity: Small
-  - Acceptance Criteria:
-    - Card 1: Replace "Total Active Households" with "Unique Households Served" (same value as current 4th card).
-    - Card 4: Replace "Unique Households Served" with total of "Household total" from Enter Deck Stats dialog for all months in the selected date range. Card title "Deck Total".
-    - PDF: Update top/summary section to show same info (first = Unique Households Served, fourth = Deck Total as above).
-  - Likely files: Stats form, PDF export for statistics dashboard.
-
 #### Statistics Dashboard — Pantry Day Volume Tooltip
 
 - [ ] Fix Pantry Day Volume chart tooltip on Services page
@@ -515,3 +515,20 @@ Implement deck entry and storage with or before the report so the report can rea
     - Shared dialog for both: line above buttons "Form: Registration" or "Form: Deck Sign In"; buttons "Export PDF" and "Print". Same behavior as Statistics / Monthly Activity Report.
   - Likely files: Main form menu, new Forms dialog, PDF generation for Registration and Deck forms.
   - Rationale: Blank forms for client registration and deck sign-in; existing clients will re-fill registration since data is not transferred into new app.
+
+#### Barcode System
+
+- [ ] Add simple human-friendly codes for future barcode use
+  - Impact: Medium
+  - Complexity: Small–Medium
+  - Acceptance Criteria:
+    1. **HouseholdCode:** Add `HouseholdCode` column to the Households table. UNIQUE, easy to type, stable. Format: `"H"` + 5 digits zero-padded (e.g. H00001, H01234). For future Code 128 barcode use.
+    2. **MemberCode:** Add `MemberCode` column to the HouseholdMembers table (for future use). UNIQUE, stable. Format: `"M"` + 5 digits zero-padded (e.g. M00001, M01234).
+    3. **Auto-generation on create:** Codes are generated when creating a new household or member. Prefer sequential generation from the highest existing code number (or a dedicated counter), not random. Enforce uniqueness at the DB level (unique index/constraint). Handle race conditions and retries safely (e.g. on conflict retry with next sequence).
+    4. **Display:** Show HouseholdCode and MemberCode as read-only fields in the Household Profile and in the Member editor UI.
+  - Out of scope for this item: No barcode scanning or printing—only DB schema, migration, auto-generation logic, and read-only display.
+  - Likely files:
+    - Schema/migration (e.g. `Sql.cs`, `DatabaseMigrator.cs`), `HouseholdRepository`, `HouseholdMemberRepository`
+    - `HouseholdProfileForm`, Member edit form (e.g. `MemberEditForm`) for read-only display
+  - Rationale: Stable, human-friendly codes enable future barcode workflows (check-in scan, deck sign-in) without exposing internal IDs.
+  

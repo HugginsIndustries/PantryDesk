@@ -226,7 +226,7 @@ partial class StatsForm
         lblCardTotalActiveHouseholds.Name = "lblCardTotalActiveHouseholds";
         lblCardTotalActiveHouseholds.Size = new Size(150, 15);
         lblCardTotalActiveHouseholds.TabIndex = 0;
-        lblCardTotalActiveHouseholds.Text = "Total Active Households";
+        lblCardTotalActiveHouseholds.Text = "Unique Households Served";
         // 
         // lblCardTotalActiveHouseholdsValue
         // 
@@ -319,7 +319,7 @@ partial class StatsForm
         lblCardUniqueHouseholdsServed.Name = "lblCardUniqueHouseholdsServed";
         lblCardUniqueHouseholdsServed.Size = new Size(180, 15);
         lblCardUniqueHouseholdsServed.TabIndex = 0;
-        lblCardUniqueHouseholdsServed.Text = "Unique Households Served";
+        lblCardUniqueHouseholdsServed.Text = "Deck Total";
         // 
         // lblCardUniqueHouseholdsServedValue
         // 

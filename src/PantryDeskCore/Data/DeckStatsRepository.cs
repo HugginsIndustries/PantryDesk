@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.Data.Sqlite;
 using PantryDeskCore.Models;
 
@@ -13,7 +14,13 @@ public static class DeckStatsRepository
     /// </summary>
     public static DeckStatsMonthly? Get(SqliteConnection connection, int year, int month)
     {
-        connection.Open();
+        var shouldClose = false;
+        if (connection.State != ConnectionState.Open)
+        {
+            connection.Open();
+            shouldClose = true;
+        }
+
         try
         {
             using var cmd = new SqliteCommand(Sql.DeckStatsMonthlySelectByYearMonth, connection);
@@ -30,7 +37,10 @@ public static class DeckStatsRepository
         }
         finally
         {
-            connection.Close();
+            if (shouldClose)
+            {
+                connection.Close();
+            }
         }
     }
 
@@ -39,7 +49,13 @@ public static class DeckStatsRepository
     /// </summary>
     public static bool Exists(SqliteConnection connection, int year, int month)
     {
-        connection.Open();
+        var shouldClose = false;
+        if (connection.State != ConnectionState.Open)
+        {
+            connection.Open();
+            shouldClose = true;
+        }
+
         try
         {
             using var cmd = new SqliteCommand(Sql.DeckStatsMonthlyExists, connection);
@@ -49,7 +65,10 @@ public static class DeckStatsRepository
         }
         finally
         {
-            connection.Close();
+            if (shouldClose)
+            {
+                connection.Close();
+            }
         }
     }
 
@@ -59,7 +78,14 @@ public static class DeckStatsRepository
     public static void Upsert(SqliteConnection connection, DeckStatsMonthly entity)
     {
         var updatedAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
-        connection.Open();
+
+        var shouldClose = false;
+        if (connection.State != ConnectionState.Open)
+        {
+            connection.Open();
+            shouldClose = true;
+        }
+
         try
         {
             using var cmd = new SqliteCommand(Sql.DeckStatsMonthlyUpsert, connection);
@@ -76,7 +102,10 @@ public static class DeckStatsRepository
         }
         finally
         {
-            connection.Close();
+            if (shouldClose)
+            {
+                connection.Close();
+            }
         }
     }
 
@@ -86,7 +115,14 @@ public static class DeckStatsRepository
     public static List<DeckStatsMonthly> GetAll(SqliteConnection connection)
     {
         var list = new List<DeckStatsMonthly>();
-        connection.Open();
+
+        var shouldClose = false;
+        if (connection.State != ConnectionState.Open)
+        {
+            connection.Open();
+            shouldClose = true;
+        }
+
         try
         {
             using var cmd = new SqliteCommand(Sql.DeckStatsMonthlySelectAll, connection);
@@ -98,8 +134,12 @@ public static class DeckStatsRepository
         }
         finally
         {
-            connection.Close();
+            if (shouldClose)
+            {
+                connection.Close();
+            }
         }
+
         return list;
     }
 

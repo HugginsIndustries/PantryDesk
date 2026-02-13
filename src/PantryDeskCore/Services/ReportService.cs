@@ -317,10 +317,10 @@ public static class ReportService
             column.Item().PaddingBottom(5);
             column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
             column.Item().PaddingTop(5);
-            column.Item().Text($"Total Active Households: {stats.TotalActiveHouseholds:N0}");
+            column.Item().Text($"Unique Households Served: {stats.UniqueHouseholdsServed:N0}");
             column.Item().Text($"Total People: {stats.TotalPeople:N0}");
             column.Item().Text($"Completed Services: {stats.CompletedServices:N0}");
-            column.Item().Text($"Unique Households Served: {stats.UniqueHouseholdsServed:N0}");
+            column.Item().Text($"Deck Total: {stats.DeckTotal:N0}");
             column.Item().PaddingBottom(10);
         });
     }

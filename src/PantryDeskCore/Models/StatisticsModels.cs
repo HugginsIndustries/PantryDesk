@@ -12,6 +12,7 @@ public class MonthlyStatistics
     public int PantryDayCompletions { get; set; }
     public int AppointmentCompletions { get; set; }
     public int OverridesCount { get; set; }
+    public int DeckTotal { get; set; }
 }
 
 public class CityBreakdown

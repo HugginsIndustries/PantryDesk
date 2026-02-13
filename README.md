@@ -9,7 +9,7 @@
 - **Pantry Days & Appointments**: Calendar-based pantry day scheduling. Pantry days for the current year are ensured automatically at app start (create-only; no overwrite). Dedicated **Appointments** form (button left of Complete Service) with Past (Completed/Cancelled/NoShow) and Future (Scheduled) panels; Create New Appointment with search by household member name; Mark Complete/Cancelled/NoShow buttons; Edit for all service events (Appointments and Pantry Days) from Past, Future, or Service History. Member-centric appointments (schedule for primary or other household member).
 - **Monthly Eligibility**: Visit types (Shop with TEFAP, Shop, TEFAP Only, Deck Only); only Shop/Shop with TEFAP count toward 1 visit/month limit. Override support (requires reason)
 - **Statistics Dashboard**: Unified dashboard with date range selection (This Month, Last Month, Past 3/6/12 Months, This/Last Year, Custom Range) and two-page layout:
-  - Summary cards: Total Active Households, Total People, Completed Services, Unique Households Served (date-range aware)
+  - Summary cards: Unique Households Served, Total People, Completed Services, Deck Total (Deck Total = sum of the averaged deck household value for each month in the selected date range based on Enter Deck Stats)
   - **Demographics page:** Five pie charts — City, Age Group, Race, Veteran Status, Disability Status (Age Group omits zero-count slices)
   - **Services page:** Visit Type and Event Type pie charts, Monthly Visits Trend (line), Pantry Day Volume by Event (bar); Pantry Day chart fills remaining space
   - Colorblind-friendly color palette (ColorBrewer Set2)

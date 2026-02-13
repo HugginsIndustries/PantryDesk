@@ -285,6 +285,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Household Form Improvements** (COMPLETED: 2025-02-12, TODO: Client Requirements/Household Form Improvements)
   - New Household form: duplicate detection by member name + birthday (exact or Levenshtein fuzzy match) against existing members; red "Warning: Possible Duplicate" in lower left; save-time Yes/No confirmation when duplicates exist. Core: `StringSimilarity` helper and `HouseholdMemberRepository.FindPotentialDuplicateMembers`.
   - New Household dialog aligned with Household Profile: width 800px; members table columns First Name, Last Name, Birthday, Primary, Race, Veteran, Disabled (AllCells for first six, Fill for last).
+- **Statistics Dashboard — Summary Cards and Deck Total** (COMPLETED: 2026-02-12, TODO: Client Requirements/Statistics Dashboard — Summary Cards and Deck Total)
+  - Summary cards now show "Unique Households Served" as the first card and "Deck Total" as the fourth card; Deck Total is the sum of the averaged deck household value (household_total_avg) for each month in the selected date range based on Enter Deck Stats.
+  - Statistics Dashboard PDF "TOTALS" section uses the same four values and ordering: Unique Households Served, Total People, Completed Services, Deck Total.
 
 ### Removed
 
