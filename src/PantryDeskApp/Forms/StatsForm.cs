@@ -499,7 +499,7 @@ public partial class StatsForm : Form
         {
             Title = "Completed Services",
             FillColor = ChartColors[0],
-            TrackerFormatString = "Pantry Day: {2:yyyy-MM-dd}\nCount: {4:0}"
+            TrackerFormatString = "Pantry Day: {2:yyyy-MM-dd}\nCount: {Y1:0}"
         };
 
         foreach (var volume in pantryDayVolume.OrderBy(v => v.PantryDate))

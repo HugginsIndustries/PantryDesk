@@ -296,6 +296,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Pantry Day Volume chart tooltip on Statistics Dashboard Services page: now displays actual completed-services count instead of literal "Count" (uses OxyPlot extended format {Y1:0} for RectangleBarItem) (COMPLETED: 2026-02-13, TODO: Client Requirements/Statistics Dashboard — Pantry Day Volume Tooltip)
 - MemberEditForm: correct default SelectedIndex for Veteran and Disabled combo boxes (3-item lists) to prevent ArgumentOutOfRangeException when editing members
 - Solution verified to build and run from clean clone
 - PantryDeskApp opens blank window as expected
