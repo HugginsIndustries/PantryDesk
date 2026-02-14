@@ -514,9 +514,7 @@ Implement deck entry and storage with or before the report so the report can rea
 
 ## Open
 
-### Client Requirements
-
-#### Barcode System
+### Barcode System
 
 - [ ] Add simple human-friendly codes for future barcode use
   - Impact: Medium
