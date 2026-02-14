@@ -521,7 +521,7 @@ Implement deck entry and storage with or before the report so the report can rea
   - Complexity: Small–Medium
   - Acceptance Criteria:
     1. **HouseholdCode:** Add `HouseholdCode` column to the Households table. UNIQUE, easy to type, stable. Format: `"H"` + 5 digits zero-padded (e.g. H00001, H01234). For future Code 128 barcode use.
-    2. **MemberCode:** Add `MemberCode` column to the HouseholdMembers table (for future use). UNIQUE, stable. Format: `"M"` + 5 digits zero-padded (e.g. M00001, M01234).
+    2. **MemberCode:** Add `MemberCode` column to the HouseholdMembers table (for future use). UNIQUE, stable. Format: `"M"` + 5 digits zero-padded (e.g. M00001, M01234). When encoding both in one barcode, use comma-delimited format `HouseholdCode,MemberCode` (e.g. H00001,M00012).
     3. **Auto-generation on create:** Codes are generated when creating a new household or member. Prefer sequential generation from the highest existing code number (or a dedicated counter), not random. Enforce uniqueness at the DB level (unique index/constraint). Handle race conditions and retries safely (e.g. on conflict retry with next sequence).
     4. **Display:** Show HouseholdCode and MemberCode as read-only fields in the Household Profile and in the Member editor UI.
   - Out of scope for this item: No barcode scanning or printing—only DB schema, migration, auto-generation logic, and read-only display.
@@ -529,4 +529,26 @@ Implement deck entry and storage with or before the report so the report can rea
     - Schema/migration (e.g. `Sql.cs`, `DatabaseMigrator.cs`), `HouseholdRepository`, `HouseholdMemberRepository`
     - `HouseholdProfileForm`, Member edit form (e.g. `MemberEditForm`) for read-only display
   - Rationale: Stable, human-friendly codes enable future barcode workflows (check-in scan, deck sign-in) without exposing internal IDs.
-  
+
+- [ ] Main page search by name or code; Complete Service dialog: member dropdown, household size, clear search after success
+  - Impact: High
+  - Complexity: Medium
+  - Prerequisite: HouseholdCode and MemberCode columns exist in DB and are displayed in Household Profile and Member editor only (see "Add simple human-friendly codes" above). Codes are not shown on the main check-in grid; search-by-code uses the search box input only.
+  - Acceptance Criteria:
+    - **Search:** Main page search box accepts names (existing: any household member) or codes. If input looks like a code (e.g. H00001, M00012, or comma-delimited H00001,M00012), search by HouseholdCode and/or MemberCode; otherwise search by member names. Comma-delimited input parses as household + member for pre-selection. Return matching household(s) as today; selecting one enables Complete Service / Open Profile as now.
+    - **After Complete Service:** When the user clicks OK and the service is successfully recorded, automatically clear the main page search box so the next name/code can be typed or scanned immediately.
+    - **Complete Service dialog:** (1) Add a member dropdown listing the household's members; auto-select the member when search was by that member's name or code (or H00001,M00012), otherwise default to primary member. Save the selected member with the service (e.g. ScheduledForMemberId). (2) Show household size (single number, total people) on the dialog as read-only so volunteers see it at check-in.
+  - Likely files: CheckInForm (search logic, clear on success), CompleteServiceDialog (member dropdown, household size display), repository lookups by HouseholdCode/MemberCode.
+  - Rationale: Enables fast check-in via code/scan, ensures correct member and household size at point of service, and keeps workflow flowing by clearing search after each completion.
+
+- [ ] Unattended deck-only scan: new role and minimal UI
+  - Impact: High
+  - Complexity: Medium
+  - Prerequisite: HouseholdCode and MemberCode in place; search/lookup by code exists (see above).
+  - Acceptance Criteria:
+    - **New role:** Add a role (e.g. "Deck") that, on login, loads a minimal UI instead of the main check-in. No access to Reports, Backup, Household Profile, Pantry Days admin, or main grid—only the deck scan form.
+    - **Deck scan form:** Single scan input (barcode + Enter). On scan: parse HouseholdCode,MemberCode (or household-only; fallback member to primary). Look up household (and member). Create one completed deck-only service (EventType Appointment, VisitType Deck Only, current Time/Date, ScheduledForMemberId from barcode or primary). Show/sound success, clear input for next scan.
+    - **Inactive household:** Allow and record; no extra code—app already derives IsActive from last service date.
+    - **Duplicates:** Record at most one deck-only service per household per day; if already recorded today, do not create another (show "Already recorded today" or similar). Prevents accidental double-scans.
+  - Likely files: Auth/role storage and login branching, new DeckScanForm (or similar), ServiceEventRepository, HouseholdRepository lookup by code.
+  - Rationale: Enables unattended deck sign-in at a kiosk; clients scan their card and the visit is recorded automatically without staff.
