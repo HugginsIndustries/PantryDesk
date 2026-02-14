@@ -99,6 +99,10 @@ public static class ReportService
         var cityBreakdown = StatisticsService.GetStatsByCity(connection, startDate, endDate);
         var pantryDayBreakdown = StatisticsService.GetPantryDayVolumeByEvent(connection, startDate, endDate);
         var composition = StatisticsService.GetCompositionServed(connection, startDate, endDate);
+        var raceBreakdown = StatisticsService.GetDemographicsByRace(connection, startDate, endDate);
+        var veteranBreakdown = StatisticsService.GetDemographicsByVeteranStatus(connection, startDate, endDate);
+        var disabilityBreakdown = StatisticsService.GetDemographicsByDisabledStatus(connection, startDate, endDate);
+        var visitTypeBreakdown = StatisticsService.GetVisitTypeBreakdown(connection, startDate, endDate);
         var monthlyTrend = StatisticsService.GetMonthlyVisitsTrend(connection, startDate, endDate);
 
         // Generate PDF
@@ -125,21 +129,45 @@ public static class ReportService
                 {
                     column.Item().PaddingVertical(10);
 
-                    // Section 1: Summary Totals
-                    column.Item().Element(elem => RenderTotalsSection(elem, stats));
+                    // Page 1: Cover page with Summary Totals
+                    column.Item().Element(elem => RenderTotalsSection(elem, stats, startDate.Year));
 
-                    // Section 2: City Breakdown (with chart if available)
+                    // Page 2: City Breakdown
+                    column.Item().PageBreak();
                     column.Item().Element(elem => RenderCityBreakdown(elem, cityBreakdown, chartImages));
 
-                    // Section 3: Age Group Distribution (with chart if available)
-                    column.Item().Element(elem => RenderCompositionSection(elem, composition, chartImages));
+                    // Page 3: Age Distribution
+                    column.Item().PageBreak();
+                    column.Item().Element(elem => RenderAgeDistributionSection(elem, composition, chartImages));
 
-                    // Section 4: Pantry Day Breakdown (with chart if available)
+                    // Page 4: Race Distribution
+                    column.Item().PageBreak();
+                    column.Item().Element(elem => RenderRaceDistributionSection(elem, raceBreakdown, chartImages));
+
+                    // Page 5: Veteran Status
+                    column.Item().PageBreak();
+                    column.Item().Element(elem => RenderVeteranStatusSection(elem, veteranBreakdown, chartImages));
+
+                    // Page 6: Disability Status
+                    column.Item().PageBreak();
+                    column.Item().Element(elem => RenderDisabilityStatusSection(elem, disabilityBreakdown, chartImages));
+
+                    // Page 7: Visit Type Breakdown
+                    column.Item().PageBreak();
+                    column.Item().Element(elem => RenderVisitTypeSection(elem, visitTypeBreakdown, chartImages));
+
+                    // Page 8: Event Type Breakdown
+                    column.Item().PageBreak();
+                    column.Item().Element(elem => RenderEventTypeSection(elem, stats, chartImages));
+
+                    // Page 9+: Pantry Day Breakdown (flows across pages as needed)
+                    column.Item().PageBreak();
                     column.Item().Element(elem => RenderPantryDayBreakdown(elem, pantryDayBreakdown, chartImages));
 
-                    // Section 5: Monthly Trend (with chart if available)
+                    // Next: Monthly Visits Trend
                     if (monthlyTrend.Count > 0)
                     {
+                        column.Item().PageBreak();
                         column.Item().Element(elem => RenderMonthlyTrendSection(elem, monthlyTrend, chartImages));
                     }
                 });
@@ -295,24 +323,51 @@ public static class ReportService
 
     private static string GetDateRangeLabel(DateTime startDate, DateTime endDate)
     {
+        if (startDate.Month == 1 && startDate.Day == 1 && endDate.Month == 12 && endDate.Day == 31 && startDate.Year == endDate.Year)
+        {
+            return startDate.Year.ToString();
+        }
         if (startDate.Year == endDate.Year && startDate.Month == endDate.Month)
         {
             return startDate.ToString("MMMM yyyy");
         }
-        else if (startDate.Year == endDate.Year)
+        if (startDate.Year == endDate.Year)
         {
             return $"{startDate:MMM} - {endDate:MMM} {startDate:yyyy}";
         }
-        else
-        {
-            return $"{startDate:MMM yyyy} - {endDate:MMM yyyy}";
-        }
+        return $"{startDate:MMM yyyy} - {endDate:MMM yyyy}";
     }
 
+    /// <summary>
+    /// Renders totals section for Monthly Summary (no cover page styling).
+    /// </summary>
     private static void RenderTotalsSection(IContainer container, MonthlyStatistics stats)
     {
         container.Column(column =>
         {
+            column.Item().Text("TOTALS").FontSize(14).Bold();
+            column.Item().PaddingBottom(5);
+            column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
+            column.Item().PaddingTop(5);
+            column.Item().Text($"Unique Households Served: {stats.UniqueHouseholdsServed:N0}");
+            column.Item().Text($"Total People: {stats.TotalPeople:N0}");
+            column.Item().Text($"Completed Services: {stats.CompletedServices:N0}");
+            column.Item().Text($"Deck Total: {stats.DeckTotal:N0}");
+            column.Item().PaddingBottom(10);
+        });
+    }
+
+    /// <summary>
+    /// Renders cover page with food bank title, year, and totals for Statistics/Yearly Report.
+    /// </summary>
+    private static void RenderTotalsSection(IContainer container, MonthlyStatistics stats, int year)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("WINLOCK-VADER FOOD BANK YEARLY REPORT").FontSize(56).Bold();
+            column.Item().PaddingBottom(100);
+            column.Item().Text(year.ToString()).FontSize(56).Bold();
+            column.Item().PaddingBottom(100);
             column.Item().Text("TOTALS").FontSize(14).Bold();
             column.Item().PaddingBottom(5);
             column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
@@ -373,23 +428,42 @@ public static class ReportService
         });
     }
 
-    private static void RenderCompositionSection(IContainer container, (int Infant, int Child, int Adult, int Senior) composition, Dictionary<string, string>? chartImages = null)
+    /// <summary>
+    /// Renders composition section for Monthly Summary (Age only, no demographics charts).
+    /// </summary>
+    private static void RenderCompositionSection(IContainer container, (int Infant, int Child, int Adult, int Senior) composition)
     {
         var total = composition.Infant + composition.Child + composition.Adult + composition.Senior;
-
         container.Column(column =>
         {
             column.Item().Text("HOUSEHOLD COMPOSITION SERVED").FontSize(14).Bold();
             column.Item().PaddingBottom(5);
             column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
             column.Item().PaddingTop(5);
+            column.Item().Text($"Infant (0-2): {composition.Infant:N0}");
+            column.Item().Text($"Child (2-18): {composition.Child:N0}");
+            column.Item().Text($"Adult (18-55): {composition.Adult:N0}");
+            column.Item().Text($"Senior (55+): {composition.Senior:N0}");
+            column.Item().Text($"Total: {total:N0}").Bold();
+            column.Item().PaddingBottom(10);
+        });
+    }
 
-            if (chartImages != null && chartImages.ContainsKey("AgeGroupDistribution") && File.Exists(chartImages["AgeGroupDistribution"]))
+    private static void RenderAgeDistributionSection(IContainer container, (int Infant, int Child, int Adult, int Senior) composition, Dictionary<string, string>? chartImages = null)
+    {
+        var total = composition.Infant + composition.Child + composition.Adult + composition.Senior;
+        container.Column(column =>
+        {
+            column.Item().Text("AGE DISTRIBUTION").FontSize(14).Bold();
+            column.Item().PaddingBottom(5);
+            column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
+            column.Item().PaddingTop(5);
+
+            if (chartImages != null && chartImages.TryGetValue("AgeGroupDistribution", out var chartPath) && File.Exists(chartPath))
             {
-                column.Item().Image(chartImages["AgeGroupDistribution"]).FitArea();
+                column.Item().Image(chartPath).FitWidth();
                 column.Item().PaddingBottom(10);
             }
-
             column.Item().Text($"Infant (0-2): {composition.Infant:N0}");
             column.Item().Text($"Child (2-18): {composition.Child:N0}");
             column.Item().Text($"Adult (18-55): {composition.Adult:N0}");
@@ -397,6 +471,182 @@ public static class ReportService
             column.Item().Text($"Total: {total:N0}").Bold();
             column.Item().PaddingTop(2);
             column.Item().Text("(Totals across unique households served in date range)").FontSize(8).FontColor(Colors.Grey.Medium);
+            column.Item().PaddingBottom(10);
+        });
+    }
+
+    private static void RenderRaceDistributionSection(IContainer container, List<DemographicsBreakdown> raceBreakdown, Dictionary<string, string>? chartImages = null)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("RACE DISTRIBUTION").FontSize(14).Bold();
+            column.Item().PaddingBottom(5);
+            column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
+            column.Item().PaddingTop(5);
+
+            if (chartImages != null && chartImages.TryGetValue("RaceDistribution", out var chartPath) && File.Exists(chartPath))
+            {
+                column.Item().Image(chartPath).FitWidth();
+                column.Item().PaddingBottom(10);
+            }
+            RenderDemographicsBreakdownDetail(column, raceBreakdown);
+            column.Item().PaddingBottom(10);
+        });
+    }
+
+    private static void RenderVeteranStatusSection(IContainer container, List<DemographicsBreakdown> veteranBreakdown, Dictionary<string, string>? chartImages = null)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("VETERAN STATUS").FontSize(14).Bold();
+            column.Item().PaddingBottom(5);
+            column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
+            column.Item().PaddingTop(5);
+
+            if (chartImages != null && chartImages.TryGetValue("VeteranDistribution", out var chartPath) && File.Exists(chartPath))
+            {
+                column.Item().Image(chartPath).FitWidth();
+                column.Item().PaddingBottom(10);
+            }
+            RenderDemographicsBreakdownDetail(column, veteranBreakdown);
+            column.Item().PaddingBottom(10);
+        });
+    }
+
+    private static void RenderDisabilityStatusSection(IContainer container, List<DemographicsBreakdown> disabilityBreakdown, Dictionary<string, string>? chartImages = null)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("DISABILITY STATUS").FontSize(14).Bold();
+            column.Item().PaddingBottom(5);
+            column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
+            column.Item().PaddingTop(5);
+
+            if (chartImages != null && chartImages.TryGetValue("DisabilityDistribution", out var chartPath) && File.Exists(chartPath))
+            {
+                column.Item().Image(chartPath).FitWidth();
+                column.Item().PaddingBottom(10);
+            }
+            RenderDemographicsBreakdownDetail(column, disabilityBreakdown);
+            column.Item().PaddingBottom(10);
+        });
+    }
+
+    private static void RenderDemographicsBreakdownDetail(ColumnDescriptor column, List<DemographicsBreakdown> breakdown)
+    {
+        if (breakdown.Count == 0)
+        {
+            column.Item().Text("No data for selected range.").FontColor(Colors.Grey.Medium);
+            return;
+        }
+        var total = breakdown.Sum(b => b.Count);
+        foreach (var item in breakdown)
+        {
+            var pct = total > 0 ? (100.0 * item.Count / total) : 0;
+            column.Item().Text($"{item.Label}: {item.Count:N0} ({pct:0}%)");
+        }
+    }
+
+    private static void RenderVisitTypeSection(IContainer container, List<DemographicsBreakdown> visitTypeBreakdown, Dictionary<string, string>? chartImages = null)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("VISIT TYPE BREAKDOWN").FontSize(14).Bold();
+            column.Item().PaddingBottom(5);
+            column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
+            column.Item().PaddingTop(5);
+
+            if (chartImages != null && chartImages.TryGetValue("VisitType", out var chartPath) && File.Exists(chartPath))
+            {
+                column.Item().Image(chartPath).FitWidth();
+                column.Item().PaddingBottom(10);
+            }
+
+            if (visitTypeBreakdown.Count > 0)
+            {
+                var total = visitTypeBreakdown.Sum(b => b.Count);
+                column.Item().Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.RelativeColumn(2);
+                        columns.RelativeColumn();
+                        columns.RelativeColumn();
+                    });
+                    table.Header(header =>
+                    {
+                        header.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(5).Text("Visit Type").Bold());
+                        header.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(5).Text("Count").Bold());
+                        header.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(5).Text("%").Bold());
+                    });
+                    foreach (var item in visitTypeBreakdown)
+                    {
+                        var pct = total > 0 ? (100.0 * item.Count / total) : 0;
+                        table.Cell().Element(c => c.Padding(5).Text(item.Label));
+                        table.Cell().Element(c => c.Padding(5).Text(item.Count.ToString("N0")).AlignRight());
+                        table.Cell().Element(c => c.Padding(5).Text($"{pct:0}%").AlignRight());
+                    }
+                });
+            }
+            else
+            {
+                column.Item().Text("No data for selected range.").FontColor(Colors.Grey.Medium);
+            }
+
+            column.Item().PaddingBottom(10);
+        });
+    }
+
+    private static void RenderEventTypeSection(IContainer container, MonthlyStatistics stats, Dictionary<string, string>? chartImages = null)
+    {
+        var pantryCount = stats.PantryDayCompletions;
+        var appointmentCount = stats.AppointmentCompletions;
+        var total = pantryCount + appointmentCount;
+
+        container.Column(column =>
+        {
+            column.Item().Text("EVENT TYPE BREAKDOWN").FontSize(14).Bold();
+            column.Item().PaddingBottom(5);
+            column.Item().LineHorizontal(1).LineColor(Colors.Grey.Medium);
+            column.Item().PaddingTop(5);
+
+            if (chartImages != null && chartImages.TryGetValue("EventType", out var chartPath) && File.Exists(chartPath))
+            {
+                column.Item().Image(chartPath).FitWidth();
+                column.Item().PaddingBottom(10);
+            }
+
+            if (total > 0)
+            {
+                var pantryPct = 100.0 * pantryCount / total;
+                var appointmentPct = 100.0 * appointmentCount / total;
+                column.Item().Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.RelativeColumn(2);
+                        columns.RelativeColumn();
+                        columns.RelativeColumn();
+                    });
+                    table.Header(header =>
+                    {
+                        header.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(5).Text("Event Type").Bold());
+                        header.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(5).Text("Count").Bold());
+                        header.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(5).Text("%").Bold());
+                    });
+                    table.Cell().Element(c => c.Padding(5).Text("Pantry Day"));
+                    table.Cell().Element(c => c.Padding(5).Text(pantryCount.ToString("N0")).AlignRight());
+                    table.Cell().Element(c => c.Padding(5).Text($"{pantryPct:0}%").AlignRight());
+                    table.Cell().Element(c => c.Padding(5).Text("Appointment"));
+                    table.Cell().Element(c => c.Padding(5).Text(appointmentCount.ToString("N0")).AlignRight());
+                    table.Cell().Element(c => c.Padding(5).Text($"{appointmentPct:0}%").AlignRight());
+                });
+            }
+            else
+            {
+                column.Item().Text("No data for selected range.").FontColor(Colors.Grey.Medium);
+            }
+
             column.Item().PaddingBottom(10);
         });
     }

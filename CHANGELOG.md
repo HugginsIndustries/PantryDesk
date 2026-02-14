@@ -254,6 +254,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Seeder: past appointments ~4% Cancelled, ~4% NoShow; 5% future appointments Cancelled; terminal output shows counts by status and primary vs non-primary
   - Seeder defaults: 500 households, 24 months back
   - AppointmentsForm: 1500×750 opening, 1100×500 min; CheckInForm: 1600×750 opening
+- **Yearly Statistics overhaul** (COMPLETED: 2026-02-13, TODO: Client Requirements/Statistics Dashboard — PDF Export)
+  - Renamed "Statistics Dashboard" to "Yearly Statistics" (Reports menu and form title)
+  - Year selection replaces date range presets: dropdown for last 10 years, default last year; statistics cover Jan 1–Dec 31 of selected year
+  - PDF: cover page with "WINLOCK-VADER FOOD BANK YEARLY REPORT" (56pt) and year (56pt); page breaks so each section starts on its own page (Totals, City Breakdown, Age Distribution, Race Distribution, Veteran Status, Disability Status, Visit Type, Event Type, Pantry Day breakdown, Monthly Visits Trend)
+  - Full demographics and services in PDF: Age/Race/Veteran/Disability as separate section titles with charts and details; Visit Type and Event Type sections added
+  - Date range labels for full-year reports show year only (e.g. "2025") in PDF header and export filename
 
 ### Changed
 
@@ -262,6 +268,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Member demographics: Veteran status options reduced to Veteran, Not Veteran, Not Specified; Disabled status uses Not Specified (replacing Unknown, Prefer Not To Answer)
 - Statistics Dashboard now supports flexible date ranges instead of fixed monthly view
 - Monthly Summary functionality merged into unified Statistics Dashboard
+- Yearly Statistics: Monthly Visits Trend changed from line to bar chart; bar width 20 days to avoid overlap; tooltip uses right-edge date ({3}) to fix month offset; MinorTickSize=0 on x-axis; MajorStep for ~12 monthly labels
 - PDF reports now include actual chart images instead of simple bar representations
 - Charts are organized into their respective sections in PDF (City Breakdown, Household Composition, Pantry Day Breakdown, Monthly Visits Trend)
 - PantryDeskSeeder now generates full demo database with realistic data (replaces "Hello seed" placeholder)
@@ -297,6 +304,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Pantry Day Volume chart tooltip on Statistics Dashboard Services page: now displays actual completed-services count instead of literal "Count" (uses OxyPlot extended format {Y1:0} for RectangleBarItem) (COMPLETED: 2026-02-13, TODO: Client Requirements/Statistics Dashboard — Pantry Day Volume Tooltip)
+- Pantry Day Volume chart tooltip: fixed date showing one day early (use {3} right-edge instead of {2} left-edge in TrackerFormatString)
 - MemberEditForm: correct default SelectedIndex for Veteran and Disabled combo boxes (3-item lists) to prevent ArgumentOutOfRangeException when editing members
 - Solution verified to build and run from clean clone
 - PantryDeskApp opens blank window as expected

@@ -112,7 +112,7 @@ partial class StatsForm
         grpDateRange.Size = new Size(1600, 60);
         grpDateRange.TabIndex = 0;
         grpDateRange.TabStop = false;
-        grpDateRange.Text = "Date Range";
+        grpDateRange.Text = "Year";
         grpDateRange.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         // 
         // lblDateRange
@@ -122,7 +122,7 @@ partial class StatsForm
         lblDateRange.Name = "lblDateRange";
         lblDateRange.Size = new Size(68, 15);
         lblDateRange.TabIndex = 0;
-        lblDateRange.Text = "Date Range:";
+        lblDateRange.Text = "Year:";
         // 
         // cmbDateRange
         // 
@@ -151,7 +151,6 @@ partial class StatsForm
         dtpStartDate.Size = new Size(200, 23);
         dtpStartDate.TabIndex = 3;
         dtpStartDate.Visible = false;
-        dtpStartDate.ValueChanged += DtpStartDate_ValueChanged;
         // 
         // lblEndDate
         // 
@@ -170,7 +169,6 @@ partial class StatsForm
         dtpEndDate.Size = new Size(200, 23);
         dtpEndDate.TabIndex = 5;
         dtpEndDate.Visible = false;
-        dtpEndDate.ValueChanged += DtpEndDate_ValueChanged;
         // 
         // btnPageDemographics
         // 
@@ -634,7 +632,7 @@ partial class StatsForm
         MinimizeBox = true;
         Name = "StatsForm";
         StartPosition = FormStartPosition.CenterParent;
-        Text = "Statistics Dashboard";
+        Text = "Yearly Statistics";
         Load += StatsForm_Load;
         grpDateRange.ResumeLayout(false);
         grpDateRange.PerformLayout();

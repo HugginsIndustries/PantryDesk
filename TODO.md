@@ -324,6 +324,19 @@ Implementation checklist based on phased plan.
     - Tooltip shows "Count: {n}" with actual count; fix "Count: Count" display bug.
   - Likely files: StatsForm or Services tab chart/tooltip code.
 
+#### Statistics Dashboard — PDF Export (Demographics and Services) (Complete)
+
+- [x] Statistics Dashboard PDF: export all demographics and services charts with consistent layout
+  - Impact: High
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - City Breakdown: leave as-is (own section).
+    - Household composition section: add Race, Veteran, and Disability charts and detailed info (Age already present). Same format: title, then chart, then detailed info.
+    - Add "Visit Type" section (after demographics, before pantry day breakdown): services charts/info, same format.
+    - Add "Event Type" section (after Visit Type, before pantry day breakdown): event charts/info, same format.
+    - Order: summary at top → City Breakdown → Household composition (with Age, Race, Veteran, Disability) → Visit Type → Event Type → Pantry Day breakdown → Monthly Visits Trend.
+  - Likely files: PDF export / report generation for statistics dashboard.
+
 ### Phase 10 — UX Improvements & Workflow Enhancements (Complete)
 
 #### Search & Check-In Improvements
@@ -489,19 +502,6 @@ Implement deck entry and storage with or before the report so the report can rea
 ## Open
 
 ### Client Requirements
-
-#### Statistics Dashboard — PDF Export (Demographics and Services)
-
-- [ ] Statistics Dashboard PDF: export all demographics and services charts with consistent layout
-  - Impact: High
-  - Complexity: Medium
-  - Acceptance Criteria:
-    - City Breakdown: leave as-is (own section).
-    - Household composition section: add Race, Veteran, and Disability charts and detailed info (Age already present). Same format: title, then chart, then detailed info.
-    - Add "Visit Type" section (after demographics, before pantry day breakdown): services charts/info, same format.
-    - Add "Event Type" section (after Visit Type, before pantry day breakdown): event charts/info, same format.
-    - Order: summary at top → City Breakdown → Household composition (with Age, Race, Veteran, Disability) → Visit Type → Event Type → Pantry Day breakdown → Monthly Visits Trend.
-  - Likely files: PDF export / report generation for statistics dashboard.
 
 #### Forms (PDF Generator) — Registration and Deck Sign In
 

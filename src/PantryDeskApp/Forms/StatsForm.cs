@@ -11,28 +11,11 @@ using OxyPlot.ImageSharp;
 namespace PantryDeskApp.Forms;
 
 /// <summary>
-/// Date range preset options for statistics dashboard.
-/// </summary>
-public enum DateRangePreset
-{
-    ThisMonth,
-    LastMonth,
-    Past3Months,
-    Past6Months,
-    Past12Months,
-    ThisYear,
-    LastYear,
-    Custom
-}
-
-/// <summary>
 /// Form displaying statistics dashboard with date range selection and charts.
 /// </summary>
 public partial class StatsForm : Form
 {
-    private DateRangePreset _currentPreset = DateRangePreset.ThisMonth;
-    private DateTime _customStartDate;
-    private DateTime _customEndDate;
+    private int _selectedYear;
 
     // Colorblind-friendly color palette (ColorBrewer Set2)
     private static readonly OxyColor[] ChartColors = new[]
@@ -175,22 +158,18 @@ public partial class StatsForm : Form
     private void InitializeDateRangeSelector()
     {
         cmbDateRange.Items.Clear();
-        cmbDateRange.Items.Add("This Month");
-        cmbDateRange.Items.Add("Last Month");
-        cmbDateRange.Items.Add("Past 3 Months");
-        cmbDateRange.Items.Add("Past 6 Months");
-        cmbDateRange.Items.Add("Past 12 Months");
-        cmbDateRange.Items.Add("This Year");
-        cmbDateRange.Items.Add("Last Year");
-        cmbDateRange.Items.Add("Custom Range");
-        cmbDateRange.SelectedIndex = 0; // Default to "This Month"
+        var currentYear = DateTime.Now.Year;
+        for (var year = currentYear; year >= currentYear - 10; year--)
+        {
+            cmbDateRange.Items.Add(year.ToString());
+        }
+        _selectedYear = currentYear - 1; // Default to last year
+        cmbDateRange.SelectedItem = _selectedYear.ToString();
 
-        // Initialize custom date pickers
-        var now = DateTime.Now;
-        _customStartDate = new DateTime(now.Year, now.Month, 1);
-        _customEndDate = new DateTime(now.Year, now.Month, 1).AddMonths(1).AddDays(-1);
-        dtpStartDate.Value = _customStartDate;
-        dtpEndDate.Value = _customEndDate;
+        lblStartDate.Visible = false;
+        dtpStartDate.Visible = false;
+        lblEndDate.Visible = false;
+        dtpEndDate.Visible = false;
     }
 
     private void StatsForm_Load(object? sender, EventArgs e)
@@ -223,11 +202,7 @@ public partial class StatsForm : Form
 
     private (DateTime startDate, DateTime endDate) GetCurrentDateRange()
     {
-        if (_currentPreset == DateRangePreset.Custom)
-        {
-            return (_customStartDate, _customEndDate);
-        }
-        return GetDateRangeForPreset(_currentPreset);
+        return (new DateTime(_selectedYear, 1, 1), new DateTime(_selectedYear, 12, 31));
     }
 
     private void LoadStats()
@@ -434,7 +409,7 @@ public partial class StatsForm : Form
     private void PopulateMonthlyVisitsTrendChart(List<MonthlyVisitsTrend> monthlyTrend)
     {
         var plotModel = new PlotModel { Title = "Monthly Visits Trend" };
-        
+
         if (monthlyTrend.Count == 0)
         {
             plotModel.Title = "Monthly Visits Trend (No Data)";
@@ -442,24 +417,22 @@ public partial class StatsForm : Form
             return;
         }
 
-        var lineSeries = new LineSeries
+        // Bar width 10 days on each side (20 total) - avoids overlap in February (28 days)
+        const double halfBarWidth = 10.0;
+
+        var barSeries = new RectangleBarSeries
         {
             Title = "Completed Services",
-            MarkerType = MarkerType.Circle,
-            MarkerSize = 4,
-            MarkerStroke = ChartColors[0],
-            MarkerFill = ChartColors[0],
-            Color = ChartColors[0],
-            StrokeThickness = 2,
-            TrackerFormatString = "Month: {2:yyyy-MM}\nCount: {4}"
+            FillColor = ChartColors[0],
+            TrackerFormatString = "Month: {3:yyyy-MM}\nCount: {Y1:0}"
         };
 
         foreach (var trend in monthlyTrend.OrderBy(t => t.Month))
         {
-            // Parse month string (YYYY-MM) and convert to numeric value for x-axis
             if (DateTime.TryParseExact(trend.Month + "-01", "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var monthDate))
             {
-                lineSeries.Points.Add(new DataPoint(DateTimeAxis.ToDouble(monthDate), trend.Count));
+                var monthValue = DateTimeAxis.ToDouble(monthDate);
+                barSeries.Items.Add(new RectangleBarItem(monthValue - halfBarWidth, 0, monthValue + halfBarWidth, trend.Count));
             }
         }
 
@@ -467,19 +440,22 @@ public partial class StatsForm : Form
         {
             Position = AxisPosition.Bottom,
             StringFormat = "MMM yyyy",
-            Title = "Month"
+            Title = "Month",
+            MajorStep = 30.44,
+            MinorTickSize = 0
         });
         plotModel.Axes.Add(new LinearAxis
         {
             Position = AxisPosition.Left,
             Title = "Count",
+            Minimum = 0,
             MajorGridlineStyle = LineStyle.Solid,
             MajorGridlineColor = OxyColor.FromArgb(128, 200, 200, 200),
             MinorGridlineStyle = LineStyle.None,
             MajorStep = 10
         });
 
-        plotModel.Series.Add(lineSeries);
+        plotModel.Series.Add(barSeries);
         plotViewMonthlyVisitsTrend.Model = plotModel;
     }
 
@@ -499,7 +475,7 @@ public partial class StatsForm : Form
         {
             Title = "Completed Services",
             FillColor = ChartColors[0],
-            TrackerFormatString = "Pantry Day: {2:yyyy-MM-dd}\nCount: {Y1:0}"
+            TrackerFormatString = "Pantry Day: {3:yyyy-MM-dd}\nCount: {Y1:0}"
         };
 
         foreach (var volume in pantryDayVolume.OrderBy(v => v.PantryDate))
@@ -530,133 +506,31 @@ public partial class StatsForm : Form
         plotViewPantryDayVolume.Model = plotModel;
     }
 
-    private DateTime GetCurrentMonthStart()
-    {
-        var now = DateTime.Now;
-        return new DateTime(now.Year, now.Month, 1);
-    }
-
-    private DateTime GetCurrentMonthEnd()
-    {
-        var now = DateTime.Now;
-        return new DateTime(now.Year, now.Month, 1).AddMonths(1).AddDays(-1);
-    }
-
     /// <summary>
-    /// Gets the date range for a preset option.
-    /// </summary>
-    private (DateTime startDate, DateTime endDate) GetDateRangeForPreset(DateRangePreset preset)
-    {
-        var now = DateTime.Now;
-        var today = now.Date;
-
-        return preset switch
-        {
-            DateRangePreset.ThisMonth => (
-                new DateTime(now.Year, now.Month, 1),
-                new DateTime(now.Year, now.Month, 1).AddMonths(1).AddDays(-1)
-            ),
-            DateRangePreset.LastMonth => (
-                new DateTime(now.Year, now.Month, 1).AddMonths(-1),
-                new DateTime(now.Year, now.Month, 1).AddDays(-1)
-            ),
-            DateRangePreset.Past3Months => (
-                new DateTime(now.Year, now.Month, 1).AddMonths(-3),
-                new DateTime(now.Year, now.Month, 1).AddMonths(1).AddDays(-1)
-            ),
-            DateRangePreset.Past6Months => (
-                new DateTime(now.Year, now.Month, 1).AddMonths(-6),
-                new DateTime(now.Year, now.Month, 1).AddMonths(1).AddDays(-1)
-            ),
-            DateRangePreset.Past12Months => (
-                new DateTime(now.Year, now.Month, 1).AddMonths(-12),
-                new DateTime(now.Year, now.Month, 1).AddMonths(1).AddDays(-1)
-            ),
-            DateRangePreset.ThisYear => (
-                new DateTime(now.Year, 1, 1),
-                new DateTime(now.Year, 12, 31)
-            ),
-            DateRangePreset.LastYear => (
-                new DateTime(now.Year - 1, 1, 1),
-                new DateTime(now.Year - 1, 12, 31)
-            ),
-            DateRangePreset.Custom => (today, today), // Will be overridden by custom date pickers
-            _ => (
-                new DateTime(now.Year, now.Month, 1),
-                new DateTime(now.Year, now.Month, 1).AddMonths(1).AddDays(-1)
-            )
-        };
-    }
-
-    /// <summary>
-    /// Gets a formatted label for a date range.
+    /// Gets a formatted label for the selected year.
     /// </summary>
     private string GetDateRangeLabel(DateTime startDate, DateTime endDate)
     {
+        if (startDate.Month == 1 && startDate.Day == 1 && endDate.Month == 12 && endDate.Day == 31 && startDate.Year == endDate.Year)
+        {
+            return startDate.Year.ToString();
+        }
         if (startDate.Year == endDate.Year && startDate.Month == endDate.Month)
         {
             return startDate.ToString("MMMM yyyy");
         }
-        else if (startDate.Year == endDate.Year)
+        if (startDate.Year == endDate.Year)
         {
             return $"{startDate:MMM} - {endDate:MMM} {startDate:yyyy}";
         }
-        else
-        {
-            return $"{startDate:MMM yyyy} - {endDate:MMM yyyy}";
-        }
+        return $"{startDate:MMM yyyy} - {endDate:MMM yyyy}";
     }
 
     private void CmbDateRange_SelectedIndexChanged(object? sender, EventArgs e)
     {
-        if (cmbDateRange.SelectedIndex < 0) return;
-
-        _currentPreset = (DateRangePreset)cmbDateRange.SelectedIndex;
-        
-        if (_currentPreset == DateRangePreset.Custom)
+        if (cmbDateRange.SelectedItem is string yearStr && int.TryParse(yearStr, out var year))
         {
-            lblStartDate.Visible = true;
-            dtpStartDate.Visible = true;
-            lblEndDate.Visible = true;
-            dtpEndDate.Visible = true;
-            _customStartDate = dtpStartDate.Value.Date;
-            _customEndDate = dtpEndDate.Value.Date;
-        }
-        else
-        {
-            lblStartDate.Visible = false;
-            dtpStartDate.Visible = false;
-            lblEndDate.Visible = false;
-            dtpEndDate.Visible = false;
-        }
-
-        LoadStats();
-    }
-
-    private void DtpStartDate_ValueChanged(object? sender, EventArgs e)
-    {
-        if (_currentPreset == DateRangePreset.Custom)
-        {
-            _customStartDate = dtpStartDate.Value.Date;
-            if (_customStartDate > _customEndDate)
-            {
-                _customEndDate = _customStartDate;
-                dtpEndDate.Value = _customEndDate;
-            }
-            LoadStats();
-        }
-    }
-
-    private void DtpEndDate_ValueChanged(object? sender, EventArgs e)
-    {
-        if (_currentPreset == DateRangePreset.Custom)
-        {
-            _customEndDate = dtpEndDate.Value.Date;
-            if (_customEndDate < _customStartDate)
-            {
-                _customStartDate = _customEndDate;
-                dtpStartDate.Value = _customStartDate;
-            }
+            _selectedYear = year;
             LoadStats();
         }
     }
@@ -706,6 +580,41 @@ public partial class StatsForm : Form
                     var imgPath = ExportChartToImage(plotViewPantryDayVolume.Model, "PantryDayVolume");
                     if (!string.IsNullOrEmpty(imgPath))
                         chartImages["PantryDayVolume"] = imgPath;
+                }
+
+                if (plotViewRaceDistribution.Model != null)
+                {
+                    var imgPath = ExportChartToImage(plotViewRaceDistribution.Model, "RaceDistribution");
+                    if (!string.IsNullOrEmpty(imgPath))
+                        chartImages["RaceDistribution"] = imgPath;
+                }
+
+                if (plotViewVeteranDistribution.Model != null)
+                {
+                    var imgPath = ExportChartToImage(plotViewVeteranDistribution.Model, "VeteranDistribution");
+                    if (!string.IsNullOrEmpty(imgPath))
+                        chartImages["VeteranDistribution"] = imgPath;
+                }
+
+                if (plotViewDisabilityDistribution.Model != null)
+                {
+                    var imgPath = ExportChartToImage(plotViewDisabilityDistribution.Model, "DisabilityDistribution");
+                    if (!string.IsNullOrEmpty(imgPath))
+                        chartImages["DisabilityDistribution"] = imgPath;
+                }
+
+                if (plotViewVisitType.Model != null)
+                {
+                    var imgPath = ExportChartToImage(plotViewVisitType.Model, "VisitType");
+                    if (!string.IsNullOrEmpty(imgPath))
+                        chartImages["VisitType"] = imgPath;
+                }
+
+                if (plotViewEventType.Model != null)
+                {
+                    var imgPath = ExportChartToImage(plotViewEventType.Model, "EventType");
+                    if (!string.IsNullOrEmpty(imgPath))
+                        chartImages["EventType"] = imgPath;
                 }
 
                 using var connection = DatabaseManager.GetConnection();
@@ -766,6 +675,41 @@ public partial class StatsForm : Form
                 var imgPath = ExportChartToImage(plotViewPantryDayVolume.Model, "PantryDayVolume");
                 if (!string.IsNullOrEmpty(imgPath))
                     chartImages["PantryDayVolume"] = imgPath;
+            }
+
+            if (plotViewRaceDistribution.Model != null)
+            {
+                var imgPath = ExportChartToImage(plotViewRaceDistribution.Model, "RaceDistribution");
+                if (!string.IsNullOrEmpty(imgPath))
+                    chartImages["RaceDistribution"] = imgPath;
+            }
+
+            if (plotViewVeteranDistribution.Model != null)
+            {
+                var imgPath = ExportChartToImage(plotViewVeteranDistribution.Model, "VeteranDistribution");
+                if (!string.IsNullOrEmpty(imgPath))
+                    chartImages["VeteranDistribution"] = imgPath;
+            }
+
+            if (plotViewDisabilityDistribution.Model != null)
+            {
+                var imgPath = ExportChartToImage(plotViewDisabilityDistribution.Model, "DisabilityDistribution");
+                if (!string.IsNullOrEmpty(imgPath))
+                    chartImages["DisabilityDistribution"] = imgPath;
+            }
+
+            if (plotViewVisitType.Model != null)
+            {
+                var imgPath = ExportChartToImage(plotViewVisitType.Model, "VisitType");
+                if (!string.IsNullOrEmpty(imgPath))
+                    chartImages["VisitType"] = imgPath;
+            }
+
+            if (plotViewEventType.Model != null)
+            {
+                var imgPath = ExportChartToImage(plotViewEventType.Model, "EventType");
+                if (!string.IsNullOrEmpty(imgPath))
+                    chartImages["EventType"] = imgPath;
             }
 
             // Generate PDF to temporary file

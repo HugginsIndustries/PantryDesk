@@ -195,7 +195,7 @@ partial class CheckInForm
         // 
         menuItemStatisticsDashboard.Name = "menuItemStatisticsDashboard";
         menuItemStatisticsDashboard.Size = new Size(195, 22);
-        menuItemStatisticsDashboard.Text = "Statistics Dashboard";
+        menuItemStatisticsDashboard.Text = "Yearly Statistics";
         menuItemStatisticsDashboard.Click += MenuItemStatisticsDashboard_Click;
         // 
         // menuAdmin
