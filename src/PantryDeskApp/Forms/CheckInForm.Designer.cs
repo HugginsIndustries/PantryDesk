@@ -38,6 +38,9 @@ partial class CheckInForm
         btnOpenProfile = new Button();
         panelTopRow = new TableLayoutPanel();
         menuStrip = new MenuStrip();
+        menuForms = new ToolStripMenuItem();
+        menuItemRegistration = new ToolStripMenuItem();
+        menuItemDeckSignIn = new ToolStripMenuItem();
         menuReports = new ToolStripMenuItem();
         menuItemEnterDeckStats = new ToolStripMenuItem();
         menuItemMonthlyActivityReport = new ToolStripMenuItem();
@@ -163,12 +166,33 @@ partial class CheckInForm
         // 
         // menuStrip
         // 
-        menuStrip.Items.AddRange(new ToolStripItem[] { menuReports, menuAdmin, menuItemLogout });
+        menuStrip.Items.AddRange(new ToolStripItem[] { menuForms, menuReports, menuAdmin, menuItemLogout });
         menuStrip.Location = new Point(0, 0);
         menuStrip.Name = "menuStrip";
         menuStrip.Size = new Size(800, 24);
         menuStrip.TabIndex = 6;
         menuStrip.Text = "menuStrip";
+        // 
+        // menuForms
+        // 
+        menuForms.DropDownItems.AddRange(new ToolStripItem[] { menuItemRegistration, menuItemDeckSignIn });
+        menuForms.Name = "menuForms";
+        menuForms.Size = new Size(50, 20);
+        menuForms.Text = "Forms";
+        // 
+        // menuItemRegistration
+        // 
+        menuItemRegistration.Name = "menuItemRegistration";
+        menuItemRegistration.Size = new Size(150, 22);
+        menuItemRegistration.Text = "Registration";
+        menuItemRegistration.Click += MenuItemRegistration_Click;
+        // 
+        // menuItemDeckSignIn
+        // 
+        menuItemDeckSignIn.Name = "menuItemDeckSignIn";
+        menuItemDeckSignIn.Size = new Size(150, 22);
+        menuItemDeckSignIn.Text = "Deck Sign In";
+        menuItemDeckSignIn.Click += MenuItemDeckSignIn_Click;
         // 
         // menuReports
         // 
@@ -328,6 +352,9 @@ partial class CheckInForm
     private Button btnNewHousehold;
     private Button btnOpenProfile;
     private MenuStrip menuStrip;
+    private ToolStripMenuItem menuForms;
+    private ToolStripMenuItem menuItemRegistration;
+    private ToolStripMenuItem menuItemDeckSignIn;
     private ToolStripMenuItem menuReports;
     private ToolStripMenuItem menuItemEnterDeckStats;
     private ToolStripMenuItem menuItemMonthlyActivityReport;

@@ -41,14 +41,22 @@ public partial class MonthlyActivityReportForm : Form
         try
         {
             using var connection = DatabaseManager.GetConnection();
-            txtFoodBankName.Text = ConfigRepository.GetValue(connection, ReportHeaderConfigKeys.FoodBankName) ?? string.Empty;
-            txtCounty.Text = ConfigRepository.GetValue(connection, ReportHeaderConfigKeys.County) ?? string.Empty;
-            txtPreparedBy.Text = ConfigRepository.GetValue(connection, ReportHeaderConfigKeys.PreparedBy) ?? string.Empty;
-            txtPhone.Text = ConfigRepository.GetValue(connection, ReportHeaderConfigKeys.Phone) ?? string.Empty;
+            txtFoodBankName.Text = ConfigRepository.GetValue(connection, ReportHeaderConfigKeys.FoodBankName)
+                ?? "Winlock-Vader Food Bank";
+            txtCounty.Text = ConfigRepository.GetValue(connection, ReportHeaderConfigKeys.County)
+                ?? "Lewis";
+            txtPreparedBy.Text = ConfigRepository.GetValue(connection, ReportHeaderConfigKeys.PreparedBy)
+                ?? "RyLee Camps";
+            txtPhone.Text = ConfigRepository.GetValue(connection, ReportHeaderConfigKeys.Phone)
+                ?? "(360) 785-2185";
         }
         catch
         {
-            // Non-fatal; leave empty
+            // Non-fatal; use defaults
+            txtFoodBankName.Text = "Winlock-Vader Food Bank";
+            txtCounty.Text = "Lewis";
+            txtPreparedBy.Text = "RyLee Camps";
+            txtPhone.Text = "(360) 785-2185";
         }
     }
 
@@ -86,6 +94,52 @@ public partial class MonthlyActivityReportForm : Form
         };
     }
 
+    private static (string? cityLine, string? raceLine, string? veteranLine, string? disabilityLine) GetDemographicLinesWithPercentages(SqliteConnection connection, DateTime monthStart, DateTime monthEnd)
+    {
+        var cityBreakdown = StatisticsService.GetStatsByCity(connection, monthStart, monthEnd);
+        var sorted = cityBreakdown.OrderByDescending(c => c.HouseholdsServed).ToList();
+        var cityTotal = sorted.Sum(c => c.HouseholdsServed);
+        var cityLine = sorted.Count > 0
+            ? string.Join(" · ", sorted.Select(c =>
+            {
+                var pct = cityTotal > 0 ? (int)Math.Round(100.0 * c.HouseholdsServed / cityTotal) : 0;
+                return $"{c.City}: {c.HouseholdsServed} ({pct}%)";
+            }))
+            : null;
+
+        var race = StatisticsService.GetDemographicsByRace(connection, monthStart, monthEnd).OrderByDescending(x => x.Count).ToList();
+        var raceTotal = race.Sum(x => x.Count);
+        var raceLine = race.Count > 0
+            ? string.Join(" · ", race.Select(x =>
+            {
+                var pct = raceTotal > 0 ? (int)Math.Round(100.0 * x.Count / raceTotal) : 0;
+                return $"{x.Label}: {x.Count} ({pct}%)";
+            }))
+            : null;
+
+        var veteran = StatisticsService.GetVeteranStatusWithDisabledVeteranBreakdown(connection, monthStart, monthEnd);
+        var veteranTotal = veteran.Sum(x => x.Count);
+        var veteranLine = veteran.Count > 0
+            ? string.Join(" · ", veteran.Select(x =>
+            {
+                var pct = veteranTotal > 0 ? (int)Math.Round(100.0 * x.Count / veteranTotal) : 0;
+                return $"{x.Label}: {x.Count} ({pct}%)";
+            }))
+            : null;
+
+        var disability = StatisticsService.GetDemographicsByDisabledStatus(connection, monthStart, monthEnd).OrderByDescending(x => x.Count).ToList();
+        var disabilityTotal = disability.Sum(x => x.Count);
+        var disabilityLine = disability.Count > 0
+            ? string.Join(" · ", disability.Select(x =>
+            {
+                var pct = disabilityTotal > 0 ? (int)Math.Round(100.0 * x.Count / disabilityTotal) : 0;
+                return $"{x.Label}: {x.Count} ({pct}%)";
+            }))
+            : null;
+
+        return (cityLine, raceLine, veteranLine, disabilityLine);
+    }
+
     private void BtnExportPdf_Click(object? sender, EventArgs e)
     {
         if (!ValidateHeader())
@@ -99,7 +153,7 @@ public partial class MonthlyActivityReportForm : Form
         using var saveDialog = new SaveFileDialog
         {
             Filter = "PDF Files (*.pdf)|*.pdf",
-            FileName = $"MonthlyActivityReport_{year}_{month:D2}.pdf",
+            FileName = $"MonthlyReport-{year}-{month:D2}.pdf",
             DefaultExt = "pdf"
         };
 
@@ -108,23 +162,15 @@ public partial class MonthlyActivityReportForm : Form
             try
             {
                 SaveHeaderToConfig();
-                string? cityLine = null;
-                string? raceLine = null;
-                string? veteranLine = null;
-                string? disabilityLine = null;
+                string? cityLine;
+                string? raceLine;
+                string? veteranLine;
+                string? disabilityLine;
                 using (var connection = DatabaseManager.GetConnection())
                 {
                     var monthStart = new DateTime(year, month, 1);
                     var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-                    var cityBreakdown = StatisticsService.GetStatsByCity(connection, monthStart, monthEnd);
-                    var sorted = cityBreakdown.OrderByDescending(c => c.HouseholdsServed).ToList();
-                    cityLine = sorted.Count > 0 ? string.Join(" · ", sorted.Select(c => $"{c.City}: {c.HouseholdsServed}")) : null;
-                    var race = StatisticsService.GetDemographicsByRace(connection, monthStart, monthEnd).OrderByDescending(x => x.Count).ToList();
-                    raceLine = race.Count > 0 ? string.Join(" · ", race.Select(x => $"{x.Label}: {x.Count}")) : null;
-                    var veteran = StatisticsService.GetVeteranStatusWithDisabledVeteranBreakdown(connection, monthStart, monthEnd);
-                    veteranLine = veteran.Count > 0 ? string.Join(" · ", veteran.Select(x => $"{x.Label}: {x.Count}")) : null;
-                    var disability = StatisticsService.GetDemographicsByDisabledStatus(connection, monthStart, monthEnd).OrderByDescending(x => x.Count).ToList();
-                    disabilityLine = disability.Count > 0 ? string.Join(" · ", disability.Select(x => $"{x.Label}: {x.Count}")) : null;
+                    (cityLine, raceLine, veteranLine, disabilityLine) = GetDemographicLinesWithPercentages(connection, monthStart, monthEnd);
                 }
                 using (var connection = DatabaseManager.GetConnection())
                 {
@@ -151,25 +197,17 @@ public partial class MonthlyActivityReportForm : Form
         try
         {
             SaveHeaderToConfig();
-            string? cityLine = null;
-            string? raceLine = null;
-            string? veteranLine = null;
-            string? disabilityLine = null;
+            string? cityLine;
+            string? raceLine;
+            string? veteranLine;
+            string? disabilityLine;
             using (var connection = DatabaseManager.GetConnection())
             {
                 var monthStart = new DateTime(year, month, 1);
                 var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-                var cityBreakdown = StatisticsService.GetStatsByCity(connection, monthStart, monthEnd);
-                var sorted = cityBreakdown.OrderByDescending(c => c.HouseholdsServed).ToList();
-                cityLine = sorted.Count > 0 ? string.Join(" · ", sorted.Select(c => $"{c.City}: {c.HouseholdsServed}")) : null;
-                var race = StatisticsService.GetDemographicsByRace(connection, monthStart, monthEnd).OrderByDescending(x => x.Count).ToList();
-                raceLine = race.Count > 0 ? string.Join(" · ", race.Select(x => $"{x.Label}: {x.Count}")) : null;
-                var veteran = StatisticsService.GetVeteranStatusWithDisabledVeteranBreakdown(connection, monthStart, monthEnd);
-                veteranLine = veteran.Count > 0 ? string.Join(" · ", veteran.Select(x => $"{x.Label}: {x.Count}")) : null;
-                var disability = StatisticsService.GetDemographicsByDisabledStatus(connection, monthStart, monthEnd).OrderByDescending(x => x.Count).ToList();
-                disabilityLine = disability.Count > 0 ? string.Join(" · ", disability.Select(x => $"{x.Label}: {x.Count}")) : null;
+                (cityLine, raceLine, veteranLine, disabilityLine) = GetDemographicLinesWithPercentages(connection, monthStart, monthEnd);
             }
-            var tempPdfPath = Path.Combine(Path.GetTempPath(), $"MonthlyActivityReport_{Guid.NewGuid()}.pdf");
+            var tempPdfPath = Path.Combine(Path.GetTempPath(), $"MonthlyReport-{year}-{month:D2}_{Guid.NewGuid()}.pdf");
             using (var connection = DatabaseManager.GetConnection())
             {
                 ReportService.GenerateMonthlyActivityReportPdf(connection, year, month, GetHeader(), tempPdfPath, cityBreakdownLine: cityLine, raceLine: raceLine, veteranLine: veteranLine, disabilityLine: disabilityLine);

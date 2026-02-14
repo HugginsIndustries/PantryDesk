@@ -538,12 +538,11 @@ public partial class StatsForm : Form
     private void BtnExportPdf_Click(object? sender, EventArgs e)
     {
         var (startDate, endDate) = GetCurrentDateRange();
-        var dateLabel = GetDateRangeLabel(startDate, endDate);
 
         using var saveDialog = new SaveFileDialog
         {
             Filter = "PDF Files (*.pdf)|*.pdf",
-            FileName = $"Statistics_{dateLabel.Replace(" ", "_").Replace("/", "-")}.pdf",
+            FileName = $"YearlyReport-{endDate.Year}.pdf",
             DefaultExt = "pdf"
         };
 
@@ -713,7 +712,7 @@ public partial class StatsForm : Form
             }
 
             // Generate PDF to temporary file
-            var tempPdfPath = Path.Combine(Path.GetTempPath(), $"Statistics_{Guid.NewGuid()}.pdf");
+            var tempPdfPath = Path.Combine(Path.GetTempPath(), $"YearlyReport-{endDate.Year}_{Guid.NewGuid()}.pdf");
             
             using var connection = DatabaseManager.GetConnection();
             ReportService.GenerateStatisticsPdf(connection, startDate, endDate, tempPdfPath, chartImages);

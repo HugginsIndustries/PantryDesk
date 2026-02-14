@@ -448,6 +448,18 @@ public partial class CheckInForm : Form
         }
     }
 
+    private void MenuItemRegistration_Click(object? sender, EventArgs e)
+    {
+        using var form = new BlankFormsForm(BlankFormKind.Registration);
+        form.ShowDialog();
+    }
+
+    private void MenuItemDeckSignIn_Click(object? sender, EventArgs e)
+    {
+        using var form = new BlankFormsForm(BlankFormKind.DeckSignIn);
+        form.ShowDialog();
+    }
+
     private void MenuItemEnterDeckStats_Click(object? sender, EventArgs e)
     {
         using var form = new DeckStatsEntryForm();

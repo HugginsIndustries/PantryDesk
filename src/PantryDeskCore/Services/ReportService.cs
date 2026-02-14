@@ -271,19 +271,19 @@ public static class ReportService
                         });
                         t.Header(h =>
                         {
-                            h.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(3).Text("Age Group").FontSize(11).Bold());
-                            h.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(3).Text("Duplicated (returning)").FontSize(11).Bold().AlignRight());
-                            h.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(3).Text("Unduplicated (first visit this year)").FontSize(11).Bold().AlignRight());
-                            h.Cell().Element(c => c.Background(Colors.Grey.Lighten3).Padding(3).Text("Total Individuals Served").FontSize(11).Bold().AlignRight());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(3).Text("Age Group").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(3).Text("Duplicated (returning)").FontSize(11).Bold().AlignRight());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(3).Text("Unduplicated (first visit this year)").FontSize(11).Bold().AlignRight());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(3).Text("Total Individuals Served").FontSize(11).Bold().AlignRight());
                         });
                         RenderActivityReportRow(t, "Infant (0-2)", stats.InfantDuplicated, stats.InfantUnduplicated);
                         RenderActivityReportRow(t, "Child (2-18)", stats.ChildDuplicated, stats.ChildUnduplicated);
                         RenderActivityReportRow(t, "Adult (18-55)", stats.AdultDuplicated, stats.AdultUnduplicated);
                         RenderActivityReportRow(t, "Senior (55+)", stats.SeniorDuplicated, stats.SeniorUnduplicated);
-                        t.Cell().Element(c => c.Padding(3).Text("Total").FontSize(11).Bold());
-                        t.Cell().Element(c => c.Padding(3).Text(stats.IndividualsDuplicated.ToString("N0")).FontSize(11).AlignRight());
-                        t.Cell().Element(c => c.Padding(3).Text(stats.IndividualsUnduplicated.ToString("N0")).FontSize(11).AlignRight());
-                        t.Cell().Element(c => c.Padding(3).Text(stats.IndividualsTotal.ToString("N0")).FontSize(11).AlignRight());
+                        t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(3).Text("Total").FontSize(11).Bold());
+                        t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(3).Text(stats.IndividualsDuplicated.ToString("N0")).FontSize(11).AlignRight());
+                        t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(3).Text(stats.IndividualsUnduplicated.ToString("N0")).FontSize(11).AlignRight());
+                        t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(3).Text(stats.IndividualsTotal.ToString("N0")).FontSize(11).AlignRight());
                     });
                     column.Item().Height(6);
                     if (!string.IsNullOrEmpty(raceLine))
@@ -313,12 +313,198 @@ public static class ReportService
         document.GeneratePdf(filePath);
     }
 
+    /// <summary>
+    /// Generates a blank Registration & Shopper Designation form PDF (one page, portrait, Letter).
+    /// No database connection required; form is for printing and hand-fill.
+    /// </summary>
+    public static void GenerateRegistrationFormPdf(string filePath)
+    {
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.Letter);
+                page.Margin(40);
+
+                page.Content().Column(column =>
+                {
+                    column.Item().Text("Winlock-Vader Food Bank Registration & Shopper Designation Form")
+                        .FontSize(16)
+                        .Bold()
+                        .AlignCenter();
+                    column.Item().PaddingBottom(4);
+                    column.Item().Text("Information below MUST MATCH your proof of residency information.")
+                        .FontSize(12)
+                        .Bold()
+                        .AlignCenter();
+                    column.Item().PaddingBottom(16);
+
+                    // Contact Info
+                    column.Item().Text("Contact Info:").FontSize(13).Bold();
+                    column.Item().PaddingBottom(4);
+                    // Line 1: Street Address
+                    column.Item().Column(c =>
+                    {
+                        c.Item().Text("Street Address").FontSize(12);
+                        c.Item().PaddingTop(2);
+                        c.Item().LineHorizontal(1).LineColor(Colors.Black);
+                    });
+                    column.Item().PaddingBottom(20);
+                    // Line 2: City, State, Zip
+                    column.Item().Row(r =>
+                    {
+                        r.RelativeItem(2).Column(c =>
+                        {
+                            c.Item().Text("City").FontSize(12);
+                            c.Item().PaddingTop(2);
+                            c.Item().LineHorizontal(1).LineColor(Colors.Black);
+                        });
+                        r.ConstantItem(100).Column(c =>
+                        {
+                            c.Item().Text("State").FontSize(12);
+                            c.Item().PaddingTop(2);
+                            c.Item().LineHorizontal(1).LineColor(Colors.Black);
+                        });
+                        r.ConstantItem(100).Column(c =>
+                        {
+                            c.Item().Text("Zip").FontSize(12);
+                            c.Item().PaddingTop(2);
+                            c.Item().LineHorizontal(1).LineColor(Colors.Black);
+                        });
+                    });
+                    column.Item().PaddingBottom(20);
+                    // Line 3: Phone #, Email
+                    column.Item().Row(r =>
+                    {
+                        r.RelativeItem().Column(c =>
+                        {
+                            c.Item().Text("Phone #").FontSize(12);
+                            c.Item().PaddingTop(2);
+                            c.Item().LineHorizontal(1).LineColor(Colors.Black);
+                        });
+                        r.RelativeItem().Column(c =>
+                        {
+                            c.Item().Text("Email").FontSize(12);
+                            c.Item().PaddingTop(2);
+                            c.Item().LineHorizontal(1).LineColor(Colors.Black);
+                        });
+                    });
+                    column.Item().PaddingBottom(12);
+
+                    // Household Members table
+                    column.Item().Text("Household Members:").FontSize(13).Bold();
+                    column.Item().PaddingBottom(4);
+                    column.Item().Text("1 - First listed member should be the primary household member.").FontSize(11).Bold();
+                    column.Item().PaddingBottom(10);
+                    column.Item().Text("2 - Name and birthday are required for each household member.").FontSize(11).Bold();
+                    column.Item().PaddingBottom(10);
+                    column.Item().Text("3 - Race, veteran status, and disability status are optional, but providing them helps us receive more funding.").FontSize(11).Bold();
+                    column.Item().PaddingBottom(10);
+                    column.Item().Text("4 - For race, please choose the closest match from the following: White, Black, Hispanic, Native American.").FontSize(11).Bold();
+                    column.Item().PaddingBottom(12);
+                    column.Item().Table(t =>
+                    {
+                        t.ColumnsDefinition(cd =>
+                        {
+                            cd.RelativeColumn(2);
+                            cd.RelativeColumn(1.5f);
+                            cd.RelativeColumn(1.5f);
+                            cd.ConstantColumn(50);
+                            cd.ConstantColumn(50);
+                        });
+                        t.Header(h =>
+                        {
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(3).Height(30).AlignCenter().AlignMiddle().Text("Name (please print first and last)").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(3).Height(30).AlignCenter().AlignMiddle().Text("Birthday (mm/dd/yyyy)").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(3).Height(30).AlignCenter().AlignMiddle().Text("Race (see above)").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(3).Height(30).AlignCenter().AlignMiddle().Text("Veteran").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(3).Height(30).AlignCenter().AlignMiddle().Text("Disabled").FontSize(11).Bold());
+                        });
+                        for (var i = 0; i < 10; i++)
+                        {
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(2).Height(30));
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(2).Height(30));
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(2).Height(30));
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(2).Height(30));
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(2).Height(30));
+                        }
+                    });
+                });
+            });
+        });
+
+        document.GeneratePdf(filePath);
+    }
+
+    /// <summary>
+    /// Generates a blank Deck Sign In form PDF (one page, landscape, Letter).
+    /// Table has at least 21 blank rows for hand-fill. No database connection required.
+    /// </summary>
+    public static void GenerateDeckSignInFormPdf(string filePath)
+    {
+        const int rowCount = 20;
+
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.Letter.Landscape());
+                page.Margin(30);
+
+                page.Content().Column(column =>
+                {
+                    column.Item().Text("Winlock-Vader Food Bank Deck Sign In")
+                        .FontSize(18)
+                        .Bold()
+                        .AlignCenter();
+                    column.Item().PaddingBottom(8);
+
+                    column.Item().Table(t =>
+                    {
+                        t.ColumnsDefinition(cd =>
+                        {
+                            cd.RelativeColumn(2);
+                            cd.ConstantColumn(70);
+                            cd.ConstantColumn(45);
+                            cd.ConstantColumn(50);
+                            cd.ConstantColumn(45);
+                            cd.ConstantColumn(45);
+                            cd.RelativeColumn();
+                        });
+                        t.Header(h =>
+                        {
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(2).AlignCenter().AlignMiddle().Text("Name (please print first and last)").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(2).AlignCenter().AlignMiddle().Text("Household Size").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(2).AlignCenter().AlignMiddle().Text("Infants (0-2)").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(2).AlignCenter().AlignMiddle().Text("Children (2-18)").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(2).AlignCenter().AlignMiddle().Text("Adults (18-55)").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(2).AlignCenter().AlignMiddle().Text("Seniors (55+)").FontSize(11).Bold());
+                            h.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Background(Colors.Grey.Lighten3).Padding(2).AlignCenter().AlignMiddle().Text("Comment").FontSize(11).Bold());
+                        });
+                        for (var i = 0; i < rowCount; i++)
+                        {
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(1).Height(22));
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(1).Height(22));
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(1).Height(22));
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(1).Height(22));
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(1).Height(22));
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(1).Height(22));
+                            t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(1).Height(22));
+                        }
+                    });
+                });
+            });
+        });
+
+        document.GeneratePdf(filePath);
+    }
+
     private static void RenderActivityReportRow(TableDescriptor t, string label, int dup, int undup)
     {
-        t.Cell().Element(c => c.Padding(3).Text(label).FontSize(11));
-        t.Cell().Element(c => c.Padding(3).Text(dup.ToString("N0")).FontSize(11).AlignRight());
-        t.Cell().Element(c => c.Padding(3).Text(undup.ToString("N0")).FontSize(11).AlignRight());
-        t.Cell().Element(c => c.Padding(3).Text((dup + undup).ToString("N0")).FontSize(11).AlignRight());
+        t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(3).Text(label).FontSize(11));
+        t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(3).Text(dup.ToString("N0")).FontSize(11).AlignRight());
+        t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(3).Text(undup.ToString("N0")).FontSize(11).AlignRight());
+        t.Cell().Element(c => c.Border(1).BorderColor(Colors.Black).Padding(3).Text((dup + undup).ToString("N0")).FontSize(11).AlignRight());
     }
 
     private static string GetDateRangeLabel(DateTime startDate, DateTime endDate)

@@ -337,6 +337,19 @@ Implementation checklist based on phased plan.
     - Order: summary at top → City Breakdown → Household composition (with Age, Race, Veteran, Disability) → Visit Type → Event Type → Pantry Day breakdown → Monthly Visits Trend.
   - Likely files: PDF export / report generation for statistics dashboard.
 
+#### Forms (PDF Generator) — Registration and Deck Sign In (Complete)
+
+- [x] Add "Forms" menu with Registration and Deck Sign In; blank PDFs with shared export/print dialog
+  - Impact: High
+  - Complexity: Medium
+  - Acceptance Criteria:
+    - Main menu: Add "Forms" as the first (leftmost) menu option, to the left of Reports, with subitems "Registration" and "Deck Sign In".
+    - **Registration:** One page, portrait, letter. Blank form. Title: "Winlock-Vader Food Bank Registration & Shopper Designation Form". Subtitle: "Information below MUST MATCH your proof of residency information." Contact Info: Street Address; City, State, Zip; Phone #, Email. Household Members: four numbered notes; table Name (please print first and last), Birthday (mm/dd/yyyy), Race (see above), Veteran, Disabled (10 rows, header height 30, centered headers, bordered cells, no footer).
+    - **Deck Sign In:** One page, landscape, letter. Title "Winlock-Vader Food Bank Deck Sign In". Table: Name (please print first and last), Household Size, Infants (0-2), Children (2-18), Adults (18-55), Seniors (55+), Comment (20 rows). Centered column headers; no footer.
+    - Shared dialog: "Form: Registration" or "Form: Deck Sign In"; Export PDF and Print (same behavior as Monthly Activity Report).
+  - Likely files: Main form menu, new Forms dialog, PDF generation for Registration and Deck forms.
+  - Rationale: Blank forms for client registration and deck sign-in; existing clients will re-fill registration since data is not transferred into new app.
+
 ### Phase 10 — UX Improvements & Workflow Enhancements (Complete)
 
 #### Search & Check-In Improvements
@@ -502,19 +515,6 @@ Implement deck entry and storage with or before the report so the report can rea
 ## Open
 
 ### Client Requirements
-
-#### Forms (PDF Generator) — Registration and Deck Sign In
-
-- [ ] Add "Forms" menu with Registration and Deck Sign In; blank PDFs with shared export/print dialog
-  - Impact: High
-  - Complexity: Medium
-  - Acceptance Criteria:
-    - Main menu: Add "Forms" as the first (leftmost) menu option, to the left of Reports, with subitems "Registration" and "Deck Sign In".
-    - **Registration:** One page, portrait, letter. Blank form. Title: "Winlock-Vader Food Bank Registration & Shopper Designation Form". Subtitle: "Information below MUST MATCH your proof of residency information." Main household contact: Address, Phone, Email. Household Members table: Name, Birthday, Primary? (blank column for check or "yes"), Race, Veteran, Disabled. For printing and hand-fill on first visit.
-    - **Deck Sign In:** One page, landscape, letter. Blank form. Title: "Winlock-Vader Food Bank Deck Sign In". Table: Name (please print), Household Size, Infants, Children, Adults, Seniors, Comment. At least 21 rows (more if page fits).
-    - Shared dialog for both: line above buttons "Form: Registration" or "Form: Deck Sign In"; buttons "Export PDF" and "Print". Same behavior as Statistics / Monthly Activity Report.
-  - Likely files: Main form menu, new Forms dialog, PDF generation for Registration and Deck forms.
-  - Rationale: Blank forms for client registration and deck sign-in; existing clients will re-fill registration since data is not transferred into new app.
 
 #### Barcode System
 
