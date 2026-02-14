@@ -302,6 +302,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `ReportService.GenerateRegistrationFormPdf(string filePath)` and `ReportService.GenerateDeckSignInFormPdf(string filePath)` in PantryDeskCore (no database required).
 - **Report export filenames:** Yearly Statistics export/print use default `YearlyReport-{year}.pdf`. Monthly Activity Report export/print use `MonthlyReport-{year}-{month}.pdf` (e.g. MonthlyReport-2026-01.pdf).
 - **Monthly Activity Report enhancements:** Default header values when none saved: Food Bank "Winlock-Vader Food Bank", County "Lewis", Prepared by "RyLee Camps", Phone "(360) 785-2185". Individuals Served table has bordered cells. Total Households (per city), Race Distribution, Veteran Status, and Disability Status lines show counts with percentages (e.g. `Winlock: 60 (47%)`, `White: 275 (80%)`).
+- **Inactive households always allowed when completing service** — Removed the "Inactive Household" confirmation popup when completing service for an inactive household. Inactive households are now always allowed; `IsActive` is automatically set to true when a qualifying service is recorded (already the case), and status is derived from last service date via `ActiveStatusSyncService`.
 
 ### Removed
 

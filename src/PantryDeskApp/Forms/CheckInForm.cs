@@ -307,21 +307,6 @@ public partial class CheckInForm : Form
         {
             using var connection = DatabaseManager.GetConnection();
 
-            // Warn if household is marked inactive
-            if (!_selectedHousehold.IsActive)
-            {
-                var inactiveResult = MessageBox.Show(
-                    "This household is marked as Inactive.\n\nDo you still want to record a completed service for this household?",
-                    "Inactive Household",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning);
-
-                if (inactiveResult == DialogResult.No)
-                {
-                    return;
-                }
-            }
-
             string? overrideReason = null;
             string? overrideNotes = null;
 
