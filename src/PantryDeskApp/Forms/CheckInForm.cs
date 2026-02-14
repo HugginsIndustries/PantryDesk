@@ -17,6 +17,7 @@ public partial class CheckInForm : Form
     public CheckInForm()
     {
         InitializeComponent();
+        menuStrip.Renderer = new ToolStripProfessionalRenderer(new SolidMenuStripColorTable());
         UpdateMenuVisibility();
         SetupDataGridView();
 
@@ -609,4 +610,10 @@ public partial class CheckInForm : Form
                 MessageBoxIcon.Error);
         }
     }
+}
+
+file sealed class SolidMenuStripColorTable : ProfessionalColorTable
+{
+    public override Color MenuStripGradientBegin => SystemColors.Menu;
+    public override Color MenuStripGradientEnd => SystemColors.Menu;
 }

@@ -12,7 +12,8 @@ public partial class LoginForm : Form
     {
         InitializeComponent();
         cmbRole.SelectedIndex = 0; // Default to "Entry"
-        
+        ActiveControl = txtPassword;
+
         // Set form icon if available
         var iconPath = Path.Combine(AppContext.BaseDirectory, "icon.ico");
         if (File.Exists(iconPath))

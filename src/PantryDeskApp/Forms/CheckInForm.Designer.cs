@@ -32,12 +32,12 @@ partial class CheckInForm
     {
         txtSearch = new TextBox();
         dgvResults = new DataGridView();
-        btnAppointments = new Button();
         btnCompleteService = new Button();
         btnNewHousehold = new Button();
         btnOpenProfile = new Button();
         panelTopRow = new TableLayoutPanel();
         menuStrip = new MenuStrip();
+        menuItemAppointments = new ToolStripMenuItem();
         menuForms = new ToolStripMenuItem();
         menuItemRegistration = new ToolStripMenuItem();
         menuItemDeckSignIn = new ToolStripMenuItem();
@@ -66,24 +66,22 @@ partial class CheckInForm
         // 
         // panelTopRow
         // 
-        panelTopRow.ColumnCount = 5;
+        panelTopRow.ColumnCount = 4;
         panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
-        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
+        panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 170F));
         panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
         panelTopRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
         panelTopRow.Controls.Add(txtSearch, 0, 0);
-        panelTopRow.Controls.Add(btnAppointments, 1, 0);
-        panelTopRow.Controls.Add(btnCompleteService, 2, 0);
-        panelTopRow.Controls.Add(btnNewHousehold, 3, 0);
-        panelTopRow.Controls.Add(btnOpenProfile, 4, 0);
+        panelTopRow.Controls.Add(btnCompleteService, 1, 0);
+        panelTopRow.Controls.Add(btnNewHousehold, 2, 0);
+        panelTopRow.Controls.Add(btnOpenProfile, 3, 0);
         panelTopRow.Dock = DockStyle.Top;
         panelTopRow.Location = new Point(0, 24);
         panelTopRow.Name = "panelTopRow";
-        panelTopRow.Padding = new Padding(12, 8, 12, 4);
+        panelTopRow.Padding = new Padding(12, 8, 12, 8);
         panelTopRow.RowCount = 1;
-        panelTopRow.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
-        panelTopRow.Size = new Size(800, 50);
+        panelTopRow.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+        panelTopRow.Size = new Size(800, 60);
         panelTopRow.TabIndex = 0;
         // 
         // txtSearch
@@ -91,7 +89,7 @@ partial class CheckInForm
         txtSearch.Dock = DockStyle.Fill;
         txtSearch.Font = new Font("Segoe UI", 12F);
         txtSearch.Location = new Point(15, 11);
-        txtSearch.Margin = new Padding(3, 3, 6, 3);
+        txtSearch.Margin = new Padding(3, 6, 6, 6);
         txtSearch.Name = "txtSearch";
         txtSearch.PlaceholderText = "Search by name...";
         txtSearch.Size = new Size(614, 29);
@@ -99,22 +97,11 @@ partial class CheckInForm
         txtSearch.TextChanged += TxtSearch_TextChanged;
         txtSearch.KeyDown += TxtSearch_KeyDown;
         // 
-        // btnAppointments
-        // 
-        btnAppointments.Dock = DockStyle.Fill;
-        btnAppointments.Location = new Point(520, 11);
-        btnAppointments.Margin = new Padding(6, 3, 3, 3);
-        btnAppointments.Name = "btnAppointments";
-        btnAppointments.Size = new Size(109, 32);
-        btnAppointments.TabIndex = 1;
-        btnAppointments.Text = "Appointments";
-        btnAppointments.UseVisualStyleBackColor = true;
-        btnAppointments.Click += BtnAppointments_Click;
-        // 
         // btnCompleteService
         // 
         btnCompleteService.Dock = DockStyle.Fill;
         btnCompleteService.Enabled = false;
+        btnCompleteService.Font = new Font("Segoe UI", 12F);
         btnCompleteService.Location = new Point(635, 11);
         btnCompleteService.Margin = new Padding(6, 3, 3, 3);
         btnCompleteService.Name = "btnCompleteService";
@@ -127,6 +114,7 @@ partial class CheckInForm
         // btnNewHousehold
         // 
         btnNewHousehold.Dock = DockStyle.Fill;
+        btnNewHousehold.Font = new Font("Segoe UI", 12F);
         btnNewHousehold.Location = new Point(788, 11);
         btnNewHousehold.Margin = new Padding(6, 3, 3, 3);
         btnNewHousehold.Name = "btnNewHousehold";
@@ -140,6 +128,7 @@ partial class CheckInForm
         // 
         btnOpenProfile.Dock = DockStyle.Fill;
         btnOpenProfile.Enabled = false;
+        btnOpenProfile.Font = new Font("Segoe UI", 12F);
         btnOpenProfile.Location = new Point(941, 11);
         btnOpenProfile.Margin = new Padding(6, 3, 3, 3);
         btnOpenProfile.Name = "btnOpenProfile";
@@ -166,12 +155,20 @@ partial class CheckInForm
         // 
         // menuStrip
         // 
-        menuStrip.Items.AddRange(new ToolStripItem[] { menuForms, menuReports, menuAdmin, menuItemLogout });
+        menuStrip.Font = new Font("Segoe UI", 12F);
+        menuStrip.Items.AddRange(new ToolStripItem[] { menuItemAppointments, menuForms, menuReports, menuAdmin, menuItemLogout });
         menuStrip.Location = new Point(0, 0);
         menuStrip.Name = "menuStrip";
         menuStrip.Size = new Size(800, 24);
         menuStrip.TabIndex = 6;
         menuStrip.Text = "menuStrip";
+        // 
+        // menuItemAppointments
+        // 
+        menuItemAppointments.Name = "menuItemAppointments";
+        menuItemAppointments.Size = new Size(90, 20);
+        menuItemAppointments.Text = "Appointments";
+        menuItemAppointments.Click += BtnAppointments_Click;
         // 
         // menuForms
         // 
@@ -347,11 +344,11 @@ partial class CheckInForm
     private TableLayoutPanel panelTopRow;
     private TextBox txtSearch;
     private DataGridView dgvResults;
-    private Button btnAppointments;
     private Button btnCompleteService;
     private Button btnNewHousehold;
     private Button btnOpenProfile;
     private MenuStrip menuStrip;
+    private ToolStripMenuItem menuItemAppointments;
     private ToolStripMenuItem menuForms;
     private ToolStripMenuItem menuItemRegistration;
     private ToolStripMenuItem menuItemDeckSignIn;

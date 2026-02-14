@@ -5,8 +5,8 @@
 ## Features
 
 - **Household Management**: Search, create, and manage household profiles with per-member tracking and age groups (Infant, Child, Adult, Senior). Active status is system-managed from last qualifying service date (annual reset, default Jan 1; Admin can change reset date). New Household form: member-based duplicate detection (name + birthday, fuzzy matching) with red warning and save-time confirmation; dialog width and members table (Race, Veteran, Disabled columns) aligned with Household Profile.
-- **Check-in**: Search and action buttons on one row; search by name (250ms debounce; Enter for immediate search). Eligibility column shows ✅ Eligible / ❌ Already Served with color coding for accessibility. Status bar shows current role and last auto/manual backup dates. "Switch Role" (replaces Logout) returns to Login without exiting.
-- **Pantry Days & Appointments**: Calendar-based pantry day scheduling. Pantry days for the current year are ensured automatically at app start (create-only; no overwrite). Dedicated **Appointments** form (button left of Complete Service) with Past (Completed/Cancelled/NoShow) and Future (Scheduled) panels; Create New Appointment with search by household member name; Mark Complete/Cancelled/NoShow buttons; Edit for all service events (Appointments and Pantry Days) from Past, Future, or Service History. Member-centric appointments (schedule for primary or other household member).
+- **Check-in**: Search and action buttons on one row (Complete Service, New Household, Open Profile); toolbar and menu use 12pt font; search by name (250ms debounce; Enter for immediate search). Eligibility column shows ✅ Eligible / ❌ Already Served with color coding for accessibility. Status bar shows current role and last auto/manual backup dates. "Switch Role" (replaces Logout) returns to Login without exiting.
+- **Pantry Days & Appointments**: Calendar-based pantry day scheduling. Pantry days for the current year are ensured automatically at app start (create-only; no overwrite). Dedicated **Appointments** form (main menu: left-most item **Appointments**) with Past (Completed/Cancelled/NoShow) and Future (Scheduled) panels; Create New Appointment with search by household member name; Mark Complete/Cancelled/NoShow buttons; Edit for all service events (Appointments and Pantry Days) from Past, Future, or Service History. Member-centric appointments (schedule for primary or other household member).
 - **Monthly Eligibility**: Visit types (Shop with TEFAP, Shop, TEFAP Only, Deck Only); only Shop/Shop with TEFAP count toward 1 visit/month limit. Override support (requires reason)
 - **Yearly Statistics** (Reports → Yearly Statistics): Year-selection dashboard for generating annual reports. Year dropdown (default: last year) drives all statistics for Jan 1–Dec 31 of the selected year. Two-page layout:
   - Summary cards: Unique Households Served, Total People, Completed Services, Deck Total (Deck Total = sum of the averaged deck household value for each month in the selected year based on Enter Deck Stats)
@@ -27,7 +27,7 @@
 
 - **Offline-first**: No internet required at runtime. No web calls or SaaS dependencies.
 - **PII Protection**: All client data is treated as sensitive PII. No PII is logged or exposed in diagnostics.
-- **Role-based Access**: Two shared role logins (Entry/Admin) with salted password hashing.
+- **Role-based Access**: Two shared role logins (Entry/Admin) with salted password hashing. Login form focuses the password field for quick entry.
 - **Least Privilege**: Admin-only features (backups, exports, calendar edits, active status reset date) are enforced.
 
 ## Quick Start

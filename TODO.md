@@ -245,10 +245,10 @@ Implementation checklist based on phased plan.
 
 #### Appointment Visibility & Management (Complete)
 
-- [x] Add dedicated "Appointments" form (button left of Complete Service on Check-In)
+- [x] Add dedicated "Appointments" form (menu item on Check-In)
   - Impact: High
   - Complexity: Medium
-  - Entry point: New "Appointments" button on main Check-In screen, left of "Complete Service" (order: Appointments | Complete Service | New Household | Open Profile)
+  - Entry point: **Appointments** menu item on main Check-In screen (left-most menu item). Top row buttons: Complete Service | New Household | Open Profile
   - Acceptance Criteria:
     - **View layout** — Two sections:
       - **Left (Past):** Latest dates at top. Includes past appointments plus future-dated appointments already marked Completed/Cancelled/NoShow (display Cancelled/NoShow in red, Completed in green). Filters: date range (default: past year to 3 months ahead), status (default: no filter). Sort by date descending.
@@ -260,7 +260,7 @@ Implementation checklist based on phased plan.
     - `PantryDeskApp/Forms/AppointmentsForm.cs` (new)
     - `PantryDeskApp/Forms/AppointmentsForm.Designer.cs` (new)
     - `PantryDeskApp/Forms/EditServiceEventDialog.cs` (new)
-    - `PantryDeskApp/Forms/CheckInForm.cs` (add Appointments button)
+    - `PantryDeskApp/Forms/CheckInForm.cs` (add Appointments menu item)
     - `PantryDeskApp/Forms/HouseholdProfileForm.cs` (remove Appointments tab/creation UI)
   - Rationale: Appointments currently only visible within individual household profiles; central form provides oversight and creation by any member name. No Upcoming panel on Check-In; may add "Appointments Today" hint later.
 

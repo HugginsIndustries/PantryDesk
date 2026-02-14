@@ -246,7 +246,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Unified statistics: all reporting (Statistics Dashboard PDF and Monthly Activity Report PDF) uses completed services only (cancelled/no-show excluded) and any completed event for households/individuals served; eligibility once-per-month rule (Shop/Shop with TEFAP) still uses qualifying visit types
   - Schema: `deck_stats_monthly` table (migration v6); `DeckStatsMonthly` model and `DeckStatsRepository`; `StatisticsFirstCompletedDateInReportingYearPerHousehold` and shared completed-service queries for activity report; veteran status demographics query with derived "Disabled Veteran" (SQL CASE); CSV/JSON export for deck stats (Admin-only)
 - **Appointment Visibility & Management** (COMPLETED: 2026-02-09, TODO: Client Requirements/Appointment Visibility & Management)
-  - Dedicated Appointments form (button left of Complete Service) with Past (Completed/Cancelled/NoShow) and Future (Scheduled) panels; date range default 1 year ago to 3 months ahead
+  - Dedicated Appointments form (main menu item **Appointments**, left-most) with Past (Completed/Cancelled/NoShow) and Future (Scheduled) panels; date range default 1 year ago to 3 months ahead
   - Create New Appointment: search by household member name, select member, set date/text/notes; member-centric appointments (`scheduled_for_member_id`, schema v7)
   - Mark Complete, Mark Cancelled, Mark NoShow buttons on Appointments form (apply to selected Future appointment)
   - EditServiceEventDialog: edit all service events (PantryDay and Appointment); right-click Edit on Past, Future, and Service History; PantryDay EventDate read-only; Appointment: full edit including status, member, date, scheduled text, visit type, notes, override reason
@@ -303,6 +303,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Report export filenames:** Yearly Statistics export/print use default `YearlyReport-{year}.pdf`. Monthly Activity Report export/print use `MonthlyReport-{year}-{month}.pdf` (e.g. MonthlyReport-2026-01.pdf).
 - **Monthly Activity Report enhancements:** Default header values when none saved: Food Bank "Winlock-Vader Food Bank", County "Lewis", Prepared by "RyLee Camps", Phone "(360) 785-2185". Individuals Served table has bordered cells. Total Households (per city), Race Distribution, Veteran Status, and Disability Status lines show counts with percentages (e.g. `Winlock: 60 (47%)`, `White: 275 (80%)`).
 - **Inactive households always allowed when completing service** — Removed the "Inactive Household" confirmation popup when completing service for an inactive household. Inactive households are now always allowed; `IsActive` is automatically set to true when a qualifying service is recorded (already the case), and status is derived from last service date via `ActiveStatusSyncService`.
+- **Check-in main screen UX** — Appointments moved from toolbar button to left-most menu item. Buttons and menu use 12pt font to match results table; search box vertically centered in toolbar row; toolbar bottom padding and panel height adjusted for spacing above table; menu strip uses solid background (no gradient) via `SolidMenuStripColorTable`.
+- **Login form** — Password field receives focus when the form is shown for quicker entry.
 
 ### Removed
 
